@@ -623,16 +623,22 @@ async function renderHome() {
             <p class="section-subtitle">Discover our highly-rated, gold-standard nutrition products.</p>
           </div>
           
-          <div class="products-grid">
-            ${featuredProducts.length > 0 ? featuredProducts.map((prod, i) => renderProductCard(prod, i)).join('') : `
-              <div class="no-products">
-                <i class="fas fa-box-open"></i>
-                <h3>No Featured Products</h3>
-                <p>Check back later or browse our full catalogue.</p>
-                <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+          ${featuredProducts.length > 0 ? `
+            <div class="slider-container animate-on-scroll">
+              <button class="slider-btn btn-prev" aria-label="Previous Products"><i class="fas fa-chevron-left"></i></button>
+              <div class="products-slider-track">
+                ${featuredProducts.map((prod, i) => renderProductCard(prod, i)).join('')}
               </div>
-            `}
-          </div>
+              <button class="slider-btn btn-next" aria-label="Next Products"><i class="fas fa-chevron-right"></i></button>
+            </div>
+          ` : `
+            <div class="no-products">
+              <i class="fas fa-box-open"></i>
+              <h3>No Featured Products</h3>
+              <p>Check back later or browse our full catalogue.</p>
+              <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+            </div>
+          `}
           ${featuredProducts.length > 0 ? `
             <div style="text-align: center; margin-top: 48px;" class="animate-on-scroll">
               <a href="#products" class="btn btn-outline">View All Products <i class="fas fa-arrow-right" style="font-size: 0.8rem; margin-left: 4px;"></i></a>
@@ -664,16 +670,22 @@ async function renderHome() {
               <p class="section-subtitle">Handpicked highest quality recovery supplements.</p>
             </div>
             
-            <div class="products-grid">
-              ${topProducts.length > 0 ? topProducts.map((prod, i) => renderProductCard(prod, i)).join('') : `
-                <div class="no-products">
-                  <i class="fas fa-box-open"></i>
-                  <h3>No Top Products Listed</h3>
-                  <p>Check back later or browse our full catalogue.</p>
-                  <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+            ${topProducts.length > 0 ? `
+              <div class="slider-container animate-on-scroll">
+                <button class="slider-btn btn-prev" aria-label="Previous Products"><i class="fas fa-chevron-left"></i></button>
+                <div class="products-slider-track">
+                  ${topProducts.map((prod, i) => renderProductCard(prod, i)).join('')}
                 </div>
-              `}
-            </div>
+                <button class="slider-btn btn-next" aria-label="Next Products"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            ` : `
+              <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <h3>No Top Products Listed</h3>
+                <p>Check back later or browse our full catalogue.</p>
+                <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+              </div>
+            `}
           </div>
         </section>
       `;
@@ -690,16 +702,22 @@ async function renderHome() {
               <p class="section-subtitle">Our most popular and highly recommended recovery products.</p>
             </div>
             
-            <div class="products-grid">
-              ${bestSellers.length > 0 ? bestSellers.map((prod, i) => renderProductCard(prod, i)).join('') : `
-                <div class="no-products">
-                  <i class="fas fa-box-open"></i>
-                  <h3>No Best Sellers Listed</h3>
-                  <p>Check back later or browse our full catalogue.</p>
-                  <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+            ${bestSellers.length > 0 ? `
+              <div class="slider-container animate-on-scroll">
+                <button class="slider-btn btn-prev" aria-label="Previous Products"><i class="fas fa-chevron-left"></i></button>
+                <div class="products-slider-track">
+                  ${bestSellers.map((prod, i) => renderProductCard(prod, i)).join('')}
                 </div>
-              `}
-            </div>
+                <button class="slider-btn btn-next" aria-label="Next Products"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            ` : `
+              <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <h3>No Best Sellers Listed</h3>
+                <p>Check back later or browse our full catalogue.</p>
+                <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+              </div>
+            `}
           </div>
         </section>
       `;
@@ -716,16 +734,22 @@ async function renderHome() {
               <p class="section-subtitle">What athletes are currently talking about and buying.</p>
             </div>
             
-            <div class="products-grid">
-              ${trendingProducts.length > 0 ? trendingProducts.map((prod, i) => renderProductCard(prod, i)).join('') : `
-                <div class="no-products">
-                  <i class="fas fa-box-open"></i>
-                  <h3>No Trending Products Listed</h3>
-                  <p>Check back later or browse our full catalogue.</p>
-                  <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+            ${trendingProducts.length > 0 ? `
+              <div class="slider-container animate-on-scroll">
+                <button class="slider-btn btn-prev" aria-label="Previous Products"><i class="fas fa-chevron-left"></i></button>
+                <div class="products-slider-track">
+                  ${trendingProducts.map((prod, i) => renderProductCard(prod, i)).join('')}
                 </div>
-              `}
-            </div>
+                <button class="slider-btn btn-next" aria-label="Next Products"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            ` : `
+              <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <h3>No Trending Products Listed</h3>
+                <p>Check back later or browse our full catalogue.</p>
+                <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+              </div>
+            `}
           </div>
         </section>
       `;
@@ -818,12 +842,51 @@ async function renderHome() {
       }, 4000);
     }
 
+    // Initialize Product Sliders
+    initProductSliders();
+
   } catch (error) {
     console.error('Home render failed:', error);
     showToast('Failed to render Home page', 'error');
   } finally {
     hideLoader();
   }
+}
+
+// Product Slider Navigation Controller
+function initProductSliders() {
+  document.querySelectorAll('.slider-container').forEach(container => {
+    const track = container.querySelector('.products-slider-track');
+    const prevBtn = container.querySelector('.btn-prev');
+    const nextBtn = container.querySelector('.btn-next');
+    if (!track || !prevBtn || !nextBtn) return;
+
+    const getScrollAmount = () => {
+      const card = track.querySelector('.product-card');
+      return card ? card.offsetWidth + 20 : 300;
+    };
+
+    prevBtn.addEventListener('click', () => {
+      track.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+    });
+
+    nextBtn.addEventListener('click', () => {
+      track.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+    });
+
+    const toggleButtons = () => {
+      const scrollLeft = track.scrollLeft;
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      prevBtn.style.opacity = scrollLeft <= 5 ? '0' : '1';
+      prevBtn.style.pointerEvents = scrollLeft <= 5 ? 'none' : 'auto';
+      nextBtn.style.opacity = scrollLeft >= maxScroll - 5 ? '0' : '1';
+      nextBtn.style.pointerEvents = scrollLeft >= maxScroll - 5 ? 'none' : 'auto';
+    };
+
+    track.addEventListener('scroll', toggleButtons);
+    setTimeout(toggleButtons, 200);
+    window.addEventListener('resize', toggleButtons);
+  });
 }
 
 
@@ -1013,19 +1076,34 @@ function renderProductCard(prod, index = 0) {
     }
   }
 
+  const sizeStr = prod.weight ? ` (Size: ${prod.weight})` : '';
+  const minPrice = hasVariants ? prod.variants.reduce((min, v) => {
+    const currentVal = v.offer_price || v.price || Infinity;
+    return currentVal < min ? currentVal : min;
+  }, Infinity) : (prod.offer_price || prod.price);
+  const priceStr = minPrice && minPrice !== Infinity ? ` for *₹${minPrice.toLocaleString('en-IN')}*` : '';
+  const cardWaMessage = `Hello! I'm interested in ordering:\n\n*${prod.title}*${sizeStr}${priceStr}\n\nPlease confirm availability. Thank you!`;
+  const cardCleanedNumber = (globalSettings ? (globalSettings.whatsapp_number || '') : '').replace(/[^0-9]/g, '');
+  const cardWaUrl = `https://wa.me/${cardCleanedNumber}?text=${encodeURIComponent(cardWaMessage)}`;
+
   return `
-    <div class="product-card animate-on-scroll ${delayClass}">
+    <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.btn-card-buy, .wishlist-btn')) window.location.hash = '#product/${prod.slug}';">
+      <button class="wishlist-btn" aria-label="Add to Wishlist" onclick="event.stopPropagation(); this.querySelector('i').classList.toggle('fas'); this.querySelector('i').classList.toggle('far'); this.classList.toggle('active');">
+        <i class="far fa-heart"></i>
+      </button>
       ${prod.featured ? '<span class="product-badge"><i class="fas fa-star"></i> Featured</span>' : ''}
       <div class="product-img-wrap">
         <img src="${mainImage}" alt="${prod.title}" loading="lazy">
+        <div class="veg-badge"><span class="veg-dot"></span></div>
       </div>
       <div class="product-info">
         <span class="product-category">${prod.categories ? prod.categories.name : 'Uncategorized'}</span>
         <h3 class="product-title">${prod.title}</h3>
-        <p class="product-desc">${prod.short_description || ''}</p>
+        <p class="product-desc-weight">${prod.weight ? escapeHTML(prod.weight) : (hasVariants && prod.variants[0].weight ? escapeHTML(prod.variants[0].weight) : 'Standard Size')}</p>
         ${priceHTML}
-        <div class="product-action">
-          <a href="#product/${prod.slug}" class="btn btn-secondary">View Details</a>
+        <div class="product-actions-row">
+          <a href="#product/${prod.slug}" class="btn btn-card-details">VIEW DETAILS</a>
+          <a href="${cardWaUrl}" target="_blank" class="btn btn-card-buy" onclick="event.stopPropagation();">BUY NOW</a>
         </div>
       </div>
     </div>
