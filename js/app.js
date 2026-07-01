@@ -1517,6 +1517,16 @@ async function renderProductDetails(params) {
 
         </div>
       </div>
+
+      <!-- Mobile Floating Buy Bar -->
+      ${product.whatsapp_enabled ? `
+        <div class="pd-mobile-buy-bar">
+          <a href="#" target="_blank" class="pd-wa-btn">
+            <i class="fab fa-whatsapp"></i>
+            Buy via WhatsApp
+          </a>
+        </div>
+      ` : ''}
     `;
 
     appContent.innerHTML = html;
