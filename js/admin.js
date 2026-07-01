@@ -130,9 +130,14 @@ async function renderDashboard() {
       <aside class="admin-sidebar">
         <div class="admin-sidebar-header">
           <span class="admin-sidebar-title">Admin Portal</span>
-          <button id="admin-theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
-            <i class="fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}"></i>
-          </button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="admin-theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
+              <i class="fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}"></i>
+            </button>
+            <button id="admin-menu-toggle" class="admin-menu-toggle-btn" aria-label="Toggle Menu">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
         </div>
         <ul class="admin-nav-list">
           <li class="admin-nav-item ${activeTab === 'dashboard' ? 'active' : ''}">
@@ -170,14 +175,25 @@ async function renderDashboard() {
   `;
 
   // Bind Sidebar navigation buttons
+  const sidebarEl = document.querySelector('.admin-sidebar');
   document.querySelectorAll('.admin-nav-item button').forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
       if (tab) {
+        if (sidebarEl) sidebarEl.classList.remove('menu-open');
         router.navigate(`#admin/${tab}`);
       }
     });
   });
+
+  // Bind Sidebar Menu Toggle for Mobile
+  const menuToggleBtn = document.getElementById('admin-menu-toggle');
+  if (menuToggleBtn && sidebarEl) {
+    menuToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sidebarEl.classList.toggle('menu-open');
+    });
+  }
 
   // Theme Toggle Button
   const themeToggleBtn = document.getElementById('admin-theme-toggle');
