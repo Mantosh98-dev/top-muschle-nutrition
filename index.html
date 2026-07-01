@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Premium quality supplements for workouts, recovery and health goals. Order via WhatsApp.">
+  <title>Top Muscle Nutrition - Premium Supplements</title>
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://topmusclenutrition.com/">
+  <meta property="og:title" id="og-title" content="Top Muscle Nutrition - Premium Supplements">
+  <meta property="og:description" id="og-desc" content="Premium quality supplements designed to power your workouts and speed up recovery. Order directly via WhatsApp.">
+  <meta property="og:image" id="og-image" content="hero_product.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://topmusclenutrition.com/">
+  <meta property="twitter:title" id="twitter-title" content="Top Muscle Nutrition - Premium Supplements">
+  <meta property="twitter:description" id="twitter-desc" content="Premium quality supplements designed to power your workouts and speed up recovery. Order directly via WhatsApp.">
+  <meta property="twitter:image" id="twitter-image" content="hero_product.png">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" id="structured-data">
+  {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": "Top Muscle Nutrition",
+    "description": "Premium quality supplements designed to power your workouts and speed up recovery.",
+    "url": "https://topmusclenutrition.com",
+    "image": "hero_product.png"
+  }
+  </script>
+  
+  <!-- Google Fonts — Outfit (headings) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Favicon template -->
+  <link rel="icon" type="image/png" href="https://via.placeholder.com/32?text=TM">
+</head>
+<body>
+
+  <!-- Header Navigation -->
+  <header class="navbar">
+    <div class="container">
+      <a href="#home" class="logo-link">
+        <img id="nav-logo" src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png" alt="Brand Logo" class="logo-img">
+        <span id="nav-brand-name" class="brand-name">Top Muscle Nutrition</span>
+      </a>
+      
+      <!-- Mobile Toggler -->
+      <button class="menu-toggle" aria-label="Toggle Navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <!-- Nav Menu Links -->
+      <ul class="nav-menu">
+        <li><a href="#home" class="nav-link active" id="nav-home">Home</a></li>
+        <li><a href="#products" class="nav-link" id="nav-products">Products</a></li>
+        <li><a href="#verify" class="nav-link" id="nav-verify">Verify Product</a></li>
+        <li><a href="#contact" class="nav-link" id="nav-contact">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Core Dynamic Content Area -->
+  <main id="app-content">
+    <!-- Loaded views dynamically through routing -->
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#home" class="footer-logo">
+            <img id="footer-logo-img" src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png" alt="Footer Logo">
+            <span id="footer-brand-text">Top Muscle Nutrition</span>
+          </a>
+          <p id="footer-desc" class="footer-desc">Premium quality supplements designed to power your workouts and speed up recovery.</p>
+          <div class="footer-socials" id="footer-socials">
+            <!-- Dynamically populated socials -->
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="footer-title">Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#products">Our Catalogue</a></li>
+            <li><a href="#verify">Verify Product</a></li>
+            <li><a href="#admin">Admin Settings</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="footer-title">Contact Support</h3>
+          <div class="footer-contact" id="footer-contact-list">
+            <!-- Dynamically populated contacts -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p id="footer-copyright">© 2026 Top Muscle Nutrition. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Loading Screen Spinner Overlay -->
+  <div id="loader-overlay" class="loader-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Modular JS Application Script -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>

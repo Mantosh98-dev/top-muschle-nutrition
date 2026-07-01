@@ -1,0 +1,1841 @@
+import { router } from './router.js';
+import * as db from './db.js';
+import { isSupabaseConfigured, saveSupabaseConfig } from './supabase-client.js';
+
+export const DEFAULT_SETTINGS = {
+  brand_name: "Top Muscle Nutrition",
+  brand_logo_url: "https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png",
+  primary_color: "#d32f2f",
+  secondary_color: "#ffffff",
+  seo_title: "Top Muscle Nutrition - Premium Supplements",
+  seo_description: "Shop premium protein, glucose, and energy drinks. Verify product and order via WhatsApp.",
+  hero_title: "Fuel Your Performance",
+  hero_description: "Premium quality supplements designed to power your workouts and speed up recovery. Order directly via WhatsApp.",
+  hero_bg_type: "gradient",
+  hero_bg_gradient: "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)",
+  hero_product_image_url: "hero_product.png",
+  hero_badge_1_text: "100% Genuine",
+  hero_badge_1_icon: "fas fa-shield-halved",
+  hero_badge_2_text: "FSSAI Certified",
+  hero_badge_2_icon: "fas fa-certificate",
+  whatsapp_number: "+1234567890",
+  contact_email: "info@topmusclenutrition.com",
+  contact_phone: "+1234567890",
+  contact_address: "123 Muscle Street, Fitness City",
+  footer_copyright: "© 2026 Top Muscle Nutrition. All rights reserved.",
+  show_top_products: true,
+  show_best_sellers: true,
+  show_trending_products: true,
+  video1_show: false,
+  video1_title: "About Our Brand",
+  video1_desc: "Watch our introduction video to learn how we make our supplements.",
+  video1_type: "youtube",
+  video1_mp4_url: "",
+  video1_youtube_url: "",
+  video2_show: false,
+  video2_title: "Authentic Verification Guide",
+  video2_desc: "See how to use our unique authentication codes to verify your product.",
+  video2_type: "youtube",
+  video2_mp4_url: "",
+  video2_youtube_url: ""
+};
+
+export function mergeSettings(settings) {
+  const merged = { ...DEFAULT_SETTINGS };
+  if (settings) {
+    for (const key in settings) {
+      if (settings[key] !== null && settings[key] !== undefined) {
+        merged[key] = settings[key];
+      }
+    }
+  }
+  return merged;
+}
+
+// Escapes HTML special characters to prevent XSS vulnerabilities
+export function escapeHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+// Global variables
+export let globalSettings = null;
+let activeCategoryFilter = null;
+let productSearchQuery = '';
+
+// DOM Elements
+const appContent = document.getElementById('app-content');
+const loaderOverlay = document.getElementById('loader-overlay');
+const mobileMenuBtn = document.querySelector('.menu-toggle');
+const navMenu = document.querySelector('.nav-menu');
+
+// Show toast notification
+export function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  let icon = 'info-circle';
+  if (type === 'success') icon = 'check-circle';
+  else if (type === 'error') icon = 'exclamation-circle';
+  
+  toast.innerHTML = `<i class="fas fa-${icon}"></i> <span>${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'fadeOut 0.3s ease-out forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+// Global loader controllers
+export function showLoader() {
+  loaderOverlay.classList.add('active');
+}
+export function hideLoader() {
+  loaderOverlay.classList.remove('active');
+}
+
+// Scroll Animation Observer — reusable initializer
+function initScrollAnimations() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.animate-on-scroll, .animate-scale, .animate-slide-left, .animate-slide-right').forEach(el => {
+    observer.observe(el);
+  });
+}
+
+// Initialise App
+async function init() {
+  setupGlobalListeners();
+  
+  try {
+    // 1. Check if Supabase keys exist
+    if (!isSupabaseConfigured()) {
+      renderWelcomeSetup();
+      return;
+    }
+    
+    // 2. Fetch and apply branding settings
+    showLoader();
+    const fetchedSettings = await db.fetchSettings();
+    globalSettings = mergeSettings(fetchedSettings);
+    applyBranding(globalSettings);
+    
+    // 3. Register routes
+    router.addRoute('#home', renderHome);
+    router.addRoute('#products', renderProducts);
+    router.addRoute('#product/:slug', renderProductDetails);
+    router.addRoute('#verify', renderProductVerification);
+    
+    // Section scroll router helper for Contact
+    router.addRoute('#contact', () => {
+      const contactSection = document.getElementById('contact-section');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        renderHome().then(() => {
+          const contactSec = document.getElementById('contact-section');
+          if (contactSec) {
+            contactSec.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      }
+    });
+    
+    // Admin routes will be handled by importing admin module
+    // We register a lazy hook for admin rendering
+    const adminModule = await import('./admin.js');
+    router.addRoute('#admin', adminModule.renderAdminPage);
+    router.addRoute('#admin/:tab', adminModule.renderAdminPage);
+    
+    // Initial route check
+    router.handleRoute();
+    
+  } catch (error) {
+    console.error('App init failed:', error);
+    showToast('Failed to load website settings. Is Supabase running?', 'error');
+    renderWelcomeSetup(); // Display setup fallback
+  } finally {
+    hideLoader();
+  }
+}
+
+// Set up UI event listeners
+function setupGlobalListeners() {
+  // Mobile Burger Menu Toggle
+  mobileMenuBtn.addEventListener('click', () => {
+    const isActive = mobileMenuBtn.classList.toggle('active');
+    navMenu.classList.toggle('active');
+    mobileMenuBtn.setAttribute('aria-expanded', isActive);
+  });
+
+  // Close mobile menu when links are clicked
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenuBtn.classList.remove('active');
+      navMenu.classList.remove('active');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Shrink header on scroll
+  window.addEventListener('scroll', () => {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+}
+
+// Welcome setup view if database settings are not configured yet
+function renderWelcomeSetup() {
+  appContent.innerHTML = `
+    <section class="section">
+      <div class="container verify-wrapper">
+        <div class="verify-card">
+          <div class="category-icon-box" style="margin: 0 auto; color: var(--primary);">
+            <i class="fas fa-plug"></i>
+          </div>
+          <h2>Configure Supabase Connection</h2>
+          <p>Welcome! Before starting, connect your database by adding your credentials in <code>js/config.js</code> or entering them below:</p>
+          
+          <div class="verify-input-group" style="text-align: left;">
+            <div class="form-group">
+              <label class="form-label" for="setup-url">Supabase Project URL</label>
+              <input type="text" id="setup-url" class="form-input" placeholder="https://xxxx.supabase.co" value="${localStorage.getItem('SUPABASE_URL') || ''}">
+            </div>
+            <div class="form-group" style="margin-top: 12px;">
+              <label class="form-label" for="setup-key">Supabase Anon Public API Key</label>
+              <input type="text" id="setup-key" class="form-input" placeholder="eyJhbGciOiJIUzI1Ni..." value="${localStorage.getItem('SUPABASE_ANON_KEY') || ''}">
+            </div>
+            <button id="save-setup-btn" class="btn btn-primary" style="margin-top: 20px;">Save and Initialize</button>
+          </div>
+          
+          <div style="margin-top: 16px; font-size: 0.85rem; color: var(--text-sub);">
+            <p><strong>Note:</strong> Executed SQL script <code>schema.sql</code> inside Supabase SQL Editor first?</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+
+  document.getElementById('save-setup-btn').addEventListener('click', () => {
+    const url = document.getElementById('setup-url').value.trim();
+    const key = document.getElementById('setup-key').value.trim();
+    if (!url || !key) {
+      showToast('Please fill in both fields', 'error');
+      return;
+    }
+    saveSupabaseConfig(url, key);
+    showToast('Credentials saved successfully. Reloading...', 'success');
+    setTimeout(() => window.location.reload(), 1000);
+  });
+}
+
+// Dynamically inject settings (Branding, Logo, Favicon, Title, Colors)
+export function applyBranding(settings) {
+  if (!settings) return;
+
+  // Document Properties
+  document.title = settings.seo_title;
+  
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content', settings.seo_description);
+
+  let favicon = document.querySelector('link[rel="icon"]');
+  if (favicon && settings.favicon_url) favicon.setAttribute('href', settings.favicon_url);
+
+  // Update Open Graph and Twitter Metadata
+  const ogTitle = document.getElementById('og-title');
+  if (ogTitle) ogTitle.setAttribute('content', settings.seo_title);
+  
+  const ogDesc = document.getElementById('og-desc');
+  if (ogDesc) ogDesc.setAttribute('content', settings.seo_description);
+  
+  const ogImage = document.getElementById('og-image');
+  if (ogImage && settings.brand_logo_url) ogImage.setAttribute('content', settings.brand_logo_url);
+  
+  const twitterTitle = document.getElementById('twitter-title');
+  if (twitterTitle) twitterTitle.setAttribute('content', settings.seo_title);
+  
+  const twitterDesc = document.getElementById('twitter-desc');
+  if (twitterDesc) twitterDesc.setAttribute('content', settings.seo_description);
+  
+  const twitterImage = document.getElementById('twitter-image');
+  if (twitterImage && settings.brand_logo_url) twitterImage.setAttribute('content', settings.brand_logo_url);
+
+  // Update JSON-LD Structured Data
+  const structuredDataEl = document.getElementById('structured-data');
+  if (structuredDataEl) {
+    try {
+      const data = {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": settings.brand_name,
+        "description": settings.seo_description,
+        "url": window.location.origin + window.location.pathname,
+        "image": settings.brand_logo_url || (window.location.origin + "/logo_temp.png"),
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": settings.contact_phone,
+          "contactType": "customer service"
+        }
+      };
+      structuredDataEl.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      console.warn("Failed to update structured data", e);
+    }
+  }
+
+  // Dynamic Theme Colors
+  document.documentElement.style.setProperty('--primary-color', settings.primary_color);
+  document.documentElement.style.setProperty('--primary', settings.primary_color);
+  // Derive primary hover/dark/deeper from hex color
+  const darkColor = adjustColorBrightness(settings.primary_color, -15);
+  const deeperColor = adjustColorBrightness(settings.primary_color, -30);
+  document.documentElement.style.setProperty('--primary-dark', darkColor);
+  document.documentElement.style.setProperty('--primary-hover', darkColor);
+  document.documentElement.style.setProperty('--primary-deeper', deeperColor);
+  document.documentElement.style.setProperty('--secondary-color', settings.secondary_color);
+
+  // Derive light/glow colors and shadow properties for Redesign v3
+  const primaryRgb = hexToRgb(settings.primary_color);
+  if (primaryRgb) {
+    document.documentElement.style.setProperty('--primary-light', `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.07)`);
+    document.documentElement.style.setProperty('--primary-glow', `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.18)`);
+    document.documentElement.style.setProperty('--shadow-red', `0 8px 24px rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.20)`);
+    document.documentElement.style.setProperty('--shadow-red-lg', `0 12px 36px rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.28)`);
+    document.documentElement.style.setProperty('--shadow-card-hover', `0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.06)`);
+  }
+
+  // Navbar Brand Logo and Name
+  const navBrandLogo = document.getElementById('nav-logo');
+  const navBrandName = document.getElementById('nav-brand-name');
+  
+  if (settings.brand_logo_url) {
+    navBrandLogo.src = settings.brand_logo_url;
+    navBrandLogo.style.display = 'block';
+    navBrandName.style.display = 'none';
+  } else {
+    navBrandLogo.style.display = 'none';
+    navBrandName.textContent = settings.brand_name;
+    navBrandName.style.display = 'block';
+    navBrandName.style.fontSize = '1.3rem';
+    navBrandName.style.fontWeight = '800';
+    navBrandName.style.color = 'var(--text)';
+  }
+
+  // Footer Config
+  const footerLogoImg = document.getElementById('footer-logo-img');
+  const footerBrandText = document.getElementById('footer-brand-text');
+  const footerCopyright = document.getElementById('footer-copyright');
+  const footerDesc = document.getElementById('footer-desc');
+
+  if (settings.brand_logo_url) {
+    footerLogoImg.src = settings.brand_logo_url;
+    footerLogoImg.style.display = 'block';
+    footerBrandText.style.display = 'none';
+  } else {
+    footerLogoImg.style.display = 'none';
+    footerBrandText.textContent = settings.brand_name;
+    footerBrandText.style.display = 'block';
+    footerBrandText.style.fontSize = '1.4rem';
+    footerBrandText.style.fontWeight = '800';
+    footerBrandText.style.color = '#fff';
+  }
+  footerCopyright.textContent = settings.footer_copyright;
+  footerDesc.textContent = settings.seo_description;
+
+  // Footer Social Media Links
+  const footerSocials = document.getElementById('footer-socials');
+  footerSocials.innerHTML = '';
+  const socials = [
+    { key: 'social_facebook', icon: 'facebook-f' },
+    { key: 'social_instagram', icon: 'instagram' },
+    { key: 'social_twitter', icon: 'twitter' },
+    { key: 'social_linkedin', icon: 'linkedin-in' }
+  ];
+  socials.forEach(s => {
+    if (settings[s.key]) {
+      footerSocials.innerHTML += `
+        <a href="${settings[s.key]}" target="_blank" class="social-icon" aria-label="${s.icon}">
+          <i class="fab fa-${s.icon}"></i>
+        </a>
+      `;
+    }
+  });
+
+  // Footer Contacts
+  document.getElementById('footer-contact-list').innerHTML = `
+    <div class="footer-contact-item">
+      <i class="fas fa-map-marker-alt"></i>
+      <span>${settings.contact_address}</span>
+    </div>
+    <div class="footer-contact-item">
+      <i class="fas fa-phone"></i>
+      <span>${settings.contact_phone}</span>
+    </div>
+    <div class="footer-contact-item">
+      <i class="fas fa-envelope"></i>
+      <span>${settings.contact_email}</span>
+    </div>
+  `;
+}
+
+// Lighten/Darken Hex colors programmatically
+function adjustColorBrightness(hex, percent) {
+  let R = parseInt(hex.substring(1, 3), 16);
+  let G = parseInt(hex.substring(3, 5), 16);
+  let B = parseInt(hex.substring(5, 7), 16);
+
+  R = parseInt(R * (100 + percent) / 100);
+  G = parseInt(G * (100 + percent) / 100);
+  B = parseInt(B * (100 + percent) / 100);
+
+  R = (R < 255) ? R : 255;
+  G = (G < 255) ? G : 255;
+  B = (B < 255) ? B : 255;
+
+  R = (R > 0) ? R : 0;
+  G = (G > 0) ? G : 0;
+  B = (B > 0) ? B : 0;
+
+  const rHex = R.toString(16).padStart(2, '0');
+  const gHex = G.toString(16).padStart(2, '0');
+  const bHex = B.toString(16).padStart(2, '0');
+
+  return `#${rHex}${gHex}${bHex}`;
+}
+
+// Convert hex to rgb helper
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+
+
+/* ==========================================
+   VIEW RENDERERS
+   ========================================== */
+
+// 1. HOME VIEW
+async function renderHome() {
+  showLoader();
+  try {
+    const allProducts = await db.fetchProducts();
+    const categories = await db.fetchCategories();
+
+    const featuredProducts = allProducts.filter(p => p.featured);
+    const topProducts = allProducts.filter(p => p.top_product);
+    const bestSellers = allProducts.filter(p => p.best_seller);
+    const trendingProducts = allProducts.filter(p => p.trending);
+    
+    // Set up Hero Background
+    let heroBgStyle = '';
+    if (globalSettings.hero_bg_type === 'image' && globalSettings.hero_bg_image_url) {
+      heroBgStyle = `background: linear-gradient(135deg, rgba(20, 20, 22, 0.75), rgba(20, 20, 22, 0.9)), url('${globalSettings.hero_bg_image_url}') center/cover no-repeat;`;
+    } else {
+      heroBgStyle = `background: ${globalSettings.hero_bg_gradient};`;
+    }
+
+    const showBadge1 = globalSettings.hero_badge_1_text !== null && globalSettings.hero_badge_1_text !== '';
+    const showBadge2 = globalSettings.hero_badge_2_text !== null && globalSettings.hero_badge_2_text !== '';
+
+    // Reusable video section builder function
+    function renderVideoSection(sectionNum, show, title, desc, type, mp4Url, youtubeUrl) {
+      if (!show) return '';
+      
+      let mediaHTML = '';
+      if (type === 'youtube' && youtubeUrl) {
+        let embedUrl = youtubeUrl;
+        if (youtubeUrl.includes('youtube.com/watch?v=')) {
+          const videoId = youtubeUrl.split('v=')[1]?.split('&')[0];
+          embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        } else if (youtubeUrl.includes('youtu.be/')) {
+          const videoId = youtubeUrl.split('youtu.be/')[1]?.split('?')[0];
+          embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        } else if (youtubeUrl.includes('youtube.com/shorts/')) {
+          const videoId = youtubeUrl.split('/shorts/')[1]?.split('?')[0]?.split('&')[0];
+          embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        } else if (youtubeUrl.includes('youtube.com/embed/')) {
+          embedUrl = youtubeUrl;
+        } else {
+          const trimmed = youtubeUrl.trim();
+          if (trimmed && !trimmed.includes('/') && trimmed.length > 5) {
+            embedUrl = `https://www.youtube.com/embed/${trimmed}`;
+          }
+        }
+        
+        mediaHTML = `
+          <div class="video-embed-container" style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:var(--r-lg); box-shadow:var(--shadow-md); border:1px solid var(--border);">
+            <iframe src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen title="${escapeHTML(title)}"></iframe>
+          </div>
+        `;
+      } else if (type === 'upload' && mp4Url) {
+        mediaHTML = `
+          <div class="video-upload-container" style="border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow-md); border:1px solid var(--border); background:#000;">
+            <video src="${mp4Url}" controls style="width:100%; display:block; aspect-ratio:16/9; object-fit:cover;" aria-label="${escapeHTML(title)}"></video>
+          </div>
+        `;
+      }
+      
+      if (!mediaHTML) return ''; // Automatically hide section if no valid video URL
+      
+      return `
+        <section class="section video-section-home-${sectionNum}" style="border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--gray-50);">
+          <div class="container" style="max-width:960px;">
+            <div class="section-header animate-on-scroll" style="text-align:center; margin-bottom:32px;">
+              ${title ? `<h2 class="section-title" style="font-size:1.75rem; margin-bottom:8px;">${escapeHTML(title)}</h2>` : ''}
+              ${desc ? `<p class="section-subtitle" style="font-size:0.95rem; color:var(--text-sub); max-width:600px; margin:0 auto;">${escapeHTML(desc)}</p>` : ''}
+            </div>
+            <div class="video-media-wrapper animate-scale" style="margin-top:12px;">
+              ${mediaHTML}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // Hero Section
+    let html = `
+      <section class="hero" style="${heroBgStyle}">
+        <div class="hero-overlay"></div>
+        <div class="container">
+          <div class="hero-content">
+            <span class="hero-eyebrow">Premium Nutrition · Trusted Quality</span>
+            <h1 class="hero-title">${globalSettings.hero_title}</h1>
+            <p class="hero-description">${globalSettings.hero_description}</p>
+            <div class="hero-buttons">
+              <a href="#products" class="btn btn-primary">Shop Products <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i></a>
+              <a href="#verify" class="btn btn-secondary">Verify Product</a>
+            </div>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <span class="hero-stat-value">100%</span>
+                <span class="hero-stat-label">Genuine Products</span>
+              </div>
+              <div class="hero-stat">
+                <span class="hero-stat-value">FSSAI</span>
+                <span class="hero-stat-label">Certified</span>
+              </div>
+              <div class="hero-stat">
+                <span class="hero-stat-value">24/7</span>
+                <span class="hero-stat-label">WhatsApp Support</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-graphic animate-scale">
+            <div class="hero-glow-sphere"></div>
+            <img src="${globalSettings.hero_product_image_url || 'hero_product.png'}" alt="Premium Supplement Jar" class="hero-product-image">
+            <div class="floating-badge badge-1" style="${showBadge1 ? '' : 'display: none;'}">
+              <i class="${globalSettings.hero_badge_1_icon || 'fas fa-shield-halved'}"></i>
+              <span>${globalSettings.hero_badge_1_text || '100% Genuine'}</span>
+            </div>
+            <div class="floating-badge badge-2" style="${showBadge2 ? '' : 'display: none;'}">
+              <i class="${globalSettings.hero_badge_2_icon || 'fas fa-certificate'}"></i>
+              <span>${globalSettings.hero_badge_2_text || 'FSSAI Certified'}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+
+    // Video Section 1 (after Hero)
+    html += renderVideoSection(
+      1, 
+      globalSettings.video1_show, 
+      globalSettings.video1_title, 
+      globalSettings.video1_desc, 
+      globalSettings.video1_type, 
+      globalSettings.video1_mp4_url, 
+      globalSettings.video1_youtube_url
+    );
+
+    // Categories Preview
+    if (categories.length > 0) {
+      const categoryIcons = ['capsules', 'dumbbell', 'bolt', 'glass-water', 'apple-alt', 'flask', 'fire', 'heartbeat'];
+      html += `
+        <section class="section">
+          <div class="container">
+            <div class="section-header animate-on-scroll">
+              <span class="section-badge">Categories</span>
+              <h2 class="section-title">Explore by Goal</h2>
+              <p class="section-subtitle">Find premium supplements tailored to your health and workout milestones.</p>
+            </div>
+            
+            <div class="category-preview-grid">
+              ${categories.map((cat, i) => `
+                <div class="category-card animate-on-scroll delay-${i + 1}" data-category-id="${cat.id}">
+                  <div class="category-icon-box">
+                    ${cat.image_url ? `
+                      <img src="${cat.image_url}" alt="${cat.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-lg);">
+                    ` : `
+                      <i class="fas fa-${categoryIcons[i % categoryIcons.length]}"></i>
+                    `}
+                  </div>
+                  <h3 class="category-name">${cat.name}</h3>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // Featured Products
+    html += `
+      <section class="section section-bg">
+        <div class="container">
+          <div class="section-header animate-on-scroll">
+            <span class="section-badge">Premium Pick</span>
+            <h2 class="section-title">Featured Products</h2>
+            <p class="section-subtitle">Discover our highly-rated, gold-standard nutrition products.</p>
+          </div>
+          
+          <div class="products-grid">
+            ${featuredProducts.length > 0 ? featuredProducts.map((prod, i) => renderProductCard(prod, i)).join('') : `
+              <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <h3>No Featured Products</h3>
+                <p>Check back later or browse our full catalogue.</p>
+                <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+              </div>
+            `}
+          </div>
+          ${featuredProducts.length > 0 ? `
+            <div style="text-align: center; margin-top: 48px;" class="animate-on-scroll">
+              <a href="#products" class="btn btn-outline">View All Products <i class="fas fa-arrow-right" style="font-size: 0.8rem; margin-left: 4px;"></i></a>
+            </div>
+          ` : ''}
+        </div>
+      </section>
+    `;
+
+    // Video Section 2 (after Featured Products)
+    html += renderVideoSection(
+      2, 
+      globalSettings.video2_show, 
+      globalSettings.video2_title, 
+      globalSettings.video2_desc, 
+      globalSettings.video2_type, 
+      globalSettings.video2_mp4_url, 
+      globalSettings.video2_youtube_url
+    );
+
+    // Top Products
+    if (globalSettings.show_top_products) {
+      html += `
+        <section class="section">
+          <div class="container">
+            <div class="section-header animate-on-scroll">
+              <span class="section-badge">Top Quality</span>
+              <h2 class="section-title">Our Top Products</h2>
+              <p class="section-subtitle">Handpicked highest quality recovery supplements.</p>
+            </div>
+            
+            <div class="products-grid">
+              ${topProducts.length > 0 ? topProducts.map((prod, i) => renderProductCard(prod, i)).join('') : `
+                <div class="no-products">
+                  <i class="fas fa-box-open"></i>
+                  <h3>No Top Products Listed</h3>
+                  <p>Check back later or browse our full catalogue.</p>
+                  <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+                </div>
+              `}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // Best Sellers
+    if (globalSettings.show_best_sellers) {
+      html += `
+        <section class="section section-bg">
+          <div class="container">
+            <div class="section-header animate-on-scroll">
+              <span class="section-badge">Best Demand</span>
+              <h2 class="section-title">Best Sellers</h2>
+              <p class="section-subtitle">Our most popular and highly recommended recovery products.</p>
+            </div>
+            
+            <div class="products-grid">
+              ${bestSellers.length > 0 ? bestSellers.map((prod, i) => renderProductCard(prod, i)).join('') : `
+                <div class="no-products">
+                  <i class="fas fa-box-open"></i>
+                  <h3>No Best Sellers Listed</h3>
+                  <p>Check back later or browse our full catalogue.</p>
+                  <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+                </div>
+              `}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // Trending Products
+    if (globalSettings.show_trending_products) {
+      html += `
+        <section class="section">
+          <div class="container">
+            <div class="section-header animate-on-scroll">
+              <span class="section-badge">On Fire</span>
+              <h2 class="section-title">Trending Products</h2>
+              <p class="section-subtitle">What athletes are currently talking about and buying.</p>
+            </div>
+            
+            <div class="products-grid">
+              ${trendingProducts.length > 0 ? trendingProducts.map((prod, i) => renderProductCard(prod, i)).join('') : `
+                <div class="no-products">
+                  <i class="fas fa-box-open"></i>
+                  <h3>No Trending Products Listed</h3>
+                  <p>Check back later or browse our full catalogue.</p>
+                  <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+                </div>
+              `}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // Contact Section
+    html += `
+      <section class="section section-bg" id="contact-section">
+        <div class="container">
+          <div class="section-header animate-on-scroll">
+            <span class="section-badge">Reach Out</span>
+            <h2 class="section-title">Contact & Support</h2>
+            <p class="section-subtitle">Have questions or need assistance placing an order? Let's connect.</p>
+          </div>
+          
+          <div class="contact-grid">
+            <div class="contact-card animate-slide-left">
+              <div class="contact-header">
+                <h3>Get In Touch</h3>
+                <p>Our sales team is available directly on WhatsApp.</p>
+              </div>
+              <div class="contact-info-list">
+                <div class="contact-item">
+                  <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                  <div class="contact-text">
+                    <h4>Address</h4>
+                    <p>${globalSettings.contact_address}</p>
+                  </div>
+                </div>
+                <div class="contact-item">
+                  <div class="contact-icon"><i class="fas fa-phone"></i></div>
+                  <div class="contact-text">
+                    <h4>Phone Support</h4>
+                    <p>${globalSettings.contact_phone}</p>
+                  </div>
+                </div>
+                <div class="contact-item">
+                  <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                  <div class="contact-text">
+                    <h4>Email Support</h4>
+                    <p>${globalSettings.contact_email}</p>
+                  </div>
+                </div>
+              </div>
+              <a href="https://wa.me/${(globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-whatsapp" style="margin-top: 12px;">
+                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+              </a>
+            </div>
+            
+            <div class="contact-map animate-slide-right">
+              ${globalSettings.google_map_iframe ? globalSettings.google_map_iframe : `
+                <div style="width:100%; height:100%; background:var(--gray-50); display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding: 24px;">
+                  <i class="fas fa-map-marked-alt" style="font-size:3rem; color:var(--text-muted); margin-bottom:12px;"></i>
+                  <h4>Map Location</h4>
+                  <p style="color:var(--text-sub);">Configure Google Maps iframe in the Admin Panel to show location map.</p>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+
+    appContent.innerHTML = html;
+
+    // Bind Category Clicks
+    document.querySelectorAll('.category-card').forEach(card => {
+      card.addEventListener('click', () => {
+        activeCategoryFilter = card.dataset.categoryId;
+        router.navigate('#products');
+      });
+    });
+
+    // Initialize scroll animations
+    initScrollAnimations();
+
+  } catch (error) {
+    console.error('Home render failed:', error);
+    showToast('Failed to render Home page', 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+
+// 2. PRODUCTS VIEW (Catalogue)
+async function renderProducts() {
+  showLoader();
+  try {
+    const products = await db.fetchProducts();
+    const categories = await db.fetchCategories();
+
+    const activeCategory = activeCategoryFilter ? categories.find(c => c.id === activeCategoryFilter) : null;
+    const activeCategoryName = activeCategory ? activeCategory.name : 'All Categories';
+
+    appContent.innerHTML = `
+      <section class="section">
+        <div class="container">
+          <div class="section-header animate-on-scroll">
+            <span class="section-badge">Catalogue</span>
+            <h2 class="section-title">Our Supplements</h2>
+            <p class="section-subtitle">Premium grade products designed for peak performance.</p>
+          </div>
+          
+          <div class="products-filter-bar animate-on-scroll">
+            <div class="search-input-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" id="product-search" class="search-input" placeholder="Search products..." value="${productSearchQuery}">
+            </div>
+            
+            <div class="custom-dropdown" id="category-dropdown">
+              <button class="dropdown-trigger" id="category-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span id="category-dropdown-label">${activeCategoryName}</span>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+              </button>
+              <ul class="dropdown-menu" id="category-dropdown-menu" role="listbox">
+                <li class="dropdown-item ${!activeCategoryFilter ? 'active' : ''}" data-value="all" role="option">All Categories</li>
+                ${categories.map(cat => `
+                  <li class="dropdown-item ${activeCategoryFilter === cat.id ? 'active' : ''}" data-value="${cat.id}" role="option">${cat.name}</li>
+                `).join('')}
+              </ul>
+            </div>
+          </div>
+          
+          <div class="products-grid" id="catalogue-grid">
+            <!-- Product Cards injected dynamically -->
+          </div>
+        </div>
+      </section>
+    `;
+
+    // Render list
+    filterAndRenderProducts(products);
+
+    // Bind Search Input
+    const searchInput = document.getElementById('product-search');
+    searchInput.addEventListener('input', (e) => {
+      productSearchQuery = e.target.value;
+      filterAndRenderProducts(products);
+    });
+
+    // Bind Custom Category Dropdown
+    const dropdownEl = document.getElementById('category-dropdown');
+    const triggerBtn = document.getElementById('category-dropdown-trigger');
+    const labelEl = document.getElementById('category-dropdown-label');
+    const menuEl = document.getElementById('category-dropdown-menu');
+
+    triggerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = dropdownEl.classList.toggle('open');
+      triggerBtn.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Handle Option Selection
+    menuEl.addEventListener('click', (e) => {
+      const item = e.target.closest('.dropdown-item');
+      if (!item) return;
+
+      const value = item.dataset.value;
+      const text = item.textContent;
+
+      // Update active filter and label
+      activeCategoryFilter = value === 'all' ? null : value;
+      labelEl.textContent = text;
+
+      // Update active styling
+      menuEl.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+
+      // Close dropdown
+      dropdownEl.classList.remove('open');
+      triggerBtn.setAttribute('aria-expanded', 'false');
+
+      // Filter and render
+      filterAndRenderProducts(products);
+    });
+
+    // Close dropdown on click outside
+    document.addEventListener('click', () => {
+      if (dropdownEl.classList.contains('open')) {
+        dropdownEl.classList.remove('open');
+        triggerBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Initialize scroll animations
+    initScrollAnimations();
+
+  } catch (error) {
+    console.error('Products page failed:', error);
+    showToast('Failed to load catalogue', 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+// Client filter and render function
+function filterAndRenderProducts(allProducts) {
+  const grid = document.getElementById('catalogue-grid');
+  if (!grid) return;
+
+  const filtered = allProducts.filter(prod => {
+    const matchesCategory = !activeCategoryFilter || prod.category_id === activeCategoryFilter;
+    const matchesSearch = !productSearchQuery || prod.title.toLowerCase().includes(productSearchQuery.toLowerCase()) || 
+                          (prod.short_description && prod.short_description.toLowerCase().includes(productSearchQuery.toLowerCase()));
+    return matchesCategory && matchesSearch;
+  });
+
+  if (filtered.length > 0) {
+    grid.innerHTML = filtered.map((prod, i) => renderProductCard(prod, i)).join('');
+    // Re-init scroll animations for newly rendered cards
+    initScrollAnimations();
+  } else {
+    grid.innerHTML = `
+      <div class="no-products">
+        <i class="fas fa-search-minus"></i>
+        <h3>No Products Found</h3>
+        <p>Try modifying your search queries or category filters.</p>
+      </div>
+    `;
+  }
+}
+
+// Single Card HTML compiler
+function renderProductCard(prod, index = 0) {
+  const mainImage = prod.product_images && prod.product_images.length > 0 
+    ? prod.product_images[0].image_url 
+    : 'https://via.placeholder.com/300?text=No+Image';
+
+  const delayClass = `delay-${(index % 6) + 1}`;
+
+  // Build price display HTML
+  let priceHTML = '';
+  const price = prod.price;
+  const offerPrice = prod.offer_price;
+  const hasVariants = Array.isArray(prod.variants) && prod.variants.length > 1;
+
+  if (hasVariants) {
+    // Find the minimum price among all variants
+    const minPrice = prod.variants.reduce((min, v) => {
+      const currentVal = v.offer_price || v.price || Infinity;
+      return currentVal < min ? currentVal : min;
+    }, Infinity);
+    
+    if (minPrice !== Infinity) {
+      priceHTML = `
+        <div class="product-price-row">
+          <span class="price-from" style="font-size: 0.78rem; font-weight:600; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.02em;">From</span>
+          <span class="price-offer">₹${minPrice.toLocaleString('en-IN')}</span>
+        </div>
+      `;
+    }
+  } else if (price) {
+    if (offerPrice && offerPrice < price) {
+      const discount = Math.round(((price - offerPrice) / price) * 100);
+      priceHTML = `
+        <div class="product-price-row">
+          <span class="price-offer">₹${offerPrice.toLocaleString('en-IN')}</span>
+          <span class="price-original">₹${price.toLocaleString('en-IN')}</span>
+          <span class="price-discount-badge">${discount}% OFF</span>
+        </div>
+      `;
+    } else {
+      priceHTML = `
+        <div class="product-price-row">
+          <span class="price-offer">₹${price.toLocaleString('en-IN')}</span>
+        </div>
+      `;
+    }
+  }
+
+  return `
+    <div class="product-card animate-on-scroll ${delayClass}">
+      ${prod.featured ? '<span class="product-badge"><i class="fas fa-star"></i> Featured</span>' : ''}
+      <div class="product-img-wrap">
+        <img src="${mainImage}" alt="${prod.title}" loading="lazy">
+      </div>
+      <div class="product-info">
+        <span class="product-category">${prod.categories ? prod.categories.name : 'Uncategorized'}</span>
+        <h3 class="product-title">${prod.title}</h3>
+        <p class="product-desc">${prod.short_description || ''}</p>
+        ${priceHTML}
+        <div class="product-action">
+          <a href="#product/${prod.slug}" class="btn btn-secondary">View Details</a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Helper parser for FDA-style Nutrition Facts Card
+function parseNutritionInfo(nutritionStr) {
+  if (!nutritionStr) return '';
+  
+  // Try parsing lines like "Label: Value" or "Label - Value"
+  const lines = nutritionStr.split('\n').map(l => l.trim()).filter(Boolean);
+  const items = [];
+  let servingSize = '1 scoop (approx. 33g)';
+  let servingsPerContainer = 'Approx. 30';
+  let calories = '120';
+  
+  const cleanLines = [];
+  lines.forEach(line => {
+    // Try matching Label: Value or Label - Value
+    const match = line.match(/^([^:-]+)[::-]\s*(.+)$/);
+    if (match) {
+      const label = match[1].trim();
+      const val = match[2].trim();
+      if (label.toLowerCase().includes('serving size')) {
+        servingSize = val;
+      } else if (label.toLowerCase().includes('servings per container') || label.toLowerCase().includes('servings')) {
+        servingsPerContainer = val;
+      } else if (label.toLowerCase().includes('calories')) {
+        calories = val;
+      } else {
+        items.push({ label, val });
+      }
+    } else {
+      cleanLines.push(line);
+    }
+  });
+  
+  // If no items were parsed, just treat it as free-form HTML lines
+  if (items.length === 0 && cleanLines.length > 0) {
+    return `
+      <div style="font-size: 0.9rem; color: var(--text-sub); line-height: 1.75; white-space: pre-line;">
+        ${nutritionStr}
+      </div>
+    `;
+  }
+  
+  return `
+    <div class="nutrition-facts-card">
+      <div class="nutrition-facts-header">
+        <h4 class="nutrition-facts-title">Nutrition Facts</h4>
+        <div class="nutrition-facts-subtitle">Standard Supplement Facts</div>
+      </div>
+      <div class="nutrition-serving-info">
+        <div>Serving Size: ${servingSize}</div>
+        <div>Servings: ${servingsPerContainer}</div>
+      </div>
+      <div class="nutrition-calories-row">
+        <div class="nutrition-calories-title">Calories</div>
+        <div class="nutrition-calories-val">${calories}</div>
+      </div>
+      <div class="nutrition-dv-header">% Daily Value *</div>
+      <div class="nutrition-grid">
+        ${items.map(item => `
+          <div class="nutrition-row">
+            <strong>${item.label}</strong>
+            <span>${item.val}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div style="font-size: 0.72rem; color: #555; margin-top: 12px; border-top: 1px solid #000; padding-top: 8px; line-height: 1.35; font-weight: 500;">
+        * Percent Daily Values are based on a 2,000 calorie diet. Your daily values may be higher or lower depending on your calorie needs.
+      </div>
+    </div>
+  `;
+}
+
+// 3. PRODUCT DETAILS VIEW
+async function renderProductDetails(params) {
+  showLoader();
+  try {
+    let product = null;
+    try {
+      product = await db.fetchProductBySlug(params.slug);
+    } catch (dbErr) {
+      console.warn('Product fetch failed:', dbErr);
+    }
+
+    if (!product) {
+      appContent.innerHTML = `
+        <section class="section">
+          <div class="container verify-wrapper">
+            <div class="verify-card">
+              <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:var(--primary);"></i>
+              <h2>Product Not Found</h2>
+              <p>The product you are looking for does not exist or has been removed.</p>
+              <a href="#products" class="btn btn-primary" style="margin-top:16px;"><i class="fas fa-arrow-left"></i> Back to Products</a>
+            </div>
+          </div>
+        </section>
+      `;
+      return;
+    }
+
+    // Fetch reviews
+    let reviews = [];
+    try {
+      reviews = await db.fetchReviews(product.id);
+    } catch (err) {
+      console.error('Failed to load reviews:', err);
+    }
+    
+    // Fetch related products in the same category
+    let relatedProducts = [];
+    try {
+      if (product.category_id) {
+        const allCatProducts = await db.fetchProducts({ category_id: product.category_id });
+        relatedProducts = allCatProducts.filter(p => p.id !== product.id).slice(0, 4);
+      }
+    } catch (err) {
+      console.error('Failed to load related products:', err);
+    }
+
+    const totalReviews = reviews.length;
+    const avgRating = totalReviews > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1) : '0.0';
+    const avgStars = Math.round(parseFloat(avgRating));
+
+    const images = product.product_images || [];
+    const mainImage = images.length > 0 ? images[0].image_url : 'https://placehold.co/600x600/f5f5f7/86868b?text=No+Image';
+
+    // Build about sections
+    const aboutSections = [
+      { key: 'long_description', title: 'About this Product', icon: 'info-circle' },
+      { key: 'benefits', title: 'Key Benefits', icon: 'star' },
+      { key: 'ingredients', title: 'Ingredients', icon: 'leaf' },
+      { key: 'nutrition', title: 'Nutrition Information', icon: 'chart-bar' },
+      { key: 'usage', title: 'Usage Instructions', icon: 'directions' },
+      { key: 'warnings', title: 'Safety & Warnings', icon: 'shield-alt' }
+    ].filter(s => product[s.key]);
+
+    // Check if variants exist
+    const hasVariants = Array.isArray(product.variants) && product.variants.length > 1;
+
+    // PRE-COMPUTE HTML SEGMENTS to avoid complex nested backticks which cause syntax errors
+    // 1. Gallery Thumbnails
+    const thumbsHTML = images.map((img, i) => `
+      <div class="pd-thumb ${i === 0 ? 'active' : ''}" data-url="${img.image_url}">
+        <img src="${img.image_url}" alt="${escapeHTML(product.title)} gallery image ${i+1}" loading="lazy">
+      </div>
+    `).join('');
+
+    // 2. Average Reviews Stars in header
+    let reviewsStarsHTML = '';
+    if (totalReviews > 0) {
+      const starsHTML = Array.from({ length: 5 }).map((_, i) => `<i class="${i < avgStars ? 'fas' : 'far'} fa-star"></i>`).join('');
+      reviewsStarsHTML = `
+        <div style="display:flex; align-items:center; gap:6px; font-size:0.8rem;">
+          <div class="rating-stars">${starsHTML}</div>
+          <span style="color:var(--text-sub); font-weight:600;">${avgRating}</span>
+        </div>
+      `;
+    }
+
+    // 3. Weight/Size Variants selector
+    let variantsHTML = '';
+    if (hasVariants) {
+      const chipsHTML = product.variants.map((v, i) => `
+        <button class="pd-size-chip ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="Select size ${escapeHTML(v.weight)}">
+          ${escapeHTML(v.weight)}
+        </button>
+      `).join('');
+      variantsHTML = `
+        <div class="pd-variants-section" style="margin-top: 4px;">
+          <span class="pd-variants-label" style="font-size:0.8rem; font-weight:700; color:var(--text-sub); display:block; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.04em;">Select Size / Weight:</span>
+          <div class="pd-size-chips" id="pd-size-chips-list" style="display:flex; flex-wrap:wrap; gap:10px;">
+            ${chipsHTML}
+          </div>
+        </div>
+      `;
+    } else if (product.weight) {
+      variantsHTML = `
+        <div class="pd-variants-section" style="margin-top: 4px;">
+          <span class="pd-variants-label" style="font-size:0.8rem; font-weight:700; color:var(--text-sub); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;">Size / Weight:</span>
+          <span style="font-size:0.88rem; font-weight:700; color:var(--text); background:var(--gray-50); border:1px solid var(--border); padding:6px 14px; border-radius:var(--r-sm); display:inline-block;">${escapeHTML(product.weight)}</span>
+        </div>
+      `;
+    }
+
+    // 4. About Sections details
+    let aboutHTML = '';
+    if (aboutSections.length > 0) {
+      const leftBlocksHTML = aboutSections.filter(s => ['long_description', 'benefits'].includes(s.key)).map(s => `
+        <div class="pd-about-block">
+          <h3 class="pd-about-block-title">
+            <i class="fas fa-${s.icon}"></i> ${s.title}
+          </h3>
+          <div class="pd-about-body">${product[s.key].replace(/\n/g, '<br>')}</div>
+        </div>
+      `).join('');
+
+      const rightBlocksHTML = aboutSections.filter(s => !['long_description', 'benefits'].includes(s.key)).map(s => {
+        const bodyContent = s.key === 'nutrition' ? parseNutritionInfo(product[s.key]) : `<div class="pd-about-body">${product[s.key].replace(/\n/g, '<br>')}</div>`;
+        return `
+          <div class="pd-about-block">
+            <h3 class="pd-about-block-title">
+              <i class="fas fa-${s.icon}"></i> ${s.title}
+            </h3>
+            ${bodyContent}
+          </div>
+        `;
+      }).join('');
+
+      aboutHTML = `
+        <div class="pd-about-section" id="pd-about">
+          <h2 class="pd-about-title">Product Details</h2>
+          <div class="pd-about-cols">
+            <!-- LEFT: description + benefits -->
+            <div class="pd-about-main">
+              ${leftBlocksHTML}
+            </div>
+            <!-- RIGHT: ingredients, nutrition, usage, warnings -->
+            <div class="pd-about-side">
+              ${rightBlocksHTML}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 5. Related Products
+    let relatedHTML = '';
+    if (relatedProducts.length > 0) {
+      const cardsHTML = relatedProducts.map((p, idx) => renderProductCard(p, idx)).join('');
+      relatedHTML = `
+        <div class="pd-related-section animate-on-scroll">
+          <h3 class="pd-related-title">You May Also Like</h3>
+          <div class="products-grid">
+            ${cardsHTML}
+          </div>
+        </div>
+      `;
+    }
+
+    // 6. Reviews list
+    let reviewsListHTML = '';
+    if (reviews.length > 0) {
+      reviewsListHTML = reviews.map(r => {
+        const dateStr = new Date(r.created_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+        const starIcons = Array.from({ length: 5 }).map((_, i) => `<i class="${i < r.rating ? 'fas' : 'far'} fa-star"></i>`).join('');
+        const commentHTML = r.comment ? `<p class="review-comment">${escapeHTML(r.comment)}</p>` : '';
+        return `
+          <div class="review-card">
+            <div class="review-card-meta">
+              <span class="review-author">${escapeHTML(r.reviewer_name)}</span>
+              <span class="review-date">${dateStr}</span>
+            </div>
+            <div class="rating-stars" style="margin-bottom:8px; font-size:0.82rem;">
+              ${starIcons}
+            </div>
+            ${commentHTML}
+          </div>
+        `;
+      }).join('');
+    } else {
+      reviewsListHTML = `
+        <div style="text-align:center; padding: 24px 0; color:var(--text-muted);">
+          <i class="far fa-comments" style="font-size:2rem; margin-bottom:12px; display:block;"></i>
+          No feedback reviews written yet
+        </div>
+      `;
+    }
+
+    // 7. Reviews header
+    let reviewsHeaderHTML = '';
+    if (totalReviews > 0) {
+      const headerStarIcons = Array.from({ length: 5 }).map((_, i) => `<i class="${i < avgStars ? 'fas' : 'far'} fa-star"></i>`).join('');
+      reviewsHeaderHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="rating-stars" style="font-size:1.15rem;">
+            ${headerStarIcons}
+          </div>
+          <span style="font-weight:700; font-size:1.1rem; color:var(--text);">${avgRating} out of 5</span>
+          <span style="color:var(--text-sub); font-size:0.88rem;">(${totalReviews} reviews)</span>
+        </div>
+      `;
+    } else {
+      reviewsHeaderHTML = `<span style="color:var(--text-sub); font-size:0.88rem;">No reviews yet. Be the first to share!</span>`;
+    }
+
+    let html = `
+      <!-- Back Navigation Bar -->
+      <div class="pd-back-bar">
+        <div class="container">
+          <button class="pd-back-btn" id="pd-back-btn">
+            <i class="fas fa-chevron-left"></i>
+            <span>Back</span>
+          </button>
+          <nav class="pd-breadcrumb">
+            <a href="#home">Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#products">Products</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>${escapeHTML(product.title)}</span>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Main Product Layout -->
+      <div class="pd-page">
+        <div class="container">
+          <div class="pd-main-grid">
+
+            <!-- LEFT: Image Gallery -->
+            <div class="pd-gallery-col">
+              <div class="pd-gallery animate-slide-left">
+                <!-- Vertical Thumbnails -->
+                <div class="pd-thumbs-col">
+                  ${thumbsHTML}
+                </div>
+
+                <!-- Main Image -->
+                <div class="pd-main-img-box">
+                  <img id="pd-main-img" src="${mainImage}" alt="${product.title}">
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: Product Info Panel -->
+            <div class="pd-info-col">
+              <div class="pd-info-sticky animate-slide-right">
+                <!-- Category -->
+                <span class="pd-category">${product.categories ? product.categories.name : 'Supplement'}</span>
+
+                <!-- Title -->
+                <h1 class="pd-title">${product.title}</h1>
+
+                <!-- Brand Sold by -->
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <p class="pd-brand">Brand: <strong>Top Muscle Nutrition</strong></p>
+                  ${reviewsStarsHTML}
+                </div>
+
+                <!-- Divider -->
+                <div class="pd-divider"></div>
+
+                <!-- Price display panel -->
+                <div class="pd-price-wrap" id="pd-price-display">
+                  <!-- Injected dynamically -->
+                </div>
+
+                <!-- Size / Weight Selection Chips -->
+                ${variantsHTML}
+
+                <!-- Divider -->
+                <div class="pd-divider" style="margin-top: 8px;"></div>
+
+                <!-- Short Description -->
+                ${product.short_description ? `
+                  <p class="pd-short-desc">${product.short_description}</p>
+                ` : ''}
+
+                <!-- Availability badge -->
+                <div class="pd-availability">
+                  <i class="fas fa-check-circle"></i>
+                  <span>In Stock</span>
+                </div>
+
+                <!-- Trust badges -->
+                <div class="pd-trust-badges">
+                  <div class="pd-trust-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>100% Genuine</span>
+                  </div>
+                  <div class="pd-trust-badge">
+                    <i class="fas fa-leaf"></i>
+                    <span>FSSAI Certified</span>
+                  </div>
+                  <div class="pd-trust-badge">
+                    <i class="fas fa-truck"></i>
+                    <span>Fast Delivery</span>
+                  </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="pd-divider"></div>
+
+                <!-- WhatsApp Order Button -->
+                ${product.whatsapp_enabled ? `
+                  <a href="#" target="_blank" class="pd-wa-btn" id="pd-whatsapp-order-btn">
+                    <i class="fab fa-whatsapp"></i>
+                    Buy via WhatsApp
+                  </a>
+                  <p class="pd-wa-note">Chat with us to confirm price & availability</p>
+                ` : `
+                  <div class="pd-disabled-order">
+                    <i class="fas fa-clock"></i>
+                    <span>Ordering temporarily unavailable for this product</span>
+                  </div>
+                `}
+
+                <!-- Verify authenticity link -->
+                <a href="#verify" class="pd-verify-link">
+                  <i class="fas fa-qrcode"></i> Verify product
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ABOUT SECTION -->
+          ${aboutHTML}
+
+          <!-- FAQ ACCORDION -->
+          <div class="pd-about-block animate-on-scroll" style="margin-top: 28px;">
+            <h3 class="pd-about-block-title">
+              <i class="fas fa-question-circle"></i> Frequently Asked Questions
+            </h3>
+            <div class="faq-accordion">
+              <div class="faq-item">
+                <button class="faq-trigger">
+                  <span>How do I verify if my product is 100% authentic?</span>
+                  <span class="faq-icon-toggle"></span>
+                </button>
+                <div class="faq-content">
+                  <div class="faq-body">
+                    Every Top Muscle Nutrition product comes with a unique security verification code printed on the packaging. Simply navigate to the "Verify Product" tab on our website, enter your code, and click "Verify Product" to check its legitimacy instantly.
+                  </div>
+                </div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-trigger">
+                  <span>How does ordering via WhatsApp work?</span>
+                  <span class="faq-icon-toggle"></span>
+                </button>
+                <div class="faq-content">
+                  <div class="faq-body">
+                    When you click "Buy via WhatsApp", a pre-filled chat message is automatically created specifying the product you are interested in. Once you send this message, our team will get in touch with you immediately to confirm the final price, shipping costs, and payment options.
+                  </div>
+                </div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-trigger">
+                  <span>Are your products FSSAI certified and safe to consume?</span>
+                  <span class="faq-icon-toggle"></span>
+                </button>
+                <div class="faq-content">
+                  <div class="faq-body">
+                    Yes! All our products are FSSAI certified and sourced from certified manufacturers. We guarantee that every supplement is completely free of banned substances and safe for standard athletic consumption.
+                  </div>
+                </div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-trigger">
+                  <span>What is your return and exchange policy?</span>
+                  <span class="faq-icon-toggle"></span>
+                </button>
+                <div class="faq-content">
+                  <div class="faq-body">
+                    We offer a 100% money-back guarantee or exchange on any unopened, sealed supplement jar within 7 days of purchase. Please contact support via email or WhatsApp if you wish to initiate a return.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RELATED PRODUCTS -->
+          ${relatedHTML}
+
+          <!-- REVIEWS CONTAINER -->
+          <div class="pd-reviews-container animate-on-scroll">
+            <div class="pd-reviews-header">
+              <h3 class="pd-reviews-title">Customer Reviews</h3>
+              ${reviewsHeaderHTML}
+            </div>
+
+            <div class="pd-reviews-grid">
+              <!-- Reviews List -->
+              <div class="reviews-list">
+                ${reviewsListHTML}
+              </div>
+
+              <!-- Write a Review Form -->
+              <div class="review-form-card">
+                <h4 class="review-form-title">Write a Customer Review</h4>
+                <div class="verify-input-group" style="text-align: left;">
+                  <div class="rating-selector-wrap">
+                    <span class="rating-label">Overall Rating:</span>
+                    <div class="rating-stars clickable" id="rating-star-select" style="font-size:1.3rem;">
+                      <i class="fas fa-star" data-value="1"></i>
+                      <i class="fas fa-star" data-value="2"></i>
+                      <i class="fas fa-star" data-value="3"></i>
+                      <i class="fas fa-star" data-value="4"></i>
+                      <i class="fas fa-star" data-value="5"></i>
+                    </div>
+                    <input type="hidden" id="review-rating-val" value="5">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="review-name">Your Full Name</label>
+                    <input type="text" id="review-name" class="form-input" placeholder="e.g. John Doe">
+                  </div>
+
+                  <div class="form-group" style="margin-top: 12px;">
+                    <label class="form-label" for="review-comment">Written Review Feedback</label>
+                    <textarea id="review-comment" class="form-input" style="height:100px; resize:none;" placeholder="Tell others about your recovery experience with this product..."></textarea>
+                  </div>
+
+                  <button class="btn btn-primary" id="submit-review-btn" style="margin-top: 20px; width: 100%;">
+                    Submit Feedback Review
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    appContent.innerHTML = html;
+
+    // Pricing and size variants dynamic update
+    function updateProductPricing(variant) {
+      const displayEl = document.getElementById('pd-price-display');
+      if (!displayEl) return;
+
+      let priceHTML = '';
+      if (variant && variant.price) {
+        const price = variant.price;
+        const offerPrice = variant.offer_price;
+        if (offerPrice && offerPrice < price) {
+          const discount = Math.round(((price - offerPrice) / price) * 100);
+          priceHTML = `
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom: 8px;">
+              <span class="price-offer" style="font-size:1.85rem; font-weight:900; color:var(--primary); font-family:var(--font-heading);">₹${offerPrice.toLocaleString('en-IN')}</span>
+              <span class="price-original" style="font-size:1.15rem; font-weight:500; text-decoration:line-through; color:var(--text-muted); font-family:var(--font-heading);">₹${price.toLocaleString('en-IN')}</span>
+              <span class="price-discount-badge" style="font-size:0.75rem; font-weight:700; background:var(--success-bg); color:var(--success); padding:3px 8px; border-radius:var(--r-xs); font-family:var(--font-heading); text-transform:uppercase;">Save ${discount}%</span>
+            </div>
+          `;
+        } else {
+          priceHTML = `
+            <div style="display:flex; align-items:baseline; margin-bottom: 8px;">
+              <span class="price-offer" style="font-size:1.85rem; font-weight:900; color:var(--text); font-family:var(--font-heading);">₹${price.toLocaleString('en-IN')}</span>
+            </div>
+          `;
+        }
+      } else {
+        priceHTML = `<span style="font-size:1.1rem; font-weight:700; color:var(--text-sub); display:block; margin-bottom: 8px;">Price on Request</span>`;
+      }
+
+      displayEl.style.opacity = '0';
+      setTimeout(() => {
+        displayEl.innerHTML = priceHTML;
+        displayEl.style.opacity = '1';
+        displayEl.style.transition = 'opacity 0.2s ease';
+      }, 50);
+
+      // Update WhatsApp link text
+      const waButtons = document.querySelectorAll('.pd-wa-btn');
+      if (waButtons.length > 0) {
+        const sizeStr = variant && variant.weight ? ` (Size: ${variant.weight})` : '';
+        const priceStr = variant && variant.price ? ` for *₹${(variant.offer_price || variant.price).toLocaleString('en-IN')}*` : '';
+        const waMessage = `Hello! I'm interested in ordering:\n\n*${product.title}*${sizeStr}${priceStr}\n\nPlease confirm availability. Thank you!`;
+        const cleanedNumber = (globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '');
+        const waUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(waMessage)}`;
+        waButtons.forEach(btn => btn.href = waUrl);
+      }
+    }
+
+    // Initialize display values
+    const initialVariant = hasVariants ? product.variants[0] : {
+      weight: product.weight || 'Standard',
+      price: product.price,
+      offer_price: product.offer_price
+    };
+    updateProductPricing(initialVariant);
+
+    // Bind size selector chips clicks
+    if (hasVariants) {
+      const chips = document.querySelectorAll('.pd-size-chip');
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          chips.forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          const index = parseInt(chip.dataset.index);
+          const variant = product.variants[index];
+          if (variant) {
+            updateProductPricing(variant);
+          }
+        });
+      });
+    }
+
+    // Bind Back Navigation click
+    document.getElementById('pd-back-btn').addEventListener('click', () => {
+      window.history.back();
+    });
+
+    // Image Gallery Thumbnail Click handler
+    const mainImgEl = document.getElementById('pd-main-img');
+    document.querySelectorAll('.pd-thumb').forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+        mainImgEl.style.opacity = '0';
+        setTimeout(() => {
+          mainImgEl.src = thumb.dataset.url;
+          mainImgEl.style.opacity = '1';
+        }, 150);
+      });
+    });
+
+    // FAQ Accordion interaction
+    document.querySelectorAll('.faq-trigger').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const item = trigger.closest('.faq-item');
+        const content = item.querySelector('.faq-content');
+        const isActive = item.classList.contains('active');
+        
+        // Collapse all items
+        document.querySelectorAll('.faq-item').forEach(i => {
+          i.classList.remove('active');
+          const c = i.querySelector('.faq-content');
+          if (c) c.style.maxHeight = '0';
+        });
+        
+        if (!isActive) {
+          item.classList.add('active');
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+      });
+    });
+
+    // Star rating selection logic in submission form
+    let selectedRating = 5;
+    const starContainer = document.getElementById('rating-star-select');
+    const ratingInput = document.getElementById('review-rating-val');
+    
+    if (starContainer) {
+      const stars = starContainer.querySelectorAll('i');
+      
+      const updateStars = (val) => {
+        stars.forEach((star, index) => {
+          if (index < val) {
+            star.className = 'fas fa-star';
+          } else {
+            star.className = 'far fa-star';
+          }
+        });
+        ratingInput.value = val;
+        selectedRating = val;
+      };
+
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          const val = parseInt(star.dataset.value);
+          updateStars(val);
+        });
+      });
+    }
+
+    // Submit review logic
+    const submitReviewBtn = document.getElementById('submit-review-btn');
+    if (submitReviewBtn) {
+      submitReviewBtn.addEventListener('click', async () => {
+        const nameInput = document.getElementById('review-name');
+        const commentInput = document.getElementById('review-comment');
+        
+        const reviewer_name = nameInput.value.trim();
+        const comment = commentInput.value.trim();
+        const rating = parseInt(ratingInput.value);
+
+        if (!reviewer_name) {
+          showToast('Please enter your name', 'error');
+          return;
+        }
+
+        showLoader();
+        try {
+          await db.saveReview({
+            product_id: product.id,
+            reviewer_name,
+            rating,
+            comment: comment || null,
+            approved: true
+          });
+
+          showToast('Review submitted successfully!', 'success');
+          renderProductDetails(params);
+        } catch (err) {
+          console.error('Failed to submit review:', err);
+          showToast('Failed to submit review', 'error');
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    // Animate About section on scroll using IntersectionObserver
+    const aboutSection = document.getElementById('pd-about');
+    if (aboutSection) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      observer.observe(aboutSection);
+
+      document.querySelectorAll('.pd-about-block').forEach((block, i) => {
+        block.style.transitionDelay = `${i * 0.08}s`;
+        const blockObserver = new IntersectionObserver(entries => {
+          entries.forEach(e => { if (e.isIntersecting) { block.classList.add('visible'); blockObserver.unobserve(block); } });
+        }, { threshold: 0.1 });
+        blockObserver.observe(block);
+      });
+    }
+
+    // Initialize scroll animations for other animated elements
+    initScrollAnimations();
+
+  } catch (error) {
+    console.error('Product details load failed:', error);
+    showToast('Failed to load product details', 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+
+// 4. VERIFICATION VIEW (Verify Authentic Product)
+function renderProductVerification() {
+  appContent.innerHTML = `
+    <section class="section">
+      <div class="container verify-wrapper">
+        <div class="verify-card animate-scale">
+          <div class="category-icon-box" style="margin: 0 auto; color: var(--primary);">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h2>Verify Product</h2>
+          <p>Protect your health. Verify if your product is genuine by entering the unique security code found on the packaging.</p>
+          
+          <div class="verify-input-group">
+            <input type="text" id="verification-code" class="verify-input" maxlength="20" placeholder="ENTER CODE HERE" aria-label="Product verification code">
+            <button id="verify-code-btn" class="btn btn-primary">
+              <i class="fas fa-check-circle"></i> Verify Product
+            </button>
+          </div>
+          
+          <!-- Results Container -->
+          <div id="verification-result-box" class="result-box">
+            <!-- Results populated here -->
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+
+  // Initialize scroll animations
+  initScrollAnimations();
+
+  const inputEl = document.getElementById('verification-code');
+  const verifyBtn = document.getElementById('verify-code-btn');
+  const resultBox = document.getElementById('verification-result-box');
+
+  verifyBtn.addEventListener('click', async () => {
+    const code = inputEl.value.trim();
+    if (!code) {
+      showToast('Please enter a product code', 'error');
+      return;
+    }
+
+    showLoader();
+    resultBox.style.display = 'none';
+
+    try {
+      const result = await db.verifyProductCode(code);
+      
+      if (result.verified) {
+        // Formatting dates
+        const mfgDate = result.manufacturing_date ? new Date(result.manufacturing_date).toLocaleDateString(undefined, {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
+        const expDate = result.expiry_date ? new Date(result.expiry_date).toLocaleDateString(undefined, {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
+        
+        resultBox.className = 'result-box success';
+        resultBox.innerHTML = `
+          <div class="result-success-header">
+            <i class="fas fa-check-circle"></i>
+            <span>Verified Genuine Product</span>
+          </div>
+          <div class="result-details-grid">
+            <img class="result-prod-img" src="${result.product_image || 'https://via.placeholder.com/100?text=No+Image'}" alt="${result.product_name}">
+            <div class="result-info">
+              <div class="result-name">${result.product_name}</div>
+              <div class="result-meta-row">
+                <span class="result-label">MFG Date:</span>
+                <span class="result-val">${mfgDate}</span>
+              </div>
+              <div class="result-meta-row">
+                <span class="result-label">Expiry Date:</span>
+                <span class="result-val">${expDate}</span>
+              </div>
+              <div class="result-meta-row">
+                <span class="result-label">Status:</span>
+                <span class="result-status-badge">${(result.status || 'active').toUpperCase()}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        resultBox.className = 'result-box error';
+        resultBox.innerHTML = `
+          <i class="fas fa-times-circle" style="font-size:1.5rem; margin-bottom:8px;"></i>
+          <div><strong>Verification Failed</strong></div>
+          <div style="font-size:0.9rem; margin-top:4px;">The code entered is invalid or does not exist in our systems. Please check the digits and try again or contact support.</div>
+        `;
+      }
+      
+      resultBox.style.display = 'block';
+
+    } catch (err) {
+      console.error('Verification error:', err);
+      showToast('Error verifying product code', 'error');
+    } finally {
+      hideLoader();
+    }
+  });
+
+  // Support pressing enter inside input
+  inputEl.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      verifyBtn.click();
+    }
+  });
+}
+
+// Start app
+init();

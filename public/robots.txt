@@ -1,0 +1,6 @@
+# robots.txt for Top Muscle Nutrition
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://topmusclenutrition.com/sitemap.xml
