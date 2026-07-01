@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS settings (
   hero_bg_gradient TEXT NOT NULL DEFAULT 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)',
   hero_bg_image_url TEXT,
   hero_product_image_url TEXT NOT NULL DEFAULT 'hero_product.png',
+  hero_product_images JSONB DEFAULT '[]',
   hero_badge_1_text TEXT NOT NULL DEFAULT '100% Genuine',
   hero_badge_1_icon TEXT NOT NULL DEFAULT 'fas fa-shield-halved',
   hero_badge_2_text TEXT NOT NULL DEFAULT 'FSSAI Certified',

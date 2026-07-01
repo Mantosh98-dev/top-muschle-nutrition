@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS = {
   hero_bg_type: "gradient",
   hero_bg_gradient: "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)",
   hero_product_image_url: "hero_product.png",
+  hero_product_images: [],
   hero_badge_1_text: "100% Genuine",
   hero_badge_1_icon: "fas fa-shield-halved",
   hero_badge_2_text: "FSSAI Certified",
@@ -518,6 +519,10 @@ async function renderHome() {
       `;
     }
 
+    const heroImages = Array.isArray(globalSettings.hero_product_images) && globalSettings.hero_product_images.length > 0
+      ? globalSettings.hero_product_images
+      : [globalSettings.hero_product_image_url || 'hero_product.png'];
+
     // Hero Section
     let html = `
       <section class="hero" style="${heroBgStyle}">
@@ -548,7 +553,11 @@ async function renderHome() {
           </div>
           <div class="hero-graphic animate-scale">
             <div class="hero-glow-sphere"></div>
-            <img src="${globalSettings.hero_product_image_url || 'hero_product.png'}" alt="Premium Supplement Jar" class="hero-product-image">
+            <div class="hero-product-images-container">
+              ${heroImages.map((imgUrl, idx) => `
+                <img src="${imgUrl}" alt="Premium Supplement Jar ${idx + 1}" class="hero-product-image ${idx === 0 ? 'active' : ''}">
+              `).join('')}
+            </div>
             <div class="floating-badge badge-1" style="${showBadge1 ? '' : 'display: none;'}">
               <i class="${globalSettings.hero_badge_1_icon || 'fas fa-shield-halved'}"></i>
               <span>${globalSettings.hero_badge_1_text || '100% Genuine'}</span>
@@ -792,6 +801,22 @@ async function renderHome() {
 
     // Initialize scroll animations
     initScrollAnimations();
+
+    // Start Hero Image Rotation if multiple images exist
+    const heroImageElements = document.querySelectorAll('.hero-product-images-container .hero-product-image');
+    if (heroImageElements.length > 1) {
+      let currentIdx = 0;
+      const intervalId = setInterval(() => {
+        // Double check if the elements are still in the DOM
+        if (!document.body.contains(heroImageElements[0])) {
+          clearInterval(intervalId);
+          return;
+        }
+        heroImageElements[currentIdx].classList.remove('active');
+        currentIdx = (currentIdx + 1) % heroImageElements.length;
+        heroImageElements[currentIdx].classList.add('active');
+      }, 4000);
+    }
 
   } catch (error) {
     console.error('Home render failed:', error);

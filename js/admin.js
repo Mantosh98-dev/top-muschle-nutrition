@@ -1774,11 +1774,25 @@ async function renderTabSettings(workspace) {
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="settings-hero-product-image">Hero Product Image</label>
-          <div style="display:flex; gap:8px;">
-            <input type="text" id="settings-hero-product-image" class="form-input" placeholder="https://image-link.com/product.png" value="${settings.hero_product_image_url !== undefined ? escapeHTML(settings.hero_product_image_url || '') : 'hero_product.png'}">
-            <button class="btn btn-dark" id="settings-hero-product-image-upload-btn" style="padding:12px;" aria-label="Upload hero product image file"><i class="fas fa-upload"></i></button>
-            <input type="file" id="settings-hero-product-image-file-input" style="display:none;" accept="image/*">
+          <label class="form-label" style="font-weight:700; margin-bottom:12px; display:block;">Hero Product Images (up to 6 slots, rotates every 4s)</label>
+          <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
+            ${Array.from({ length: 6 }).map((_, index) => {
+              const url = (settings.hero_product_images && settings.hero_product_images[index]) || (index === 0 ? settings.hero_product_image_url : '') || '';
+              return `
+                <div class="hero-img-slot" style="display:flex; flex-direction:column; gap:6px; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-sm); background: var(--card-bg-light, rgba(0,0,0,0.02));">
+                  <span style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Image Slot ${index + 1} ${index === 0 ? '(Primary / Fallback)' : ''}</span>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <div class="hero-thumb-preview" id="hero-thumb-preview-${index}" style="width:40px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                      ${url ? `<img src="${escapeHTML(url)}" style="max-width:100%; max-height:100%; object-fit:contain;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
+                    </div>
+                    <input type="text" id="settings-hero-image-${index}" class="form-input hero-image-input" placeholder="Paste image URL here" value="${escapeHTML(url)}" style="flex:1;">
+                    <button class="btn btn-dark settings-hero-upload-btn" data-slot="${index}" style="padding:12px;" type="button" aria-label="Upload hero image slot ${index + 1}"><i class="fas fa-upload"></i></button>
+                    <button class="btn btn-ghost settings-hero-clear-btn" data-slot="${index}" style="padding:12px; color:var(--error-color); border-color:var(--error-color);" type="button" aria-label="Clear slot ${index + 1}"><i class="fas fa-times"></i></button>
+                    <input type="file" id="settings-hero-file-input-${index}" style="display:none;" accept="image/*">
+                  </div>
+                </div>
+              `;
+            }).join('')}
           </div>
         </div>
 
@@ -2040,26 +2054,52 @@ async function renderTabSettings(workspace) {
     }
   });
 
-  // Hero Product Image upload handler
-  const heroProdFileBtn = document.getElementById('settings-hero-product-image-upload-btn');
-  const heroProdFileInput = document.getElementById('settings-hero-product-image-file-input');
-  heroProdFileBtn.addEventListener('click', () => heroProdFileInput.click());
-  
-  heroProdFileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // Hero Product Images upload and clear handlers
+  for (let i = 0; i < 6; i++) {
+    const uploadBtn = document.querySelector(`.settings-hero-upload-btn[data-slot="${i}"]`);
+    const fileInput = document.getElementById(`settings-hero-file-input-${i}`);
+    const clearBtn = document.querySelector(`.settings-hero-clear-btn[data-slot="${i}"]`);
+    const inputEl = document.getElementById(`settings-hero-image-${i}`);
+    const previewEl = document.getElementById(`hero-thumb-preview-${i}`);
 
-    showLoader();
-    try {
-      const publicUrl = await db.uploadImage(file, 'brand-assets');
-      document.getElementById('settings-hero-product-image').value = publicUrl;
-      showToast('Hero product image uploaded successfully', 'success');
-    } catch (err) {
-      showToast('Hero product image upload failed', 'error');
-    } finally {
-      hideLoader();
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        showLoader();
+        try {
+          const publicUrl = await db.uploadImage(file, 'brand-assets');
+          inputEl.value = publicUrl;
+          previewEl.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          showToast(`Hero image ${i + 1} uploaded successfully`, 'success');
+        } catch (err) {
+          showToast(`Hero image ${i + 1} upload failed`, 'error');
+        } finally {
+          hideLoader();
+        }
+      });
     }
-  });
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        inputEl.value = '';
+        previewEl.innerHTML = `<i class="fas fa-image" style="color: var(--text-muted);"></i>`;
+      });
+    }
+
+    if (inputEl) {
+      inputEl.addEventListener('input', () => {
+        const url = inputEl.value.trim();
+        if (url) {
+          previewEl.innerHTML = `<img src="${escapeHTML(url)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+        } else {
+          previewEl.innerHTML = `<i class="fas fa-image" style="color: var(--text-muted);"></i>`;
+        }
+      });
+    }
+  }
 
   // Video Section 1 source toggle
   const video1TypeSelect = document.getElementById('settings-video1-type');
@@ -2173,7 +2213,8 @@ async function renderTabSettings(workspace) {
       hero_bg_type: bgTypeEl.value,
       hero_bg_gradient: bgGradInput.value.trim(),
       hero_bg_image_url: document.getElementById('settings-hero-bg-image').value.trim() || null,
-      hero_product_image_url: document.getElementById('settings-hero-product-image').value.trim() || 'hero_product.png',
+      hero_product_images: Array.from({ length: 6 }).map((_, idx) => document.getElementById(`settings-hero-image-${idx}`).value.trim()).filter(Boolean),
+      hero_product_image_url: document.getElementById('settings-hero-image-0').value.trim() || 'hero_product.png',
       hero_badge_1_text: document.getElementById('settings-hero-badge-1-text').value.trim() || null,
       hero_badge_1_icon: document.getElementById('settings-hero-badge-1-icon').value.trim() || null,
       hero_badge_2_text: document.getElementById('settings-hero-badge-2-text').value.trim() || null,
