@@ -2807,9 +2807,7 @@ textarea.form-input { resize: vertical; }
   .pd-main-grid { grid-template-columns: 1fr; gap: 28px; }
   .pd-gallery-col { position: static; }
   .pd-about-cols { grid-template-columns: 1fr; }
-  .pd-mobile-buy-bar { display: block; }
-  .pd-info-sticky .pd-wa-btn { display: none; }
-  .pd-info-sticky .pd-wa-note { display: none; }
+  .pd-mobile-buy-bar { display: none; }
 }
 
 /* ── Tablet & Mobile ── */
