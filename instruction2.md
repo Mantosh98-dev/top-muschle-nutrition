@@ -1,85 +1,53 @@
-# Production Final QA & Auto Fix
+# README – Image Update Rules (No Self-Verification)
 
-Perform a complete production-level review of the entire project before deployment.
+## Objective
 
-## Code Review
-
-* Scan every file in the project.
-* Detect and fix all build errors.
-* Detect and fix all runtime errors.
-* Detect and fix all console errors and warnings.
-* Remove unused code, imports, files, and dependencies.
-* Ensure there are no broken references.
-
-## UI / UX
-
-* Review every page.
-* Fix layout issues.
-* Fix spacing, alignment, typography, and responsiveness.
-* Ensure consistent colors, buttons, icons, and animations.
-* Verify mobile, tablet, and desktop layouts.
-
-## Functionality
-
-* Test every button, link, form, navigation item, modal, dropdown, and interaction.
-* Verify image loading.
-* Verify all product pages.
-* Verify the admin panel.
-* Ensure CRUD operations (Create, Read, Update, Delete) work correctly.
-* Verify authentication and route protection.
-
-## Performance
-
-* Optimize images.
-* Improve loading speed.
-* Remove unnecessary re-renders.
-* Optimize JavaScript and CSS.
-* Ensure there are no memory leaks.
-
-## Security
-
-* Validate and sanitize all inputs.
-* Check authentication.
-* Verify authorization.
-* Protect admin routes.
-* Review environment variables.
-* Check for exposed secrets.
-* Apply OWASP best practices where applicable.
-
-## SEO
-
-* Verify page titles.
-* Verify meta descriptions.
-* Verify favicon.
-* Verify Open Graph metadata.
-* Check sitemap and robots.txt if applicable.
-
-## Accessibility
-
-* Verify keyboard navigation.
-* Verify image alt text.
-* Verify color contrast.
-* Verify form labels.
-
-## Final Testing
-
-* Test the complete application as if you were an end user.
-* Fix every issue that you discover.
-* Continue testing until no critical issues remain.
+Replace the UI images using the images that I upload.
 
 ## Important Rules
 
-* Do not change the design unless required to fix a bug.
-* Do not remove any existing functionality.
-* Do not add new features unless they are required to resolve an issue.
-* Do not automatically open Chrome or any browser.
-* Do not perform browser automation or screen interaction unless I explicitly request it.
+* Replace only the required images.
+* Do not modify layouts, styling, spacing, typography, animations, components, business logic, backend, routes, or project structure.
+* Keep the existing responsive behavior unchanged.
+* Optimize images without noticeable quality loss.
 
-## Final Report
+## Verification Policy
 
-After completion, provide:
+**Do NOT perform automated visual verification.**
 
-* All issues found.
-* All fixes applied.
-* Any remaining recommendations.
-* Confirmation that the project is production-ready.
+Specifically:
+
+* Do NOT launch Chrome, Chromium, Edge, or any browser for verification.
+* Do NOT start a development server solely for validation.
+* Do NOT take screenshots.
+* Do NOT record videos or screen recordings.
+* Do NOT compare before/after screenshots.
+* Do NOT run Playwright, Puppeteer, Selenium, Cypress, or any browser automation.
+* Do NOT repeatedly reopen browser windows after every change.
+* Do NOT verify each image replacement automatically.
+
+## Expected Workflow
+
+1. Replace the requested images.
+2. Ensure image paths are correct.
+3. Ensure the project compiles successfully (if applicable).
+4. Report which files were modified.
+5. Stop and wait for my review.
+
+## If an Issue Is Found
+
+If any ambiguity or missing asset exists:
+
+* Explain the issue.
+* Identify the affected file(s).
+* Wait for my confirmation before making additional changes.
+
+## Final Output
+
+After completing the task, provide only:
+
+* Files changed
+* Images replaced
+* Any unresolved issues (if any)
+
+Do not perform any additional verification or browser-based validation unless I explicitly request it.
