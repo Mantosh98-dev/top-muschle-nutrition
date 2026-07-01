@@ -2240,7 +2240,9 @@ textarea.form-input { resize: vertical; }
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-xs);
 }
 
@@ -2927,6 +2929,41 @@ textarea.form-input { resize: vertical; }
   .admin-sidebar-footer { display: none; }
   .admin-main-panel { padding: 24px 16px; }
   .admin-header-row { flex-direction: column; gap: 12px; }
+
+  /* Admin Panel Responsiveness Fixes */
+  .admin-dashboard [style*="display:grid"],
+  .admin-dashboard [style*="display: grid"],
+  .modal [style*="display:grid"],
+  .modal [style*="display: grid"] {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  .modal {
+    padding: 12px;
+  }
+  
+  .modal-body {
+    padding: 20px 16px;
+    gap: 14px;
+  }
+  
+  .modal-header {
+    padding: 16px 20px;
+  }
+  
+  .modal-footer {
+    padding: 14px 20px;
+  }
+
+  .admin-login-wrapper {
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+  
+  .admin-login-card {
+    padding: 32px 24px;
+  }
 
   .verify-card { padding: 40px 28px; }
 
