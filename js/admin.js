@@ -1910,54 +1910,43 @@ async function renderTabSettings(workspace) {
   // Bind color input syncing
   const cPrimInput = document.getElementById('settings-color-primary');
   const cPrimText = document.getElementById('settings-color-primary-text');
-  cPrimInput.addEventListener('input', (e) => cPrimText.value = e.target.value);
-  cPrimText.addEventListener('input', (e) => {
-    if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) cPrimInput.value = e.target.value;
-  });
+  if (cPrimInput && cPrimText) {
+    cPrimInput.addEventListener('input', (e) => cPrimText.value = e.target.value);
+    cPrimText.addEventListener('input', (e) => {
+      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) cPrimInput.value = e.target.value;
+    });
+  }
 
   const cSecInput = document.getElementById('settings-color-secondary');
   const cSecText = document.getElementById('settings-color-secondary-text');
-  cSecInput.addEventListener('input', (e) => cSecText.value = e.target.value);
-  cSecText.addEventListener('input', (e) => {
-    if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) cSecInput.value = e.target.value;
-  });
-
-  // Toggle Background types
-  const bgTypeEl = document.getElementById('settings-hero-bg-type');
-  const bgGradInput = document.getElementById('settings-hero-bg-gradient');
-  const bgImgWrap = document.getElementById('settings-hero-image-wrap');
-
-  bgTypeEl.addEventListener('change', (e) => {
-    if (e.target.value === 'gradient') {
-      bgGradInput.style.display = 'block';
-      bgImgWrap.style.display = 'none';
-    } else {
-      bgGradInput.style.display = 'none';
-      bgImgWrap.style.display = 'flex';
-    }
-  });
+  if (cSecInput && cSecText) {
+    cSecInput.addEventListener('input', (e) => cSecText.value = e.target.value);
+    cSecText.addEventListener('input', (e) => {
+      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) cSecInput.value = e.target.value;
+    });
+  }
 
   // Logo file upload handler
   const logoFileBtn = document.getElementById('settings-logo-upload-btn');
   const logoFileInput = document.getElementById('settings-logo-file-input');
-  logoFileBtn.addEventListener('click', () => logoFileInput.click());
-  
-  logoFileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    showLoader();
-    try {
-      const publicUrl = await db.uploadImage(file, 'brand-assets');
-      document.getElementById('settings-brand-logo').value = publicUrl;
-      showToast('Brand logo uploaded successfully', 'success');
-      // Save settings directly or let user click save? Refreshing fields is safer.
-    } catch (err) {
-      showToast('Logo upload failed', 'error');
-    } finally {
-      hideLoader();
-    }
-  });
+  if (logoFileBtn && logoFileInput) {
+    logoFileBtn.addEventListener('click', () => logoFileInput.click());
+    logoFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showLoader();
+      try {
+        const publicUrl = await db.uploadImage(file, 'brand-assets');
+        document.getElementById('settings-brand-logo').value = publicUrl;
+        showToast('Brand logo uploaded successfully', 'success');
+        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+      } catch (err) {
+        showToast('Logo upload failed', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
 
   // Footer Logo file upload handler
   const footerLogoFileBtn = document.getElementById('settings-footer-logo-upload-btn');
@@ -1967,12 +1956,12 @@ async function renderTabSettings(workspace) {
     footerLogoFileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-
       showLoader();
       try {
         const publicUrl = await db.uploadImage(file, 'brand-assets');
         document.getElementById('settings-footer-logo').value = publicUrl;
         showToast('Footer logo uploaded successfully', 'success');
+        setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         showToast('Footer logo upload failed', 'error');
       } finally {
@@ -1981,235 +1970,54 @@ async function renderTabSettings(workspace) {
     });
   }
 
-  // Background Image upload handler
-  const bgFileBtn = document.getElementById('settings-hero-bg-upload-btn');
-  const bgFileInput = document.getElementById('settings-hero-bg-file-input');
-  bgFileBtn.addEventListener('click', () => bgFileInput.click());
-  
-  bgFileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    showLoader();
-    try {
-      const publicUrl = await db.uploadImage(file, 'brand-assets');
-      document.getElementById('settings-hero-bg-image').value = publicUrl;
-      showToast('Hero background uploaded successfully', 'success');
-    } catch (err) {
-      showToast('Hero image upload failed', 'error');
-    } finally {
-      hideLoader();
-    }
-  });
-
-  // Hero Product Images upload and clear handlers
-  for (let i = 0; i < 6; i++) {
-    const uploadBtn = document.querySelector(`.settings-hero-upload-btn[data-slot="${i}"]`);
-    const fileInput = document.getElementById(`settings-hero-file-input-${i}`);
-    const clearBtn = document.querySelector(`.settings-hero-clear-btn[data-slot="${i}"]`);
-    const inputEl = document.getElementById(`settings-hero-image-${i}`);
-    const previewEl = document.getElementById(`hero-thumb-preview-${i}`);
-
-    if (uploadBtn && fileInput) {
-      uploadBtn.addEventListener('click', () => fileInput.click());
-      fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        showLoader();
-        try {
-          const publicUrl = await db.uploadImage(file, 'brand-assets');
-          inputEl.value = publicUrl;
-          previewEl.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-          showToast(`Hero image ${i + 1} uploaded successfully`, 'success');
-        } catch (err) {
-          showToast(`Hero image ${i + 1} upload failed`, 'error');
-        } finally {
-          hideLoader();
-        }
-      });
-    }
-
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        inputEl.value = '';
-        previewEl.innerHTML = `<i class="fas fa-image" style="color: var(--text-muted);"></i>`;
-      });
-    }
-
-    if (inputEl) {
-      inputEl.addEventListener('input', () => {
-        const url = inputEl.value.trim();
-        if (url) {
-          previewEl.innerHTML = `<img src="${escapeHTML(url)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-        } else {
-          previewEl.innerHTML = `<i class="fas fa-image" style="color: var(--text-muted);"></i>`;
-        }
-      });
-    }
-  }
-
-  // Video Section 1 source toggle
-  const video1TypeSelect = document.getElementById('settings-video1-type');
-  const video1UploadWrap = document.getElementById('settings-video1-upload-wrap');
-  const video1YoutubeInput = document.getElementById('settings-video1-youtube');
-  
-  if (video1TypeSelect) {
-    video1TypeSelect.addEventListener('change', (e) => {
-      if (e.target.value === 'upload') {
-        video1UploadWrap.style.display = 'flex';
-        video1YoutubeInput.style.display = 'none';
-      } else {
-        video1UploadWrap.style.display = 'none';
-        video1YoutubeInput.style.display = 'block';
-      }
-    });
-  }
-
-  // Video Section 1 MP4 upload handler
-  const video1FileBtn = document.getElementById('settings-video1-upload-btn');
-  const video1FileInput = document.getElementById('settings-video1-file-input');
-  if (video1FileBtn && video1FileInput) {
-    video1FileBtn.addEventListener('click', () => video1FileInput.click());
-    video1FileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      showLoader();
-      try {
-        const publicUrl = await db.uploadImage(file, 'brand-assets');
-        document.getElementById('settings-video1-mp4').value = publicUrl;
-        showToast('Section 1 video uploaded successfully', 'success');
-      } catch (err) {
-        showToast('Section 1 video upload failed', 'error');
-      } finally {
-        hideLoader();
-      }
-    });
-  }
-
-  // Video Section 2 source toggle
-  const video2TypeSelect = document.getElementById('settings-video2-type');
-  const video2UploadWrap = document.getElementById('settings-video2-upload-wrap');
-  const video2YoutubeInput = document.getElementById('settings-video2-youtube');
-  
-  if (video2TypeSelect) {
-    video2TypeSelect.addEventListener('change', (e) => {
-      if (e.target.value === 'upload') {
-        video2UploadWrap.style.display = 'flex';
-        video2YoutubeInput.style.display = 'none';
-      } else {
-        video2UploadWrap.style.display = 'none';
-        video2YoutubeInput.style.display = 'block';
-      }
-    });
-  }
-
-  // Video Section 2 MP4 upload handler
-  const video2FileBtn = document.getElementById('settings-video2-upload-btn');
-  const video2FileInput = document.getElementById('settings-video2-file-input');
-  if (video2FileBtn && video2FileInput) {
-    video2FileBtn.addEventListener('click', () => video2FileInput.click());
-    video2FileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      showLoader();
-      try {
-        const publicUrl = await db.uploadImage(file, 'brand-assets');
-        document.getElementById('settings-video2-mp4').value = publicUrl;
-        showToast('Section 2 video uploaded successfully', 'success');
-      } catch (err) {
-        showToast('Section 2 video upload failed', 'error');
-      } finally {
-        hideLoader();
-      }
-    });
-  }
-
   // Save Settings Click
   const saveBtn = document.getElementById('settings-save-btn');
-  saveBtn.addEventListener('click', async () => {
-    const primaryColor = cPrimText.value.trim();
-    const secondaryColor = cSecText.value.trim();
-    
-    if (!primaryColor.match(/^#[0-9A-Fa-f]{6}$/)) {
-      showToast('Primary color theme must be a valid 6-character hex code (e.g. #D32F2F)', 'error');
-      return;
-    }
-    if (!secondaryColor.match(/^#[0-9A-Fa-f]{6}$/)) {
-      showToast('Secondary color theme must be a valid 6-character hex code (e.g. #FFFFFF)', 'error');
-      return;
-    }
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const primaryColor = cPrimText.value.trim();
+      const secondaryColor = cSecText.value.trim();
+      
+      if (!primaryColor.match(/^#[0-9A-Fa-f]{6}$/)) {
+        showToast('Primary color theme must be a valid 6-character hex code (e.g. #D32F2F)', 'error');
+        return;
+      }
+      if (!secondaryColor.match(/^#[0-9A-Fa-f]{6}$/)) {
+        showToast('Secondary color theme must be a valid 6-character hex code (e.g. #FFFFFF)', 'error');
+        return;
+      }
 
-    // Alert user if WhatsApp number is formatted incorrectly
-    const waInput = document.getElementById('settings-whatsapp').value.trim();
-    if (waInput && !waInput.startsWith('+') && waInput.length > 5) {
-      showToast('Warning: WhatsApp contact number should ideally include country code starting with + (e.g. +447123456789)', 'error');
-    }
+      const waInput = document.getElementById('settings-whatsapp').value.trim();
+      
+      const payload = {
+        brand_name: document.getElementById('settings-brand-name').value.trim(),
+        brand_logo_url: document.getElementById('settings-brand-logo').value.trim() || null,
+        footer_logo_url: document.getElementById('settings-footer-logo').value.trim() || null,
+        primary_color: primaryColor,
+        secondary_color: secondaryColor,
+        favicon_url: document.getElementById('settings-favicon').value.trim() || null,
+        whatsapp_number: waInput,
+        contact_phone: document.getElementById('settings-phone').value.trim(),
+        contact_email: document.getElementById('settings-email').value.trim(),
+        contact_address: document.getElementById('settings-address').value.trim(),
+        google_map_iframe: document.getElementById('settings-map').value.trim() || null,
+        seo_title: document.getElementById('settings-seo-title').value.trim(),
+        seo_description: document.getElementById('settings-seo-desc').value.trim()
+      };
 
-    const payload = {
-      brand_name: document.getElementById('settings-brand-name').value.trim(),
-      brand_logo_url: document.getElementById('settings-brand-logo').value.trim() || null,
-      footer_logo_url: document.getElementById('settings-footer-logo').value.trim() || null,
-      primary_color: cPrimText.value.trim(),
-      secondary_color: cSecText.value.trim(),
-      favicon_url: document.getElementById('settings-favicon').value.trim() || null,
-      seo_title: document.getElementById('settings-seo-title').value.trim(),
-      seo_description: document.getElementById('settings-seo-desc').value.trim(),
-      hero_title: document.getElementById('settings-hero-title').value.trim(),
-      hero_description: document.getElementById('settings-hero-desc').value.trim(),
-      hero_bg_type: bgTypeEl.value,
-      hero_bg_gradient: bgGradInput.value.trim(),
-      hero_bg_image_url: document.getElementById('settings-hero-bg-image').value.trim() || null,
-      hero_product_images: Array.from({ length: 6 }).map((_, idx) => document.getElementById(`settings-hero-image-${idx}`).value.trim()).filter(Boolean),
-      hero_product_image_url: document.getElementById('settings-hero-image-0').value.trim() || 'hero_product.png',
-      hero_badge_1_text: document.getElementById('settings-hero-badge-1-text').value.trim() || null,
-      hero_badge_1_icon: document.getElementById('settings-hero-badge-1-icon').value.trim() || null,
-      hero_badge_2_text: document.getElementById('settings-hero-badge-2-text').value.trim() || null,
-      hero_badge_2_icon: document.getElementById('settings-hero-badge-2-icon').value.trim() || null,
-      whatsapp_number: waInput,
-      contact_phone: document.getElementById('settings-phone').value.trim(),
-      contact_email: document.getElementById('settings-email').value.trim(),
-      contact_address: document.getElementById('settings-address').value.trim(),
-      google_map_iframe: document.getElementById('settings-map').value.trim() || null,
-      footer_copyright: document.getElementById('settings-copyright').value.trim(),
-      social_facebook: document.getElementById('settings-fb').value.trim() || null,
-      social_instagram: document.getElementById('settings-ig').value.trim() || null,
-      social_twitter: document.getElementById('settings-twitter').value.trim() || null,
-      social_linkedin: document.getElementById('settings-linkedin').value.trim() || null,
-      show_top_products: document.getElementById('settings-show-top-products').checked,
-      show_best_sellers: document.getElementById('settings-show-best-sellers').checked,
-      show_trending_products: document.getElementById('settings-show-trending-products').checked,
-      video1_show: document.getElementById('settings-video1-show').checked,
-      video1_title: document.getElementById('settings-video1-title').value.trim() || null,
-      video1_desc: document.getElementById('settings-video1-desc').value.trim() || null,
-      video1_type: video1TypeSelect.value,
-      video1_mp4_url: document.getElementById('settings-video1-mp4').value.trim() || null,
-      video1_youtube_url: document.getElementById('settings-video1-youtube').value.trim() || null,
-      video2_show: document.getElementById('settings-video2-show').checked,
-      video2_title: document.getElementById('settings-video2-title').value.trim() || null,
-      video2_desc: document.getElementById('settings-video2-desc').value.trim() || null,
-      video2_type: video2TypeSelect.value,
-      video2_mp4_url: document.getElementById('settings-video2-mp4').value.trim() || null,
-      video2_youtube_url: document.getElementById('settings-video2-youtube').value.trim() || null
-    };
-
-    showLoader();
-    try {
-      const newSettings = await db.updateSettings(payload);
-      showToast('Global settings updated successfully', 'success');
-      // Apply changes globally instantly
-      applyBranding(newSettings);
-      // Reload workspace tab to redraw thumbnail overlays
-      renderActiveWorkspaceTab();
-    } catch (err) {
-      console.error(err);
-      showToast('Failed to save settings configurations', 'error');
-    } finally {
-      hideLoader();
-    }
-  });
+      showLoader();
+      try {
+        const newSettings = await db.updateSettings(payload);
+        showToast('Global settings updated successfully', 'success');
+        applyBranding(newSettings);
+        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to save settings configurations', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
 }
 
 // ==========================================
