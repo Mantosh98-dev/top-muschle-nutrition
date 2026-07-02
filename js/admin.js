@@ -1808,7 +1808,9 @@ async function renderTabSettings(workspace) {
             <button class="btn btn-dark" id="settings-logo-upload-btn" style="padding:12px;" type="button" aria-label="Upload brand logo file"><i class="fas fa-upload"></i></button>
             <input type="file" id="settings-logo-file-input" style="display:none;" accept="image/*">
           </div>
-          ${settings.brand_logo_url ? `<img src="${escapeHTML(settings.brand_logo_url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
+          <div id="settings-brand-logo-preview-wrap">
+            ${settings.brand_logo_url ? `<img src="${escapeHTML(settings.brand_logo_url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
+          </div>
         </div>
 
         <div class="form-group" style="margin-bottom:16px;">
@@ -1823,7 +1825,9 @@ async function renderTabSettings(workspace) {
             <button class="btn btn-dark" id="settings-footer-logo-upload-btn" style="padding:12px;" type="button" aria-label="Upload footer logo file"><i class="fas fa-upload"></i></button>
             <input type="file" id="settings-footer-logo-file-input" style="display:none;" accept="image/*">
           </div>
-          ${settings.footer_logo_url ? `<img src="${escapeHTML(settings.footer_logo_url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
+          <div id="settings-footer-logo-preview-wrap">
+            ${settings.footer_logo_url ? `<img src="${escapeHTML(settings.footer_logo_url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
+          </div>
         </div>
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -1946,12 +1950,27 @@ async function renderTabSettings(workspace) {
       try {
         const publicUrl = await db.uploadImage(file, 'brand-assets');
         document.getElementById('settings-brand-logo').value = publicUrl;
+        const previewWrap = document.getElementById('settings-brand-logo-preview-wrap');
+        if (previewWrap) {
+          previewWrap.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">`;
+        }
         showToast('Brand logo uploaded successfully', 'success');
-        setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         showToast('Logo upload failed', 'error');
       } finally {
         hideLoader();
+      }
+    });
+  }
+
+  // Brand Logo manual input preview syncing
+  const brandLogoInput = document.getElementById('settings-brand-logo');
+  if (brandLogoInput) {
+    brandLogoInput.addEventListener('input', () => {
+      const url = brandLogoInput.value.trim();
+      const previewWrap = document.getElementById('settings-brand-logo-preview-wrap');
+      if (previewWrap) {
+        previewWrap.innerHTML = url ? `<img src="${escapeHTML(url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : '';
       }
     });
   }
@@ -1968,12 +1987,27 @@ async function renderTabSettings(workspace) {
       try {
         const publicUrl = await db.uploadImage(file, 'brand-assets');
         document.getElementById('settings-footer-logo').value = publicUrl;
+        const previewWrap = document.getElementById('settings-footer-logo-preview-wrap');
+        if (previewWrap) {
+          previewWrap.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">`;
+        }
         showToast('Footer logo uploaded successfully', 'success');
-        setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         showToast('Footer logo upload failed', 'error');
       } finally {
         hideLoader();
+      }
+    });
+  }
+
+  // Footer Logo manual input preview syncing
+  const footerLogoInput = document.getElementById('settings-footer-logo');
+  if (footerLogoInput) {
+    footerLogoInput.addEventListener('input', () => {
+      const url = footerLogoInput.value.trim();
+      const previewWrap = document.getElementById('settings-footer-logo-preview-wrap');
+      if (previewWrap) {
+        previewWrap.innerHTML = url ? `<img src="${escapeHTML(url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : '';
       }
     });
   }
@@ -2185,6 +2219,9 @@ async function renderTabCustomization(workspace) {
             <input type="text" id="settings-promo-banner-image-url" class="form-input" placeholder="https://image-link.com/promo.jpg" value="${escapeHTML(settings.promo_banner_image_url || '')}">
             <button class="btn btn-dark" id="settings-promo-banner-upload-btn" style="padding:12px;" type="button" aria-label="Upload promo banner"><i class="fas fa-upload"></i></button>
             <input type="file" id="settings-promo-banner-file-input" style="display:none;" accept="image/*">
+          </div>
+          <div id="settings-promo-banner-preview-wrap">
+            ${settings.promo_banner_image_url ? `<img src="${escapeHTML(settings.promo_banner_image_url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
           </div>
         </div>
         <div class="form-group" style="margin-bottom:24px;">
@@ -2420,12 +2457,27 @@ async function renderTabCustomization(workspace) {
       try {
         const publicUrl = await db.uploadImage(file, 'brand-assets');
         document.getElementById('settings-promo-banner-image-url').value = publicUrl;
+        const previewWrap = document.getElementById('settings-promo-banner-preview-wrap');
+        if (previewWrap) {
+          previewWrap.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">`;
+        }
         showToast('Promotional banner uploaded successfully', 'success');
-        setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         showToast('Promo banner upload failed', 'error');
       } finally {
         hideLoader();
+      }
+    });
+  }
+
+  // Promotional Banner manual input preview syncing
+  const promoBannerInput = document.getElementById('settings-promo-banner-image-url');
+  if (promoBannerInput) {
+    promoBannerInput.addEventListener('input', () => {
+      const url = promoBannerInput.value.trim();
+      const previewWrap = document.getElementById('settings-promo-banner-preview-wrap');
+      if (previewWrap) {
+        previewWrap.innerHTML = url ? `<img src="${escapeHTML(url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : '';
       }
     });
   }
@@ -2459,7 +2511,6 @@ async function renderTabCustomization(workspace) {
         const publicUrl = await db.uploadImage(file, 'brand-assets');
         document.getElementById('settings-hero-bg-image').value = publicUrl;
         showToast('Hero background uploaded successfully', 'success');
-        setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         showToast('Hero image upload failed', 'error');
       } finally {
@@ -2487,7 +2538,6 @@ async function renderTabCustomization(workspace) {
           if (inputEl) inputEl.value = publicUrl;
           if (previewEl) previewEl.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
           showToast(`Hero image ${i + 1} uploaded successfully`, 'success');
-          setTimeout(() => renderActiveWorkspaceTab(), 1000);
         } catch (err) {
           showToast(`Hero image ${i + 1} upload failed`, 'error');
         } finally {
@@ -2544,7 +2594,6 @@ async function renderTabCustomization(workspace) {
         const publicUrl = await db.uploadImage(file, 'brand-assets');
         document.getElementById('settings-video1-mp4').value = publicUrl;
         showToast('Section 1 video uploaded successfully', 'success');
-        setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         showToast('Section 1 video upload failed', 'error');
       } finally {
@@ -2582,7 +2631,6 @@ async function renderTabCustomization(workspace) {
         const publicUrl = await db.uploadImage(file, 'brand-assets');
         document.getElementById('settings-video2-mp4').value = publicUrl;
         showToast('Section 2 video uploaded successfully', 'success');
-        setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         showToast('Section 2 video upload failed', 'error');
       } finally {
