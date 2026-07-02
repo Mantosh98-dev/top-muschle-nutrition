@@ -313,6 +313,14 @@ async function renderActiveWorkspaceTab() {
   } catch (error) {
     console.error(`Render tab ${activeTab} failed:`, error);
     showToast(`Failed to load tab data`, 'error');
+    if (workspace) {
+      workspace.innerHTML = `
+        <div style="padding: 24px; color: #dc2626; background: #fef2f2; border: 1px solid #fee2e2; border-radius: var(--radius-md); margin-top: 20px;">
+          <h3 style="margin-top: 0; font-size: 1.1rem; font-weight: 700;"><i class="fas fa-exclamation-circle"></i> Error Loading Tab: ${escapeHTML(error.message)}</h3>
+          <pre style="margin: 12px 0 0 0; padding: 12px; background: rgba(0,0,0,0.04); border-radius: var(--radius-sm); font-family: monospace; font-size: 0.85rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all;">${escapeHTML(error.stack)}</pre>
+        </div>
+      `;
+    }
   } finally {
     hideLoader();
   }
