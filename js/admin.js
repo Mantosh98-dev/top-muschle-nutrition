@@ -508,7 +508,8 @@ async function openProductModal(productId = null) {
     usage: '', warnings: '',
     featured: false, whatsapp_enabled: true,
     top_product: false, best_seller: false, trending: false,
-    price: '', offer_price: '', weight: '', variants: []
+    price: '', offer_price: '', weight: '', variants: [],
+    product_type: 'gym'
   };
   
   tempProductImages = [];
@@ -526,6 +527,7 @@ async function openProductModal(productId = null) {
     
     if (productId) {
       product = await db.fetchProductById(productId);
+      if (!product.product_type) product.product_type = 'gym';
       tempProductImages = (product.product_images || []).map(img => img.image_url);
       tempProductVariants = (Array.isArray(product.variants) && product.variants.length > 1) ? [...product.variants] : [];
     }
@@ -573,6 +575,20 @@ async function openProductModal(productId = null) {
             <div class="form-group">
               <label class="form-label" for="prod-short-desc">Short Summary Description</label>
               <textarea id="prod-short-desc" class="form-input" style="height:80px; resize:none;">${escapeHTML(product.short_description || '')}</textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 4px;">
+              <label class="form-label" style="display:block; margin-bottom:8px; font-weight:600;">Product Type & Unit System</label>
+              <div style="display:flex; gap:20px; align-items:center;">
+                <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:0.88rem; font-weight:500;">
+                  <input type="radio" name="prod-type" value="gym" ${product.product_type !== 'medicine' ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;">
+                  <span>Gym/Supplement (kg, g)</span>
+                </label>
+                <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:0.88rem; font-weight:500;">
+                  <input type="radio" name="prod-type" value="medicine" ${product.product_type === 'medicine' ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;">
+                  <span>Medicine (mg, mmg, tablets)</span>
+                </label>
+              </div>
             </div>
             
             <div style="display:flex; flex-direction:column; gap:12px; margin-top: 10px;">
@@ -717,6 +733,14 @@ async function openProductModal(productId = null) {
   renderModalGalleryPreview();
   renderModalVariants();
 
+  // Bind product type change to refresh variants unit dropdown options
+  const prodTypeRadios = modal.querySelectorAll('input[name="prod-type"]');
+  prodTypeRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      renderModalVariants();
+    });
+  });
+
   // Close bindings
   const closeBtn = document.getElementById('modal-close-btn');
   const cancelBtn = document.getElementById('modal-cancel-btn');
@@ -750,8 +774,20 @@ async function openProductModal(productId = null) {
     const baseOfferPriceInput = document.getElementById('prod-offer-price');
     const baseWeightInput = document.getElementById('prod-weight');
 
+    // Get current product type selected in modal radio buttons
+    const typeRadio = modal.querySelector('input[name="prod-type"]:checked');
+    const isMedicine = typeRadio ? typeRadio.value === 'medicine' : (product.product_type === 'medicine');
+    
+    if (baseWeightInput) {
+      baseWeightInput.placeholder = isMedicine ? 'e.g. 100 mg or 30 Tablets' : 'e.g. 1 kg';
+    }
+
+    const activeSizes = isMedicine 
+      ? ['10 mg', '50 mg', '100 mg', '250 mg', '500 mg', '10 Tablets', '30 Tablets', '60 Tablets', '30 Capsules', '60 Capsules', '100 mmg']
+      : weightSizes;
+
     if (tempProductVariants.length === 0) {
-      container.innerHTML = `<span style="font-size:0.8rem; color:var(--text-muted); text-align:center; display:block; padding:8px 0; font-weight:500;">No weight variants added. Base price settings will be used.</span>`;
+      container.innerHTML = `<span style="font-size:0.8rem; color:var(--text-muted); text-align:center; display:block; padding:8px 0; font-weight:500;">No size variants added. Base price settings will be used.</span>`;
       if (basePriceInput) basePriceInput.disabled = false;
       if (baseOfferPriceInput) baseOfferPriceInput.disabled = false;
       if (baseWeightInput) baseWeightInput.disabled = false;
@@ -774,19 +810,19 @@ async function openProductModal(productId = null) {
       row.className = 'variant-row';
       row.style = 'display:grid; grid-template-columns: 2fr 1.5fr 1.5fr 40px; gap:12px; align-items:flex-start; margin-bottom:4px;';
       
-      const isStandard = weightSizes.includes(variant.weight);
+      const isStandard = activeSizes.includes(variant.weight);
       const selectValue = isStandard ? variant.weight : (variant.weight ? 'custom' : '');
 
       row.innerHTML = `
         <div style="display:flex; flex-direction:column; gap:4px;">
           <select class="form-input variant-weight-select" data-index="${index}" style="padding:8px 12px; height:40px;">
-            <option value="">-- Choose Weight --</option>
-            ${weightSizes.map(s => `
+            <option value="">-- Choose Size --</option>
+            ${activeSizes.map(s => `
               <option value="${escapeHTML(s)}" ${selectValue === s ? 'selected' : ''}>${escapeHTML(s)}</option>
             `).join('')}
-            <option value="custom" ${selectValue === 'custom' ? 'selected' : ''}>Custom weight...</option>
+            <option value="custom" ${selectValue === 'custom' ? 'selected' : ''}>Custom size...</option>
           </select>
-          <input type="text" class="form-input variant-custom-weight" data-index="${index}" placeholder="e.g. 750 g" 
+          <input type="text" class="form-input variant-custom-weight" data-index="${index}" placeholder="e.g. 100 mg" 
                  style="display: ${selectValue === 'custom' ? 'block' : 'none'}; margin-top: 4px; padding:6px 10px; font-size:0.82rem; height:32px;" 
                  value="${!isStandard ? escapeHTML(variant.weight || '') : ''}">
         </div>
@@ -1025,6 +1061,7 @@ async function openProductModal(productId = null) {
     const payload = {
       title,
       slug,
+      product_type: modal.querySelector('input[name="prod-type"]:checked')?.value || 'gym',
       category_id: document.getElementById('prod-category').value || null,
       short_description: document.getElementById('prod-short-desc').value.trim() || null,
       long_description: document.getElementById('prod-long-desc').value.trim() || null,

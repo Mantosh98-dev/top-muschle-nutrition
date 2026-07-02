@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS products (
   featured BOOLEAN DEFAULT false,
   whatsapp_enabled BOOLEAN DEFAULT true,
   weight TEXT,
+  product_type TEXT DEFAULT 'gym',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -269,6 +270,9 @@ ALTER TABLE settings ADD COLUMN IF NOT EXISTS footer_logo_url TEXT;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS top_product BOOLEAN DEFAULT false;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS best_seller BOOLEAN DEFAULT false;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS trending BOOLEAN DEFAULT false;
+
+-- Add product_type (e.g. gym, medicine) column to products table
+ALTER TABLE products ADD COLUMN IF NOT EXISTS product_type TEXT DEFAULT 'gym';
 
 
 --------------------------------------------------------------------------------

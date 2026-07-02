@@ -1088,6 +1088,19 @@ function renderProductCard(prod, index = 0) {
   const cardCleanedNumber = (globalSettings ? (globalSettings.whatsapp_number || '') : '').replace(/[^0-9]/g, '');
   const cardWaUrl = `https://wa.me/${cardCleanedNumber}?text=${encodeURIComponent(cardWaMessage)}`;
 
+  // Calculate product ratings based on reviews
+  const approvedReviews = prod.reviews ? prod.reviews.filter(r => r.approved) : [];
+  const totalReviews = approvedReviews.length;
+  const avgRating = totalReviews > 0 ? (approvedReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1) : '5.0';
+  const avgStars = Math.round(parseFloat(avgRating));
+  const starsHTML = Array.from({ length: 5 }).map((_, i) => `<i class="${i < avgStars ? 'fas' : 'far'} fa-star" style="color:#f59e0b; font-size:0.75rem; margin-right:1px;"></i>`).join('');
+  const ratingHTML = `
+    <div class="product-card-rating" style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+      <div style="display:flex;">${starsHTML}</div>
+      <span style="font-size:0.75rem; color:var(--text-sub); font-weight:600;">${avgRating} (${totalReviews})</span>
+    </div>
+  `;
+
   return `
     <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.btn-card-buy, .wishlist-btn')) window.location.hash = '#product/${prod.slug}';">
       <button class="wishlist-btn" aria-label="Add to Wishlist" onclick="event.stopPropagation(); this.querySelector('i').classList.toggle('fas'); this.querySelector('i').classList.toggle('far'); this.classList.toggle('active');">
@@ -1101,6 +1114,8 @@ function renderProductCard(prod, index = 0) {
       <div class="product-info">
         <span class="product-category">${prod.categories ? prod.categories.name : 'Uncategorized'}</span>
         <h3 class="product-title">${prod.title}</h3>
+        <span class="product-brand" style="font-size:0.75rem; color:var(--text-sub); display:block; font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Brand: ${escapeHTML(globalSettings ? globalSettings.brand_name : 'Top Muscle Nutrition')}</span>
+        ${ratingHTML}
         <p class="product-desc-weight">${prod.weight ? escapeHTML(prod.weight) : (hasVariants && prod.variants[0].weight ? escapeHTML(prod.variants[0].weight) : 'Standard Size')}</p>
         ${priceHTML}
         <div class="product-actions-row">

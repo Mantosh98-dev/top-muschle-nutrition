@@ -80,7 +80,8 @@ export async function fetchProducts(filters = {}) {
     .select(`
       *,
       categories (id, name),
-      product_images (id, image_url, sort_order)
+      product_images (id, image_url, sort_order),
+      reviews (rating, approved)
     `);
 
   if (filters.featured !== undefined) {
@@ -118,7 +119,8 @@ export async function fetchProductBySlug(slug) {
     .select(`
       *,
       categories (id, name),
-      product_images (id, image_url, sort_order)
+      product_images (id, image_url, sort_order),
+      reviews (rating, approved)
     `)
     .eq('slug', slug)
     .single();
@@ -137,7 +139,8 @@ export async function fetchProductById(id) {
     .from('products')
     .select(`
       *,
-      product_images (id, image_url, sort_order)
+      product_images (id, image_url, sort_order),
+      reviews (rating, approved)
     `)
     .eq('id', id)
     .single();
