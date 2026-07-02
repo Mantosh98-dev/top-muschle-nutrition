@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS products (
   whatsapp_enabled BOOLEAN DEFAULT true,
   weight TEXT,
   product_type TEXT DEFAULT 'gym',
+  brand TEXT DEFAULT 'Top Muscle Nutrition',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -273,6 +274,27 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS trending BOOLEAN DEFAULT false;
 
 -- Add product_type (e.g. gym, medicine) column to products table
 ALTER TABLE products ADD COLUMN IF NOT EXISTS product_type TEXT DEFAULT 'gym';
+
+-- Add brand column to products table
+ALTER TABLE products ADD COLUMN IF NOT EXISTS brand TEXT DEFAULT 'Top Muscle Nutrition';
+
+-- Add Announcement Bar to settings table
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS announcement_show BOOLEAN DEFAULT false;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS announcement_text TEXT DEFAULT 'Welcome to Top Muscle Nutrition! Shop premium supplements directly via WhatsApp.';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS announcement_bg_color TEXT DEFAULT '#d32f2f';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS announcement_text_color TEXT DEFAULT '#ffffff';
+
+-- Add Promotional Banners to settings table
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS promo_banner_show BOOLEAN DEFAULT false;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS promo_banner_image_url TEXT;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS promo_banner_link TEXT;
+
+-- Add CTA Banners to settings table
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS cta_banner_show BOOLEAN DEFAULT false;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS cta_banner_title TEXT DEFAULT 'Ready to Level Up Your Workouts?';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS cta_banner_desc TEXT DEFAULT 'Chat with our experts on WhatsApp for personalized supplement guidance.';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS cta_banner_btn_text TEXT DEFAULT 'Chat on WhatsApp';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS cta_banner_bg_color TEXT DEFAULT '#1a1a1a';
 
 
 --------------------------------------------------------------------------------

@@ -39,7 +39,22 @@ export const DEFAULT_SETTINGS = {
   video2_desc: "See how to use our unique authentication codes to verify your product.",
   video2_type: "youtube",
   video2_mp4_url: "",
-  video2_youtube_url: ""
+  video2_youtube_url: "",
+  // Announcement Bar Defaults
+  announcement_show: false,
+  announcement_text: "Welcome to Top Muscle Nutrition! Shop premium supplements directly via WhatsApp.",
+  announcement_bg_color: "#d32f2f",
+  announcement_text_color: "#ffffff",
+  // Promotional Banners Defaults
+  promo_banner_show: false,
+  promo_banner_image_url: "",
+  promo_banner_link: "",
+  // CTA Banners Defaults
+  cta_banner_show: false,
+  cta_banner_title: "Ready to Level Up Your Workouts?",
+  cta_banner_desc: "Chat with our experts on WhatsApp for personalized supplement guidance.",
+  cta_banner_btn_text: "Chat on WhatsApp",
+  cta_banner_bg_color: "#1a1a1a"
 };
 
 export function mergeSettings(settings) {
@@ -255,6 +270,20 @@ function renderWelcomeSetup() {
 // Dynamically inject settings (Branding, Logo, Favicon, Title, Colors)
 export function applyBranding(settings) {
   if (!settings) return;
+
+  // Announcement Bar Configuration
+  const annBar = document.getElementById('announcement-bar');
+  const annText = document.getElementById('announcement-text');
+  if (annBar && annText) {
+    if (settings.announcement_show && settings.announcement_text) {
+      annText.textContent = settings.announcement_text;
+      annBar.style.backgroundColor = settings.announcement_bg_color || settings.primary_color;
+      annBar.style.color = settings.announcement_text_color || '#ffffff';
+      annBar.style.display = 'block';
+    } else {
+      annBar.style.display = 'none';
+    }
+  }
 
   // Document Properties
   document.title = settings.seo_title;
@@ -573,6 +602,19 @@ async function renderHome() {
       </section>
     `;
 
+    // Promotional Banner Section
+    if (globalSettings.promo_banner_show && globalSettings.promo_banner_image_url) {
+      html += `
+        <section class="section promo-banner-section" style="padding: 30px 0; background: var(--gray-50); border-bottom: 1px solid var(--border-color);">
+          <div class="container">
+            <a href="${globalSettings.promo_banner_link || '#products'}" style="display:block; overflow:hidden; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+              <img src="${globalSettings.promo_banner_image_url}" alt="Promotional Banner" style="width:100%; height:auto; object-fit:cover; display:block;">
+            </a>
+          </div>
+        </section>
+      `;
+    }
+
     // Video Section 1 (after Hero)
     html += renderVideoSection(
       1, 
@@ -752,6 +794,22 @@ async function renderHome() {
                 <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
               </div>
             `}
+          </div>
+        </section>
+      `;
+    }
+
+    // CTA Banner Section
+    if (globalSettings.cta_banner_show) {
+      html += `
+        <section class="section cta-banner-section" style="padding: 70px 0; background: ${globalSettings.cta_banner_bg_color || '#161618'}; color: #ffffff; text-align: center; position: relative; overflow: hidden; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+          <div style="position:absolute; inset:0; background:radial-gradient(circle at center, rgba(var(--primary-rgb, 211, 47, 47), 0.15) 0%, transparent 65%); pointer-events:none;"></div>
+          <div class="container" style="position:relative; z-index:2; max-width: 680px; display:flex; flex-direction:column; gap:20px; align-items:center; margin: 0 auto;">
+            <h2 style="color:#ffffff; font-size:clamp(1.7rem, 3.5vw, 2.4rem); font-weight:800; font-family:var(--font-heading); margin: 0;">${escapeHTML(globalSettings.cta_banner_title || 'Ready to Level Up Your Workouts?')}</h2>
+            <p style="color:rgba(255,255,255,0.75); font-size:1.02rem; line-height:1.6; margin: 0;">${escapeHTML(globalSettings.cta_banner_desc || 'Chat with our experts on WhatsApp for personalized supplement guidance.')}</p>
+            <a href="https://wa.me/${(globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-primary" style="margin-top:8px; display:inline-flex; align-items:center; gap:8px;">
+              <i class="fab fa-whatsapp" style="font-size:1.15rem;"></i> ${escapeHTML(globalSettings.cta_banner_btn_text || 'Chat on WhatsApp')}
+            </a>
           </div>
         </section>
       `;
@@ -1114,7 +1172,7 @@ function renderProductCard(prod, index = 0) {
       <div class="product-info">
         <span class="product-category">${prod.categories ? prod.categories.name : 'Uncategorized'}</span>
         <h3 class="product-title">${prod.title}</h3>
-        <span class="product-brand" style="font-size:0.75rem; color:var(--text-sub); display:block; font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Brand: ${escapeHTML(globalSettings ? globalSettings.brand_name : 'Top Muscle Nutrition')}</span>
+        <span class="product-brand" style="font-size:0.75rem; color:var(--text-sub); display:block; font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Brand: ${escapeHTML(prod.brand || (globalSettings ? globalSettings.brand_name : 'Top Muscle Nutrition'))}</span>
         ${ratingHTML}
         <p class="product-desc-weight">${prod.weight ? escapeHTML(prod.weight) : (hasVariants && prod.variants[0].weight ? escapeHTML(prod.variants[0].weight) : 'Standard Size')}</p>
         ${priceHTML}
@@ -1459,7 +1517,7 @@ async function renderProductDetails(params) {
 
                 <!-- Brand Sold by -->
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                  <p class="pd-brand">Brand: <strong>Top Muscle Nutrition</strong></p>
+                  <p class="pd-brand">Brand: <strong>${escapeHTML(product.brand || (globalSettings ? globalSettings.brand_name : 'Top Muscle Nutrition'))}</strong></p>
                   ${reviewsStarsHTML}
                 </div>
 

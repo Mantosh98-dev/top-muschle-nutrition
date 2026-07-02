@@ -149,6 +149,9 @@ async function renderDashboard() {
           <li class="admin-nav-item ${activeTab === 'categories' || activeTab === 'preferences' ? 'active' : ''}">
             <button data-tab="preferences"><i class="fas fa-sliders-h"></i> Preferences</button>
           </li>
+          <li class="admin-nav-item ${activeTab === 'customization' ? 'active' : ''}">
+            <button data-tab="customization"><i class="fas fa-palette"></i> Website Customization</button>
+          </li>
           <li class="admin-nav-item ${activeTab === 'codes' ? 'active' : ''}">
             <button data-tab="codes"><i class="fas fa-shield-halved"></i> Verification Codes</button>
           </li>
@@ -288,6 +291,9 @@ async function renderActiveWorkspaceTab() {
         break;
       case 'settings':
         await renderTabSettings(workspace);
+        break;
+      case 'customization':
+        await renderTabCustomization(workspace);
         break;
 
       default:
@@ -509,7 +515,7 @@ async function openProductModal(productId = null) {
     featured: false, whatsapp_enabled: true,
     top_product: false, best_seller: false, trending: false,
     price: '', offer_price: '', weight: '', variants: [],
-    product_type: 'gym'
+    product_type: 'gym', brand: ''
   };
   
   tempProductImages = [];
@@ -570,6 +576,11 @@ async function openProductModal(productId = null) {
                   <option value="${cat.id}" ${product.category_id === cat.id ? 'selected' : ''}>${escapeHTML(cat.name)}</option>
                 `).join('')}
               </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="prod-brand">Product Brand Name</label>
+              <input type="text" id="prod-brand" class="form-input" placeholder="e.g. Optimum Nutrition (Defaults if empty)" value="${escapeHTML(product.brand || '')}">
             </div>
             
             <div class="form-group">
@@ -1062,6 +1073,7 @@ async function openProductModal(productId = null) {
       title,
       slug,
       product_type: modal.querySelector('input[name="prod-type"]:checked')?.value || 'gym',
+      brand: document.getElementById('prod-brand').value.trim() || 'Top Muscle Nutrition',
       category_id: document.getElementById('prod-category').value || null,
       short_description: document.getElementById('prod-short-desc').value.trim() || null,
       long_description: document.getElementById('prod-long-desc').value.trim() || null,
@@ -1709,39 +1721,51 @@ async function renderTabSettings(workspace) {
   const settings = mergeSettings(fetchedSettings);
 
   workspace.innerHTML = `
-    <div class="admin-header-row">
+    <div class="admin-header-row" style="margin-bottom:20px;">
       <div class="admin-title-desc">
-        <h2 class="admin-title">Branding & Configurations</h2>
-        <span class="admin-subtitle">Manage website layout, content texts, and branding assets globally.</span>
+        <h2 class="admin-title">Branding & Store Settings</h2>
+        <span class="admin-subtitle">Configure brand names, core logo assets, theme colors, support links, and SEO metadata.</span>
       </div>
     </div>
     
-    <div class="admin-settings-grid">
+    <!-- Sub tabs navigation -->
+    <div class="admin-sub-tabs" style="display:flex; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:24px;">
+      <button class="btn btn-ghost settings-sub-tab-btn active" data-subtab="identity" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-id-card"></i> Brand Identity</button>
+      <button class="btn btn-ghost settings-sub-tab-btn" data-subtab="contacts" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-address-book"></i> Contacts & Support</button>
+      <button class="btn btn-ghost settings-sub-tab-btn" data-subtab="seo" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-search"></i> SEO Metadata</button>
+    </div>
+    
+    <div class="settings-content-area" style="background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:24px; box-shadow:var(--shadow-sm);">
       
-      <!-- Box Left: Identity & Branding Styles -->
-      <div class="settings-card">
-        <h3 class="settings-section-title">Branding Identity</h3>
+      <!-- Subtab 1: Identity & Colors -->
+      <div id="settings-subtab-identity" class="settings-subtab-panel" style="display:block;">
+        <h3 class="settings-section-title" style="margin-top:0;">Brand Identity Assets</h3>
         
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:16px;">
           <label class="form-label" for="settings-brand-name">Brand Name</label>
           <input type="text" id="settings-brand-name" class="form-input" value="${escapeHTML(settings.brand_name)}">
         </div>
         
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:16px;">
           <label class="form-label" for="settings-brand-logo">Navbar Brand Logo URL</label>
           <div style="display:flex; gap:12px;">
             <input type="text" id="settings-brand-logo" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(settings.brand_logo_url || '')}">
-            <button class="btn btn-dark" id="settings-logo-upload-btn" style="padding:12px;" aria-label="Upload brand logo file"><i class="fas fa-upload"></i></button>
+            <button class="btn btn-dark" id="settings-logo-upload-btn" style="padding:12px;" type="button" aria-label="Upload brand logo file"><i class="fas fa-upload"></i></button>
             <input type="file" id="settings-logo-file-input" style="display:none;" accept="image/*">
           </div>
           ${settings.brand_logo_url ? `<img src="${escapeHTML(settings.brand_logo_url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-favicon">Favicon Image URL</label>
+          <input type="text" id="settings-favicon" class="form-input" placeholder="https://image-link.com/favicon.png" value="${escapeHTML(settings.favicon_url || '')}">
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px;">
           <label class="form-label" for="settings-footer-logo">Footer Logo URL</label>
           <div style="display:flex; gap:12px;">
             <input type="text" id="settings-footer-logo" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(settings.footer_logo_url || '')}">
-            <button class="btn btn-dark" id="settings-footer-logo-upload-btn" style="padding:12px;" aria-label="Upload footer logo file"><i class="fas fa-upload"></i></button>
+            <button class="btn btn-dark" id="settings-footer-logo-upload-btn" style="padding:12px;" type="button" aria-label="Upload footer logo file"><i class="fas fa-upload"></i></button>
             <input type="file" id="settings-footer-logo-file-input" style="display:none;" accept="image/*">
           </div>
           ${settings.footer_logo_url ? `<img src="${escapeHTML(settings.footer_logo_url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
@@ -1749,7 +1773,7 @@ async function renderTabSettings(workspace) {
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
           <div class="form-group">
-            <label class="form-label" for="settings-color-primary">Primary Color Theme</label>
+            <label class="form-label" for="settings-color-primary">Primary Theme Color</label>
             <div style="display:flex; gap:10px; align-items:center;">
               <input type="color" id="settings-color-primary" value="${escapeHTML(settings.primary_color)}" style="width:40px; height:40px; border:none; cursor:pointer;">
               <input type="text" id="settings-color-primary-text" class="form-input" style="flex:1;" value="${escapeHTML(settings.primary_color)}">
@@ -1757,118 +1781,20 @@ async function renderTabSettings(workspace) {
           </div>
           
           <div class="form-group">
-            <label class="form-label" for="settings-color-secondary">Secondary Color Theme</label>
+            <label class="form-label" for="settings-color-secondary">Secondary Theme Color</label>
             <div style="display:flex; gap:10px; align-items:center;">
               <input type="color" id="settings-color-secondary" value="${escapeHTML(settings.secondary_color)}" style="width:40px; height:40px; border:none; cursor:pointer;">
               <input type="text" id="settings-color-secondary-text" class="form-input" style="flex:1;" value="${escapeHTML(settings.secondary_color)}">
             </div>
           </div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label" for="settings-favicon">Favicon Image URL</label>
-          <input type="text" id="settings-favicon" class="form-input" placeholder="https://image-link.com/favicon.png" value="${escapeHTML(settings.favicon_url || '')}">
-        </div>
-        
-        <hr style="border:0; border-top:1px solid var(--border-color);">
-        <h3 class="settings-section-title">SEO Configurations</h3>
-        
-        <div class="form-group">
-          <label class="form-label" for="settings-seo-title">Meta Website Title (SEO)</label>
-          <input type="text" id="settings-seo-title" class="form-input" value="${escapeHTML(settings.seo_title)}">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label" for="settings-seo-desc">Meta Description (SEO)</label>
-          <textarea id="settings-seo-desc" class="form-input" style="height:100px; resize:none;">${escapeHTML(settings.seo_description)}</textarea>
-        </div>
       </div>
       
-      <!-- Box Right: Homepage Content & Contacts -->
-      <div class="settings-card">
-        <h3 class="settings-section-title">Homepage Hero Section</h3>
+      <!-- Subtab 2: Contacts & Map -->
+      <div id="settings-subtab-contacts" class="settings-subtab-panel" style="display:none;">
+        <h3 class="settings-section-title" style="margin-top:0;">Support & Contact Details</h3>
         
-        <div class="form-group">
-          <label class="form-label" for="settings-hero-title">Hero Title Heading</label>
-          <input type="text" id="settings-hero-title" class="form-input" value="${escapeHTML(settings.hero_title)}">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label" for="settings-hero-desc">Hero Subtitle / Description</label>
-          <textarea id="settings-hero-desc" class="form-input" style="height:80px; resize:none;">${escapeHTML(settings.hero_description)}</textarea>
-        </div>
-        
-        <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-bg-type">Hero Background Type</label>
-            <select id="settings-hero-bg-type" class="form-input">
-              <option value="gradient" ${settings.hero_bg_type === 'gradient' ? 'selected' : ''}>CSS Gradient</option>
-              <option value="image" ${settings.hero_bg_type === 'image' ? 'selected' : ''}>Background Image</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-bg-gradient">Background Details</label>
-            <!-- Show either gradient code input or image upload depending on toggle -->
-            <input type="text" id="settings-hero-bg-gradient" class="form-input" style="display:${settings.hero_bg_type === 'gradient' ? 'block' : 'none'};" placeholder="e.g. linear-gradient(...)" value="${escapeHTML(settings.hero_bg_gradient)}">
-            
-            <div id="settings-hero-image-wrap" style="display:${settings.hero_bg_type === 'image' ? 'flex' : 'none'}; gap:8px;">
-              <input type="text" id="settings-hero-bg-image" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(settings.hero_bg_image_url || '')}">
-              <button class="btn btn-dark" id="settings-hero-bg-upload-btn" style="padding:12px;" aria-label="Upload hero background image"><i class="fas fa-upload"></i></button>
-              <input type="file" id="settings-hero-bg-file-input" style="display:none;" accept="image/*">
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" style="font-weight:700; margin-bottom:12px; display:block;">Hero Product Images (up to 6 slots, rotates every 4s)</label>
-          <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
-            ${Array.from({ length: 6 }).map((_, index) => {
-              const url = (settings.hero_product_images && settings.hero_product_images[index]) || (index === 0 ? settings.hero_product_image_url : '') || '';
-              return `
-                <div class="hero-img-slot" style="display:flex; flex-direction:column; gap:6px; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-sm); background: var(--card-bg-light, rgba(0,0,0,0.02));">
-                  <span style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Image Slot ${index + 1} ${index === 0 ? '(Primary / Fallback)' : ''}</span>
-                  <div style="display:flex; gap:8px; align-items:center;">
-                    <div class="hero-thumb-preview" id="hero-thumb-preview-${index}" style="width:40px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-                      ${url ? `<img src="${escapeHTML(url)}" style="max-width:100%; max-height:100%; object-fit:contain;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
-                    </div>
-                    <input type="text" id="settings-hero-image-${index}" class="form-input hero-image-input" placeholder="Paste image URL here" value="${escapeHTML(url)}" style="flex:1;">
-                    <button class="btn btn-dark settings-hero-upload-btn" data-slot="${index}" style="padding:12px;" type="button" aria-label="Upload hero image slot ${index + 1}"><i class="fas fa-upload"></i></button>
-                    <button class="btn btn-ghost settings-hero-clear-btn" data-slot="${index}" style="padding:12px; color:var(--error-color); border-color:var(--error-color);" type="button" aria-label="Clear slot ${index + 1}"><i class="fas fa-times"></i></button>
-                    <input type="file" id="settings-hero-file-input-${index}" style="display:none;" accept="image/*">
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-badge-1-text">Hero Tag 1 (Genuine Tag Text)</label>
-            <input type="text" id="settings-hero-badge-1-text" class="form-input" value="${settings.hero_badge_1_text !== undefined ? escapeHTML(settings.hero_badge_1_text || '') : '100% Genuine'}" placeholder="Leave empty to hide badge">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-badge-1-icon">Hero Tag 1 Icon Class (FontAwesome)</label>
-            <input type="text" id="settings-hero-badge-1-icon" class="form-input" value="${settings.hero_badge_1_icon !== undefined ? escapeHTML(settings.hero_badge_1_icon || '') : 'fas fa-shield-halved'}" placeholder="e.g. fas fa-shield-halved">
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-badge-2-text">Hero Tag 2 (Certified Tag Text)</label>
-            <input type="text" id="settings-hero-badge-2-text" class="form-input" value="${settings.hero_badge_2_text !== undefined ? escapeHTML(settings.hero_badge_2_text || '') : 'FSSAI Certified'}" placeholder="Leave empty to hide badge">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-badge-2-icon">Hero Tag 2 Icon Class (FontAwesome)</label>
-            <input type="text" id="settings-hero-badge-2-icon" class="form-input" value="${settings.hero_badge_2_icon !== undefined ? escapeHTML(settings.hero_badge_2_icon || '') : 'fas fa-certificate'}" placeholder="e.g. fas fa-certificate">
-          </div>
-        </div>
-        
-        <hr style="border:0; border-top:1px solid var(--border-color);">
-        <h3 class="settings-section-title">Support & Contact Details</h3>
-        
-        <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px;">
+        <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px; margin-bottom:16px;">
           <div class="form-group">
             <label class="form-label" for="settings-whatsapp">WhatsApp Contact Number *</label>
             <input type="text" id="settings-whatsapp" class="form-input" placeholder="e.g. +447123456789" value="${escapeHTML(settings.whatsapp_number || '')}">
@@ -1879,12 +1805,12 @@ async function renderTabSettings(workspace) {
           </div>
         </div>
         
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:16px;">
           <label class="form-label" for="settings-email">Contact Email Address</label>
           <input type="email" id="settings-email" class="form-input" value="${escapeHTML(settings.contact_email || '')}">
         </div>
         
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:16px;">
           <label class="form-label" for="settings-address">Physical Office Address</label>
           <input type="text" id="settings-address" class="form-input" value="${escapeHTML(settings.contact_address || '')}">
         </div>
@@ -1893,140 +1819,46 @@ async function renderTabSettings(workspace) {
           <label class="form-label" for="settings-map">Google Maps Embed HTML / Source URL</label>
           <input type="text" id="settings-map" class="form-input" placeholder="Insert google maps iframe HTML src url" value="${escapeHTML(settings.google_map_iframe || '')}">
         </div>
-        
-        <hr style="border:0; border-top:1px solid var(--border-color);">
-        <h3 class="settings-section-title">Footer Specifications</h3>
-        
-        <div class="form-group">
-          <label class="form-label" for="settings-copyright">Copyright Text</label>
-          <input type="text" id="settings-copyright" class="form-input" value="${escapeHTML(settings.footer_copyright || '')}">
-        </div>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-fb">Facebook Link</label>
-            <input type="text" id="settings-fb" class="form-input" placeholder="https://facebook.com/..." value="${escapeHTML(settings.social_facebook || '')}">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settings-ig">Instagram Link</label>
-            <input type="text" id="settings-ig" class="form-input" placeholder="https://instagram.com/..." value="${escapeHTML(settings.social_instagram || '')}">
-          </div>
-        </div>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-twitter">Twitter Link</label>
-            <input type="text" id="settings-twitter" class="form-input" placeholder="https://twitter.com/..." value="${escapeHTML(settings.social_twitter || '')}">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settings-linkedin">LinkedIn Link</label>
-            <input type="text" id="settings-linkedin" class="form-input" placeholder="https://linkedin.com/in/..." value="${escapeHTML(settings.social_linkedin || '')}">
-          </div>
-        </div>
-
-        <hr style="border:0; border-top:1px solid var(--border-color); margin: 24px 0 16px 0;">
-        <h3 class="settings-section-title">Homepage Section Visibility</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
-          <label class="switch-label" for="settings-show-top-products" style="margin:0;">
-            <input type="checkbox" id="settings-show-top-products" class="switch-input" ${settings.show_top_products ? 'checked' : ''}>
-            <span class="switch-slider"></span>
-            <span>Show Top Products</span>
-          </label>
-          <label class="switch-label" for="settings-show-best-sellers" style="margin:0;">
-            <input type="checkbox" id="settings-show-best-sellers" class="switch-input" ${settings.show_best_sellers ? 'checked' : ''}>
-            <span class="switch-slider"></span>
-            <span>Show Best Sellers</span>
-          </label>
-          <label class="switch-label" for="settings-show-trending-products" style="margin:0;">
-            <input type="checkbox" id="settings-show-trending-products" class="switch-input" ${settings.show_trending_products ? 'checked' : ''}>
-            <span class="switch-slider"></span>
-            <span>Show Trending</span>
-          </label>
-        </div>
-
-        <hr style="border:0; border-top:1px solid var(--border-color); margin: 24px 0 16px 0;">
-        <h3 class="settings-section-title">Homepage Video Section 1 (After Hero)</h3>
-        <div style="margin-bottom:12px;">
-          <label class="switch-label" for="settings-video1-show" style="margin:0;">
-            <input type="checkbox" id="settings-video1-show" class="switch-input" ${settings.video1_show ? 'checked' : ''}>
-            <span class="switch-slider"></span>
-            <span>Enable Video Section 1</span>
-          </label>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="settings-video1-title">Section 1 Title</label>
-          <input type="text" id="settings-video1-title" class="form-input" value="${escapeHTML(settings.video1_title || '')}">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="settings-video1-desc">Section 1 Description</label>
-          <textarea id="settings-video1-desc" class="form-input" style="height:60px; resize:none;">${escapeHTML(settings.video1_desc || '')}</textarea>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-video1-type">Video Type</label>
-            <select id="settings-video1-type" class="form-input">
-              <option value="upload" ${settings.video1_type === 'upload' ? 'selected' : ''}>Upload MP4</option>
-              <option value="youtube" ${settings.video1_type === 'youtube' ? 'selected' : ''}>YouTube Embed</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Video Source details</label>
-            <div id="settings-video1-upload-wrap" style="display:${settings.video1_type === 'upload' ? 'flex' : 'none'}; gap:8px;">
-              <input type="text" id="settings-video1-mp4" class="form-input" placeholder="https://url-to-mp4.mp4" value="${escapeHTML(settings.video1_mp4_url || '')}">
-              <button class="btn btn-dark" id="settings-video1-upload-btn" style="padding:12px;" type="button" aria-label="Upload Section 1 MP4"><i class="fas fa-upload"></i></button>
-              <input type="file" id="settings-video1-file-input" style="display:none;" accept="video/mp4">
-            </div>
-            <input type="text" id="settings-video1-youtube" class="form-input" style="display:${settings.video1_type === 'youtube' ? 'block' : 'none'};" placeholder="e.g. https://www.youtube.com/watch?v=..." value="${escapeHTML(settings.video1_youtube_url || '')}">
-          </div>
-        </div>
-
-        <hr style="border:0; border-top:1px solid var(--border-color); margin: 24px 0 16px 0;">
-        <h3 class="settings-section-title">Homepage Video Section 2 (After Featured)</h3>
-        <div style="margin-bottom:12px;">
-          <label class="switch-label" for="settings-video2-show" style="margin:0;">
-            <input type="checkbox" id="settings-video2-show" class="switch-input" ${settings.video2_show ? 'checked' : ''}>
-            <span class="switch-slider"></span>
-            <span>Enable Video Section 2</span>
-          </label>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="settings-video2-title">Section 2 Title</label>
-          <input type="text" id="settings-video2-title" class="form-input" value="${escapeHTML(settings.video2_title || '')}">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="settings-video2-desc">Section 2 Description</label>
-          <textarea id="settings-video2-desc" class="form-input" style="height:60px; resize:none;">${escapeHTML(settings.video2_desc || '')}</textarea>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-video2-type">Video Type</label>
-            <select id="settings-video2-type" class="form-input">
-              <option value="upload" ${settings.video2_type === 'upload' ? 'selected' : ''}>Upload MP4</option>
-              <option value="youtube" ${settings.video2_type === 'youtube' ? 'selected' : ''}>YouTube Embed</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Video Source details</label>
-            <div id="settings-video2-upload-wrap" style="display:${settings.video2_type === 'upload' ? 'flex' : 'none'}; gap:8px;">
-              <input type="text" id="settings-video2-mp4" class="form-input" placeholder="https://url-to-mp4.mp4" value="${escapeHTML(settings.video2_mp4_url || '')}">
-              <button class="btn btn-dark" id="settings-video2-upload-btn" style="padding:12px;" type="button" aria-label="Upload Section 2 MP4"><i class="fas fa-upload"></i></button>
-              <input type="file" id="settings-video2-file-input" style="display:none;" accept="video/mp4">
-            </div>
-            <input type="text" id="settings-video2-youtube" class="form-input" style="display:${settings.video2_type === 'youtube' ? 'block' : 'none'};" placeholder="e.g. https://www.youtube.com/watch?v=..." value="${escapeHTML(settings.video2_youtube_url || '')}">
-          </div>
-        </div>
-
       </div>
       
-      <!-- Row Footer: Global Save Panel -->
-      <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end; gap:16px; margin-top:16px;">
-        <button class="btn btn-primary" id="settings-save-btn" style="padding:16px 40px; font-size:1.05rem;">
+      <!-- Subtab 3: SEO -->
+      <div id="settings-subtab-seo" class="settings-subtab-panel" style="display:none;">
+        <h3 class="settings-section-title" style="margin-top:0;">SEO Metadata Configurations</h3>
+        
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-seo-title">Meta Website Title (SEO)</label>
+          <input type="text" id="settings-seo-title" class="form-input" value="${escapeHTML(settings.seo_title)}">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="settings-seo-desc">Meta Description (SEO)</label>
+          <textarea id="settings-seo-desc" class="form-input" style="height:100px; resize:none;">${escapeHTML(settings.seo_description)}</textarea>
+        </div>
+      </div>
+      
+      <!-- Shared Save Button Row -->
+      <div style="display:flex; justify-content:flex-end; margin-top:24px; border-top:1px solid var(--border-color); padding-top:20px;">
+        <button class="btn btn-primary" id="settings-save-btn" style="padding:14px 40px; font-size:1rem; font-weight:600;">
           <i class="fas fa-save"></i> Save Global Configurations
         </button>
       </div>
       
     </div>
   `;
+
+  // Bind sub-tabs toggle
+  const subTabBtns = workspace.querySelectorAll('.settings-sub-tab-btn');
+  const subTabPanels = workspace.querySelectorAll('.settings-subtab-panel');
+  subTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.dataset.subtab;
+      subTabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      subTabPanels.forEach(panel => {
+        panel.style.display = panel.id === `settings-subtab-${tabId}` ? 'block' : 'none';
+      });
+    });
+  });
 
   // Bind color input syncing
   const cPrimInput = document.getElementById('settings-color-primary');
@@ -2331,6 +2163,635 @@ async function renderTabSettings(workspace) {
       hideLoader();
     }
   });
+}
+
+// ==========================================
+// NEW TAB: WEBSITE CUSTOMIZATION BUILDER
+// ==========================================
+async function renderTabCustomization(workspace) {
+  const fetchedSettings = await db.fetchSettings();
+  const settings = mergeSettings(fetchedSettings);
+
+  workspace.innerHTML = `
+    <div class="admin-header-row" style="margin-bottom:20px;">
+      <div class="admin-title-desc">
+        <h2 class="admin-title">Website Customization</h2>
+        <span class="admin-subtitle">Refine page layouts, announcement tickers, banner slots, and visual hero properties.</span>
+      </div>
+    </div>
+    
+    <!-- Sub tabs navigation -->
+    <div class="admin-sub-tabs" style="display:flex; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:24px;">
+      <button class="btn btn-ghost customization-sub-tab-btn active" data-subtab="hero" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-image"></i> Hero Slide Section</button>
+      <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="banners" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-bullhorn"></i> Announcements & Banners</button>
+      <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="homepage" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-home"></i> Section Feeds & Videos</button>
+      <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="footer" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-shoe-prints"></i> Footer Socials & Copyright</button>
+    </div>
+    
+    <div class="customization-content-area" style="background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:24px; box-shadow:var(--shadow-sm);">
+      
+      <!-- Subtab 1: Hero Settings -->
+      <div id="customization-subtab-hero" class="customization-subtab-panel" style="display:block;">
+        <h3 class="settings-section-title" style="margin-top:0;">Homepage Hero Section</h3>
+        
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-hero-title">Hero Title Heading</label>
+          <input type="text" id="settings-hero-title" class="form-input" value="${escapeHTML(settings.hero_title)}">
+        </div>
+        
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-hero-desc">Hero Subtitle / Description</label>
+          <textarea id="settings-hero-desc" class="form-input" style="height:80px; resize:none;">${escapeHTML(settings.hero_description)}</textarea>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:12px; margin-bottom:16px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-hero-bg-type">Hero Background Type</label>
+            <select id="settings-hero-bg-type" class="form-input">
+              <option value="gradient" ${settings.hero_bg_type === 'gradient' ? 'selected' : ''}>CSS Gradient</option>
+              <option value="image" ${settings.hero_bg_type === 'image' ? 'selected' : ''}>Background Image</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="settings-hero-bg-gradient">Background Details</label>
+            <input type="text" id="settings-hero-bg-gradient" class="form-input" style="display:${settings.hero_bg_type === 'gradient' ? 'block' : 'none'};" placeholder="e.g. linear-gradient(...)" value="${escapeHTML(settings.hero_bg_gradient)}">
+            
+            <div id="settings-hero-image-wrap" style="display:${settings.hero_bg_type === 'image' ? 'flex' : 'none'}; gap:8px;">
+              <input type="text" id="settings-hero-bg-image" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(settings.hero_bg_image_url || '')}">
+              <button class="btn btn-dark" id="settings-hero-bg-upload-btn" style="padding:12px;" type="button" aria-label="Upload hero background image"><i class="fas fa-upload"></i></button>
+              <input type="file" id="settings-hero-bg-file-input" style="display:none;" accept="image/*">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" style="font-weight:700; margin-bottom:12px; display:block;">Hero Product Image Carousel Slots (up to 6 images)</label>
+          <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
+            ${Array.from({ length: 6 }).map((_, index) => {
+              const url = (settings.hero_product_images && settings.hero_product_images[index]) || (index === 0 ? settings.hero_product_image_url : '') || '';
+              return `
+                <div class="hero-img-slot" style="display:flex; flex-direction:column; gap:6px; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-sm); background: rgba(0,0,0,0.01);">
+                  <span style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Image Slot ${index + 1} ${index === 0 ? '(Primary / Fallback)' : ''}</span>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <div class="hero-thumb-preview" id="hero-thumb-preview-${index}" style="width:40px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                      ${url ? `<img src="${escapeHTML(url)}" style="max-width:100%; max-height:100%; object-fit:contain;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
+                    </div>
+                    <input type="text" id="settings-hero-image-${index}" class="form-input hero-image-input" placeholder="Paste image URL here" value="${escapeHTML(url)}" style="flex:1;">
+                    <button class="btn btn-dark settings-hero-upload-btn" data-slot="${index}" style="padding:12px;" type="button" aria-label="Upload hero image slot ${index + 1}"><i class="fas fa-upload"></i></button>
+                    <button class="btn btn-ghost settings-hero-clear-btn" data-slot="${index}" style="padding:12px; color:var(--error-color); border-color:var(--error-color);" type="button" aria-label="Clear slot ${index + 1}"><i class="fas fa-times"></i></button>
+                    <input type="file" id="settings-hero-file-input-${index}" style="display:none;" accept="image/*">
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-hero-badge-1-text">Hero Tag 1 (Genuine Tag Text)</label>
+            <input type="text" id="settings-hero-badge-1-text" class="form-input" value="${settings.hero_badge_1_text !== undefined ? escapeHTML(settings.hero_badge_1_text || '') : '100% Genuine'}" placeholder="Leave empty to hide badge">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settings-hero-badge-1-icon">Hero Tag 1 Icon Class (FontAwesome)</label>
+            <input type="text" id="settings-hero-badge-1-icon" class="form-input" value="${settings.hero_badge_1_icon !== undefined ? escapeHTML(settings.hero_badge_1_icon || '') : 'fas fa-shield-halved'}" placeholder="e.g. fas fa-shield-halved">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-hero-badge-2-text">Hero Tag 2 (Certified Tag Text)</label>
+            <input type="text" id="settings-hero-badge-2-text" class="form-input" value="${settings.hero_badge_2_text !== undefined ? escapeHTML(settings.hero_badge_2_text || '') : 'FSSAI Certified'}" placeholder="Leave empty to hide badge">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settings-hero-badge-2-icon">Hero Tag 2 Icon Class (FontAwesome)</label>
+            <input type="text" id="settings-hero-badge-2-icon" class="form-input" value="${settings.hero_badge_2_icon !== undefined ? escapeHTML(settings.hero_badge_2_icon || '') : 'fas fa-certificate'}" placeholder="e.g. fas fa-certificate">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Subtab 2: Announcements & Banners -->
+      <div id="customization-subtab-banners" class="customization-subtab-panel" style="display:none;">
+        
+        <!-- Announcement Bar Panel -->
+        <h3 class="settings-section-title" style="margin-top:0;">Global Announcement Ticker Bar</h3>
+        <div style="margin-bottom:12px;">
+          <label class="switch-label" for="settings-announcement-show" style="margin:0;">
+            <input type="checkbox" id="settings-announcement-show" class="switch-input" ${settings.announcement_show ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Enable Top Announcement Bar</span>
+          </label>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-announcement-text">Announcement Bar Text</label>
+          <input type="text" id="settings-announcement-text" class="form-input" placeholder="e.g. Welcome to Top Muscle Nutrition! Chat with us directly on WhatsApp." value="${escapeHTML(settings.announcement_text || '')}">
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-announcement-bg-color">Announcement Background Color</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="color" id="settings-announcement-bg-color" value="${escapeHTML(settings.announcement_bg_color || '#d32f2f')}" style="width:40px; height:40px; border:none; cursor:pointer;">
+              <input type="text" id="settings-announcement-bg-color-text" class="form-input" style="flex:1;" value="${escapeHTML(settings.announcement_bg_color || '#d32f2f')}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settings-announcement-text-color">Announcement Text Color</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="color" id="settings-announcement-text-color" value="${escapeHTML(settings.announcement_text_color || '#ffffff')}" style="width:40px; height:40px; border:none; cursor:pointer;">
+              <input type="text" id="settings-announcement-text-color-text" class="form-input" style="flex:1;" value="${escapeHTML(settings.announcement_text_color || '#ffffff')}">
+            </div>
+          </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
+
+        <!-- Promotional Banner Panel -->
+        <h3 class="settings-section-title">Promotional Banners</h3>
+        <div style="margin-bottom:12px;">
+          <label class="switch-label" for="settings-promo-banner-show" style="margin:0;">
+            <input type="checkbox" id="settings-promo-banner-show" class="switch-input" ${settings.promo_banner_show ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Enable Promotional Hero Banner</span>
+          </label>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-promo-banner-image-url">Banner Image URL</label>
+          <div style="display:flex; gap:12px;">
+            <input type="text" id="settings-promo-banner-image-url" class="form-input" placeholder="https://image-link.com/promo.jpg" value="${escapeHTML(settings.promo_banner_image_url || '')}">
+            <button class="btn btn-dark" id="settings-promo-banner-upload-btn" style="padding:12px;" type="button" aria-label="Upload promo banner"><i class="fas fa-upload"></i></button>
+            <input type="file" id="settings-promo-banner-file-input" style="display:none;" accept="image/*">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:24px;">
+          <label class="form-label" for="settings-promo-banner-link">Banner Click Destination Link</label>
+          <input type="text" id="settings-promo-banner-link" class="form-input" placeholder="e.g. #products or category link" value="${escapeHTML(settings.promo_banner_link || '')}">
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
+
+        <!-- Call-To-Action (CTA) Banner Panel -->
+        <h3 class="settings-section-title">Call-To-Action Banner (Pre-footer)</h3>
+        <div style="margin-bottom:12px;">
+          <label class="switch-label" for="settings-cta-banner-show" style="margin:0;">
+            <input type="checkbox" id="settings-cta-banner-show" class="switch-input" ${settings.cta_banner_show ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Enable CTA Section</span>
+          </label>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-cta-banner-title">CTA Banner Title Heading</label>
+          <input type="text" id="settings-cta-banner-title" class="form-input" value="${escapeHTML(settings.cta_banner_title || 'Ready to Level Up Your Workouts?')}">
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-cta-banner-desc">CTA Subtitle Description</label>
+          <textarea id="settings-cta-banner-desc" class="form-input" style="height:60px; resize:none;">${escapeHTML(settings.cta_banner_desc || 'Chat with our experts on WhatsApp for personalized supplement guidance.')}</textarea>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-cta-banner-btn-text">Button Text</label>
+            <input type="text" id="settings-cta-banner-btn-text" class="form-input" value="${escapeHTML(settings.cta_banner_btn_text || 'Chat on WhatsApp')}">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settings-cta-banner-bg-color">CTA Background Color</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="color" id="settings-cta-banner-bg-color" value="${escapeHTML(settings.cta_banner_bg_color || '#161618')}" style="width:40px; height:40px; border:none; cursor:pointer;">
+              <input type="text" id="settings-cta-banner-bg-color-text" class="form-input" style="flex:1;" value="${escapeHTML(settings.cta_banner_bg_color || '#161618')}">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Subtab 3: Homepage Sections & Videos -->
+      <div id="customization-subtab-homepage" class="customization-subtab-panel" style="display:none;">
+        <h3 class="settings-section-title" style="margin-top:0;">Homepage Section Visibility</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:24px;">
+          <label class="switch-label" for="settings-show-top-products" style="margin:0;">
+            <input type="checkbox" id="settings-show-top-products" class="switch-input" ${settings.show_top_products ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Show Top Products</span>
+          </label>
+          <label class="switch-label" for="settings-show-best-sellers" style="margin:0;">
+            <input type="checkbox" id="settings-show-best-sellers" class="switch-input" ${settings.show_best_sellers ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Show Best Sellers</span>
+          </label>
+          <label class="switch-label" for="settings-show-trending-products" style="margin:0;">
+            <input type="checkbox" id="settings-show-trending-products" class="switch-input" ${settings.show_trending_products ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Show Trending</span>
+          </label>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
+
+        <!-- Video Section 1 -->
+        <h3 class="settings-section-title">Homepage Video Section 1 (After Hero)</h3>
+        <div style="margin-bottom:12px;">
+          <label class="switch-label" for="settings-video1-show" style="margin:0;">
+            <input type="checkbox" id="settings-video1-show" class="switch-input" ${settings.video1_show ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Enable Video Section 1</span>
+          </label>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label" for="settings-video1-title">Section 1 Title</label>
+          <input type="text" id="settings-video1-title" class="form-input" value="${escapeHTML(settings.video1_title || '')}">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label" for="settings-video1-desc">Section 1 Description</label>
+          <textarea id="settings-video1-desc" class="form-input" style="height:60px; resize:none;">${escapeHTML(settings.video1_desc || '')}</textarea>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px; margin-bottom:24px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-video1-type">Video Type</label>
+            <select id="settings-video1-type" class="form-input">
+              <option value="upload" ${settings.video1_type === 'upload' ? 'selected' : ''}>Upload MP4</option>
+              <option value="youtube" ${settings.video1_type === 'youtube' ? 'selected' : ''}>YouTube Embed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Video Source Details</label>
+            <div id="settings-video1-upload-wrap" style="display:${settings.video1_type === 'upload' ? 'flex' : 'none'}; gap:8px;">
+              <input type="text" id="settings-video1-mp4" class="form-input" placeholder="https://url-to-mp4.mp4" value="${escapeHTML(settings.video1_mp4_url || '')}">
+              <button class="btn btn-dark" id="settings-video1-upload-btn" style="padding:12px;" type="button" aria-label="Upload Section 1 MP4"><i class="fas fa-upload"></i></button>
+              <input type="file" id="settings-video1-file-input" style="display:none;" accept="video/mp4">
+            </div>
+            <input type="text" id="settings-video1-youtube" class="form-input" style="display:${settings.video1_type === 'youtube' ? 'block' : 'none'};" placeholder="e.g. https://www.youtube.com/watch?v=..." value="${escapeHTML(settings.video1_youtube_url || '')}">
+          </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
+
+        <!-- Video Section 2 -->
+        <h3 class="settings-section-title">Homepage Video Section 2 (After Featured)</h3>
+        <div style="margin-bottom:12px;">
+          <label class="switch-label" for="settings-video2-show" style="margin:0;">
+            <input type="checkbox" id="settings-video2-show" class="switch-input" ${settings.video2_show ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Enable Video Section 2</span>
+          </label>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label" for="settings-video2-title">Section 2 Title</label>
+          <input type="text" id="settings-video2-title" class="form-input" value="${escapeHTML(settings.video2_title || '')}">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label" for="settings-video2-desc">Section 2 Description</label>
+          <textarea id="settings-video2-desc" class="form-input" style="height:60px; resize:none;">${escapeHTML(settings.video2_desc || '')}</textarea>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-video2-type">Video Type</label>
+            <select id="settings-video2-type" class="form-input">
+              <option value="upload" ${settings.video2_type === 'upload' ? 'selected' : ''}>Upload MP4</option>
+              <option value="youtube" ${settings.video2_type === 'youtube' ? 'selected' : ''}>YouTube Embed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Video Source Details</label>
+            <div id="settings-video2-upload-wrap" style="display:${settings.video2_type === 'upload' ? 'flex' : 'none'}; gap:8px;">
+              <input type="text" id="settings-video2-mp4" class="form-input" placeholder="https://url-to-mp4.mp4" value="${escapeHTML(settings.video2_mp4_url || '')}">
+              <button class="btn btn-dark" id="settings-video2-upload-btn" style="padding:12px;" type="button" aria-label="Upload Section 2 MP4"><i class="fas fa-upload"></i></button>
+              <input type="file" id="settings-video2-file-input" style="display:none;" accept="video/mp4">
+            </div>
+            <input type="text" id="settings-video2-youtube" class="form-input" style="display:${settings.video2_type === 'youtube' ? 'block' : 'none'};" placeholder="e.g. https://www.youtube.com/watch?v=..." value="${escapeHTML(settings.video2_youtube_url || '')}">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Subtab 4: Footer & Socials -->
+      <div id="customization-subtab-footer" class="customization-subtab-panel" style="display:none;">
+        <h3 class="settings-section-title" style="margin-top:0;">Footer Specifications</h3>
+        
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-copyright">Copyright Text</label>
+          <input type="text" id="settings-copyright" class="form-input" value="${escapeHTML(settings.footer_copyright || '')}">
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-fb">Facebook Link</label>
+            <input type="text" id="settings-fb" class="form-input" placeholder="https://facebook.com/..." value="${escapeHTML(settings.social_facebook || '')}">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settings-ig">Instagram Link</label>
+            <input type="text" id="settings-ig" class="form-input" placeholder="https://instagram.com/..." value="${escapeHTML(settings.social_instagram || '')}">
+          </div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+          <div class="form-group">
+            <label class="form-label" for="settings-twitter">Twitter Link</label>
+            <input type="text" id="settings-twitter" class="form-input" placeholder="https://twitter.com/..." value="${escapeHTML(settings.social_twitter || '')}">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settings-linkedin">LinkedIn Link</label>
+            <input type="text" id="settings-linkedin" class="form-input" placeholder="https://linkedin.com/in/..." value="${escapeHTML(settings.social_linkedin || '')}">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Shared Save Button Row -->
+      <div style="display:flex; justify-content:flex-end; margin-top:24px; border-top:1px solid var(--border-color); padding-top:20px;">
+        <button class="btn btn-primary" id="customization-save-btn" style="padding:14px 40px; font-size:1rem; font-weight:600;">
+          <i class="fas fa-save"></i> Save Website Customizations
+        </button>
+      </div>
+      
+    </div>
+  `;
+
+  // Bind sub-tabs toggle
+  const subTabBtns = workspace.querySelectorAll('.customization-sub-tab-btn');
+  const subTabPanels = workspace.querySelectorAll('.customization-subtab-panel');
+  subTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.dataset.subtab;
+      subTabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      subTabPanels.forEach(panel => {
+        panel.style.display = panel.id === `customization-subtab-${tabId}` ? 'block' : 'none';
+      });
+    });
+  });
+
+  // Color pickers syncing
+  const annBgInput = document.getElementById('settings-announcement-bg-color');
+  const annBgText = document.getElementById('settings-announcement-bg-color-text');
+  if (annBgInput && annBgText) {
+    annBgInput.addEventListener('input', (e) => annBgText.value = e.target.value);
+    annBgText.addEventListener('input', (e) => {
+      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) annBgInput.value = e.target.value;
+    });
+  }
+
+  const annTxtInput = document.getElementById('settings-announcement-text-color');
+  const annTxtText = document.getElementById('settings-announcement-text-color-text');
+  if (annTxtInput && annTxtText) {
+    annTxtInput.addEventListener('input', (e) => annTxtText.value = e.target.value);
+    annTxtText.addEventListener('input', (e) => {
+      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) annTxtInput.value = e.target.value;
+    });
+  }
+
+  const ctaBgInput = document.getElementById('settings-cta-banner-bg-color');
+  const ctaBgText = document.getElementById('settings-cta-banner-bg-color-text');
+  if (ctaBgInput && ctaBgText) {
+    ctaBgInput.addEventListener('input', (e) => ctaBgText.value = e.target.value);
+    ctaBgText.addEventListener('input', (e) => {
+      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) ctaBgInput.value = e.target.value;
+    });
+  }
+
+  // Promotional Banner image uploader
+  const promoFileBtn = document.getElementById('settings-promo-banner-upload-btn');
+  const promoFileInput = document.getElementById('settings-promo-banner-file-input');
+  if (promoFileBtn && promoFileInput) {
+    promoFileBtn.addEventListener('click', () => promoFileInput.click());
+    promoFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showLoader();
+      try {
+        const publicUrl = await db.uploadImage(file, 'brand-assets');
+        document.getElementById('settings-promo-banner-image-url').value = publicUrl;
+        showToast('Promotional banner uploaded successfully', 'success');
+        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+      } catch (err) {
+        showToast('Promo banner upload failed', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
+
+  // Toggle Background types for Hero
+  const bgTypeEl = document.getElementById('settings-hero-bg-type');
+  const bgGradInput = document.getElementById('settings-hero-bg-gradient');
+  const bgImgWrap = document.getElementById('settings-hero-image-wrap');
+  if (bgTypeEl && bgGradInput && bgImgWrap) {
+    bgTypeEl.addEventListener('change', (e) => {
+      if (e.target.value === 'gradient') {
+        bgGradInput.style.display = 'block';
+        bgImgWrap.style.display = 'none';
+      } else {
+        bgGradInput.style.display = 'none';
+        bgImgWrap.style.display = 'flex';
+      }
+    });
+  }
+
+  // Background Image upload handler
+  const bgFileBtn = document.getElementById('settings-hero-bg-upload-btn');
+  const bgFileInput = document.getElementById('settings-hero-bg-file-input');
+  if (bgFileBtn && bgFileInput) {
+    bgFileBtn.addEventListener('click', () => bgFileInput.click());
+    bgFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showLoader();
+      try {
+        const publicUrl = await db.uploadImage(file, 'brand-assets');
+        document.getElementById('settings-hero-bg-image').value = publicUrl;
+        showToast('Hero background uploaded successfully', 'success');
+        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+      } catch (err) {
+        showToast('Hero image upload failed', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
+
+  // Hero Product Images upload and clear handlers
+  for (let i = 0; i < 6; i++) {
+    const uploadBtn = workspace.querySelector(`.settings-hero-upload-btn[data-slot="${i}"]`);
+    const fileInput = document.getElementById(`settings-hero-file-input-${i}`);
+    const clearBtn = workspace.querySelector(`.settings-hero-clear-btn[data-slot="${i}"]`);
+    const inputEl = document.getElementById(`settings-hero-image-${i}`);
+    const previewEl = document.getElementById(`hero-thumb-preview-${i}`);
+
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        showLoader();
+        try {
+          const publicUrl = await db.uploadImage(file, 'brand-assets');
+          if (inputEl) inputEl.value = publicUrl;
+          if (previewEl) previewEl.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          showToast(`Hero image ${i + 1} uploaded successfully`, 'success');
+          setTimeout(() => renderActiveWorkspaceTab(), 1000);
+        } catch (err) {
+          showToast(`Hero image ${i + 1} upload failed`, 'error');
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (inputEl) inputEl.value = '';
+        if (previewEl) previewEl.innerHTML = `<i class="fas fa-image" style="color: var(--text-muted);"></i>`;
+      });
+    }
+
+    if (inputEl && previewEl) {
+      inputEl.addEventListener('input', () => {
+        const url = inputEl.value.trim();
+        if (url) {
+          previewEl.innerHTML = `<img src="${escapeHTML(url)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+        } else {
+          previewEl.innerHTML = `<i class="fas fa-image" style="color: var(--text-muted);"></i>`;
+        }
+      });
+    }
+  }
+
+  // Video Section 1 source toggle
+  const video1TypeSelect = document.getElementById('settings-video1-type');
+  const video1UploadWrap = document.getElementById('settings-video1-upload-wrap');
+  const video1YoutubeInput = document.getElementById('settings-video1-youtube');
+  if (video1TypeSelect && video1UploadWrap && video1YoutubeInput) {
+    video1TypeSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'upload') {
+        video1UploadWrap.style.display = 'flex';
+        video1YoutubeInput.style.display = 'none';
+      } else {
+        video1UploadWrap.style.display = 'none';
+        video1YoutubeInput.style.display = 'block';
+      }
+    });
+  }
+
+  // Video Section 1 MP4 upload handler
+  const video1FileBtn = document.getElementById('settings-video1-upload-btn');
+  const video1FileInput = document.getElementById('settings-video1-file-input');
+  if (video1FileBtn && video1FileInput) {
+    video1FileBtn.addEventListener('click', () => video1FileInput.click());
+    video1FileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showLoader();
+      try {
+        const publicUrl = await db.uploadImage(file, 'brand-assets');
+        document.getElementById('settings-video1-mp4').value = publicUrl;
+        showToast('Section 1 video uploaded successfully', 'success');
+        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+      } catch (err) {
+        showToast('Section 1 video upload failed', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
+
+  // Video Section 2 source toggle
+  const video2TypeSelect = document.getElementById('settings-video2-type');
+  const video2UploadWrap = document.getElementById('settings-video2-upload-wrap');
+  const video2YoutubeInput = document.getElementById('settings-video2-youtube');
+  if (video2TypeSelect && video2UploadWrap && video2YoutubeInput) {
+    video2TypeSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'upload') {
+        video2UploadWrap.style.display = 'flex';
+        video2YoutubeInput.style.display = 'none';
+      } else {
+        video2UploadWrap.style.display = 'none';
+        video2YoutubeInput.style.display = 'block';
+      }
+    });
+  }
+
+  // Video Section 2 MP4 upload handler
+  const video2FileBtn = document.getElementById('settings-video2-upload-btn');
+  const video2FileInput = document.getElementById('settings-video2-file-input');
+  if (video2FileBtn && video2FileInput) {
+    video2FileBtn.addEventListener('click', () => video2FileInput.click());
+    video2FileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showLoader();
+      try {
+        const publicUrl = await db.uploadImage(file, 'brand-assets');
+        document.getElementById('settings-video2-mp4').value = publicUrl;
+        showToast('Section 2 video uploaded successfully', 'success');
+        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+      } catch (err) {
+        showToast('Section 2 video upload failed', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
+
+  // Save Customization Click
+  const saveBtn = document.getElementById('customization-save-btn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const payload = {
+        hero_title: document.getElementById('settings-hero-title').value.trim(),
+        hero_description: document.getElementById('settings-hero-desc').value.trim(),
+        hero_bg_type: bgTypeEl.value,
+        hero_bg_gradient: bgGradInput.value.trim(),
+        hero_bg_image_url: document.getElementById('settings-hero-bg-image').value.trim() || null,
+        hero_product_images: Array.from({ length: 6 }).map((_, idx) => document.getElementById(`settings-hero-image-${idx}`).value.trim()).filter(Boolean),
+        hero_product_image_url: document.getElementById('settings-hero-image-0').value.trim() || 'hero_product.png',
+        hero_badge_1_text: document.getElementById('settings-hero-badge-1-text').value.trim() || null,
+        hero_badge_1_icon: document.getElementById('settings-hero-badge-1-icon').value.trim() || null,
+        hero_badge_2_text: document.getElementById('settings-hero-badge-2-text').value.trim() || null,
+        hero_badge_2_icon: document.getElementById('settings-hero-badge-2-icon').value.trim() || null,
+        announcement_show: document.getElementById('settings-announcement-show').checked,
+        announcement_text: document.getElementById('settings-announcement-text').value.trim(),
+        announcement_bg_color: document.getElementById('settings-announcement-bg-color-text').value.trim(),
+        announcement_text_color: document.getElementById('settings-announcement-text-color-text').value.trim(),
+        promo_banner_show: document.getElementById('settings-promo-banner-show').checked,
+        promo_banner_image_url: document.getElementById('settings-promo-banner-image-url').value.trim() || null,
+        promo_banner_link: document.getElementById('settings-promo-banner-link').value.trim() || null,
+        cta_banner_show: document.getElementById('settings-cta-banner-show').checked,
+        cta_banner_title: document.getElementById('settings-cta-banner-title').value.trim(),
+        cta_banner_desc: document.getElementById('settings-cta-banner-desc').value.trim(),
+        cta_banner_btn_text: document.getElementById('settings-cta-banner-btn-text').value.trim(),
+        cta_banner_bg_color: document.getElementById('settings-cta-banner-bg-color-text').value.trim(),
+        show_top_products: document.getElementById('settings-show-top-products').checked,
+        show_best_sellers: document.getElementById('settings-show-best-sellers').checked,
+        show_trending_products: document.getElementById('settings-show-trending-products').checked,
+        video1_show: document.getElementById('settings-video1-show').checked,
+        video1_title: document.getElementById('settings-video1-title').value.trim() || null,
+        video1_desc: document.getElementById('settings-video1-desc').value.trim() || null,
+        video1_type: video1TypeSelect.value,
+        video1_mp4_url: document.getElementById('settings-video1-mp4').value.trim() || null,
+        video1_youtube_url: document.getElementById('settings-video1-youtube').value.trim() || null,
+        video2_show: document.getElementById('settings-video2-show').checked,
+        video2_title: document.getElementById('settings-video2-title').value.trim() || null,
+        video2_desc: document.getElementById('settings-video2-desc').value.trim() || null,
+        video2_type: video2TypeSelect.value,
+        video2_mp4_url: document.getElementById('settings-video2-mp4').value.trim() || null,
+        video2_youtube_url: document.getElementById('settings-video2-youtube').value.trim() || null,
+        footer_copyright: document.getElementById('settings-copyright').value.trim(),
+        social_facebook: document.getElementById('settings-fb').value.trim() || null,
+        social_instagram: document.getElementById('settings-ig').value.trim() || null,
+        social_twitter: document.getElementById('settings-twitter').value.trim() || null,
+        social_linkedin: document.getElementById('settings-linkedin').value.trim() || null
+      };
+
+      showLoader();
+      try {
+        const newSettings = await db.updateSettings(payload);
+        showToast('Website customizations saved successfully', 'success');
+        applyBranding(newSettings);
+        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to save website customizations', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
 }
 
 // ==========================================
