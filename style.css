@@ -2853,13 +2853,18 @@ textarea.form-input { resize: vertical; }
   }
 
   .logo-link {
-    width: auto;
+    width: 150px;
     max-width: 220px;
-    overflow: visible;
+    overflow: hidden;
+    flex-shrink: 0;
+    justify-content: flex-start;
   }
 
   .logo-img {
-    transform: scale(1.35);
+    height: 100%;
+    width: auto;
+    max-width: none;
+    transform: scale(1.85);
     transform-origin: left center;
   }
 
@@ -3132,6 +3137,7 @@ textarea.form-input { resize: vertical; }
     gap: 8px;
     overflow-x: auto;
     width: 100%;
+    max-width: none;
     padding: 8px 4px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
