@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS settings (
   id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
   brand_name TEXT NOT NULL DEFAULT 'Top Muscle Nutrition',
   brand_logo_url TEXT,
+  footer_logo_url TEXT,
   primary_color TEXT NOT NULL DEFAULT '#d32f2f',
   secondary_color TEXT NOT NULL DEFAULT '#ffffff',
   favicon_url TEXT,
@@ -260,6 +261,9 @@ ALTER TABLE settings ADD COLUMN IF NOT EXISTS video2_desc TEXT DEFAULT 'See how 
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS video2_type TEXT DEFAULT 'youtube'; -- 'upload' or 'youtube'
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS video2_mp4_url TEXT;
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS video2_youtube_url TEXT;
+
+-- Add footer logo setting to settings table
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS footer_logo_url TEXT;
 
 -- Add new product type flags to products table
 ALTER TABLE products ADD COLUMN IF NOT EXISTS top_product BOOLEAN DEFAULT false;

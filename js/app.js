@@ -5,6 +5,7 @@ import { isSupabaseConfigured, saveSupabaseConfig } from './supabase-client.js';
 export const DEFAULT_SETTINGS = {
   brand_name: "Top Muscle Nutrition",
   brand_logo_url: "https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png",
+  footer_logo_url: "https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png",
   primary_color: "#d32f2f",
   secondary_color: "#ffffff",
   seo_title: "Top Muscle Nutrition - Premium Supplements",
@@ -350,8 +351,9 @@ export function applyBranding(settings) {
   const footerCopyright = document.getElementById('footer-copyright');
   const footerDesc = document.getElementById('footer-desc');
 
-  if (settings.brand_logo_url) {
-    footerLogoImg.src = settings.brand_logo_url;
+  const footerLogoUrl = settings.footer_logo_url || settings.brand_logo_url;
+  if (footerLogoUrl) {
+    footerLogoImg.src = footerLogoUrl;
     footerLogoImg.style.display = 'block';
     footerBrandText.style.display = 'none';
   } else {

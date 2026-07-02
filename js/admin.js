@@ -1691,13 +1691,23 @@ async function renderTabSettings(workspace) {
         </div>
         
         <div class="form-group">
-          <label class="form-label" for="settings-brand-logo">Brand Logo URL</label>
+          <label class="form-label" for="settings-brand-logo">Navbar Brand Logo URL</label>
           <div style="display:flex; gap:12px;">
             <input type="text" id="settings-brand-logo" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(settings.brand_logo_url || '')}">
             <button class="btn btn-dark" id="settings-logo-upload-btn" style="padding:12px;" aria-label="Upload brand logo file"><i class="fas fa-upload"></i></button>
             <input type="file" id="settings-logo-file-input" style="display:none;" accept="image/*">
           </div>
           ${settings.brand_logo_url ? `<img src="${escapeHTML(settings.brand_logo_url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="settings-footer-logo">Footer Logo URL</label>
+          <div style="display:flex; gap:12px;">
+            <input type="text" id="settings-footer-logo" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(settings.footer_logo_url || '')}">
+            <button class="btn btn-dark" id="settings-footer-logo-upload-btn" style="padding:12px;" aria-label="Upload footer logo file"><i class="fas fa-upload"></i></button>
+            <input type="file" id="settings-footer-logo-file-input" style="display:none;" accept="image/*">
+          </div>
+          ${settings.footer_logo_url ? `<img src="${escapeHTML(settings.footer_logo_url)}" style="max-height: 50px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
         </div>
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -2033,6 +2043,28 @@ async function renderTabSettings(workspace) {
     }
   });
 
+  // Footer Logo file upload handler
+  const footerLogoFileBtn = document.getElementById('settings-footer-logo-upload-btn');
+  const footerLogoFileInput = document.getElementById('settings-footer-logo-file-input');
+  if (footerLogoFileBtn && footerLogoFileInput) {
+    footerLogoFileBtn.addEventListener('click', () => footerLogoFileInput.click());
+    footerLogoFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showLoader();
+      try {
+        const publicUrl = await db.uploadImage(file, 'brand-assets');
+        document.getElementById('settings-footer-logo').value = publicUrl;
+        showToast('Footer logo uploaded successfully', 'success');
+      } catch (err) {
+        showToast('Footer logo upload failed', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
+
   // Background Image upload handler
   const bgFileBtn = document.getElementById('settings-hero-bg-upload-btn');
   const bgFileInput = document.getElementById('settings-hero-bg-file-input');
@@ -2203,6 +2235,7 @@ async function renderTabSettings(workspace) {
     const payload = {
       brand_name: document.getElementById('settings-brand-name').value.trim(),
       brand_logo_url: document.getElementById('settings-brand-logo').value.trim() || null,
+      footer_logo_url: document.getElementById('settings-footer-logo').value.trim() || null,
       primary_color: cPrimText.value.trim(),
       secondary_color: cSecText.value.trim(),
       favicon_url: document.getElementById('settings-favicon').value.trim() || null,
