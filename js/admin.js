@@ -2595,14 +2595,21 @@ async function renderTabCustomization(workspace) {
   const saveBtn = document.getElementById('customization-save-btn');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
+      const video1Select = document.getElementById('settings-video1-type');
+      const video2Select = document.getElementById('settings-video2-type');
+      const heroBgSelect = document.getElementById('settings-hero-bg-type');
+
       const payload = {
         hero_title: document.getElementById('settings-hero-title').value.trim(),
         hero_description: document.getElementById('settings-hero-desc').value.trim(),
-        hero_bg_type: bgTypeEl.value,
-        hero_bg_gradient: bgGradInput.value.trim(),
+        hero_bg_type: heroBgSelect ? heroBgSelect.value : 'gradient',
+        hero_bg_gradient: document.getElementById('settings-hero-bg-gradient').value.trim(),
         hero_bg_image_url: document.getElementById('settings-hero-bg-image').value.trim() || null,
-        hero_product_images: Array.from({ length: 6 }).map((_, idx) => document.getElementById(`settings-hero-image-${idx}`).value.trim()).filter(Boolean),
-        hero_product_image_url: document.getElementById('settings-hero-image-0').value.trim() || 'hero_product.png',
+        hero_product_images: Array.from({ length: 6 }).map((_, idx) => {
+          const el = document.getElementById(`settings-hero-image-${idx}`);
+          return el ? el.value.trim() : '';
+        }).filter(Boolean),
+        hero_product_image_url: (document.getElementById('settings-hero-image-0') ? document.getElementById('settings-hero-image-0').value.trim() : '') || 'hero_product.png',
         hero_badge_1_text: document.getElementById('settings-hero-badge-1-text').value.trim() || null,
         hero_badge_1_icon: document.getElementById('settings-hero-badge-1-icon').value.trim() || null,
         hero_badge_2_text: document.getElementById('settings-hero-badge-2-text').value.trim() || null,
@@ -2625,13 +2632,13 @@ async function renderTabCustomization(workspace) {
         video1_show: document.getElementById('settings-video1-show').checked,
         video1_title: document.getElementById('settings-video1-title').value.trim() || null,
         video1_desc: document.getElementById('settings-video1-desc').value.trim() || null,
-        video1_type: video1TypeSelect.value,
+        video1_type: video1Select ? video1Select.value : 'upload',
         video1_mp4_url: document.getElementById('settings-video1-mp4').value.trim() || null,
         video1_youtube_url: document.getElementById('settings-video1-youtube').value.trim() || null,
         video2_show: document.getElementById('settings-video2-show').checked,
         video2_title: document.getElementById('settings-video2-title').value.trim() || null,
         video2_desc: document.getElementById('settings-video2-desc').value.trim() || null,
-        video2_type: video2TypeSelect.value,
+        video2_type: video2Select ? video2Select.value : 'upload',
         video2_mp4_url: document.getElementById('settings-video2-mp4').value.trim() || null,
         video2_youtube_url: document.getElementById('settings-video2-youtube').value.trim() || null,
         footer_copyright: document.getElementById('settings-copyright').value.trim(),
