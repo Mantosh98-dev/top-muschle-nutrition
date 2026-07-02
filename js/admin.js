@@ -408,6 +408,53 @@ async function renderTabDashboard(workspace, banner) {
 async function renderTabProducts(workspace) {
   const products = await db.fetchProducts();
 
+  // Helper to build tbody HTML
+  function buildTableRows(filteredProducts) {
+    if (filteredProducts.length === 0) {
+      return `
+        <tr>
+          <td colspan="6" style="text-align:center; padding: 48px 0; color:var(--text-secondary);">
+            <i class="fas fa-box-open" style="font-size:2.5rem; margin-bottom:12px; color:var(--text-muted);"></i>
+            <p>No products listing matches your search query.</p>
+          </td>
+        </tr>
+      `;
+    }
+    return filteredProducts.map(prod => {
+      const firstImg = prod.product_images && prod.product_images.length > 0
+        ? prod.product_images[0].image_url
+        : 'https://via.placeholder.com/50?text=No+Img';
+      
+      let badges = [];
+      if (prod.featured) badges.push('<span style="color:#d97706; font-size:0.75rem; font-weight:700; white-space:nowrap;"><i class="fas fa-star"></i> Featured</span>');
+      if (prod.top_product) badges.push('<span style="color:#3b82f6; font-size:0.75rem; font-weight:700; white-space:nowrap;"><i class="fas fa-trophy"></i> Top</span>');
+      if (prod.best_seller) badges.push('<span style="color:#ec4899; font-size:0.75rem; font-weight:700; white-space:nowrap;"><i class="fas fa-crown"></i> Best Seller</span>');
+      if (prod.trending) badges.push('<span style="color:#ef4444; font-size:0.75rem; font-weight:700; white-space:nowrap;"><i class="fas fa-fire"></i> Trending</span>');
+      const badgesHTML = badges.length > 0 ? badges.join('<br>') : '<span style="color:var(--text-muted); font-size:0.75rem;">None</span>';
+
+      return `
+        <tr>
+          <td><img src="${firstImg}" style="width:40px; height:40px; object-fit:contain; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff;"></td>
+          <td>
+            <strong>${escapeHTML(prod.title)}</strong>
+            ${prod.brand ? `<br><small style="color:var(--text-muted); font-weight:600;">Brand: ${escapeHTML(prod.brand)}</small>` : ''}
+            <br><small style="color:var(--text-muted);">${escapeHTML(prod.slug)}</small>
+          </td>
+          <td>${prod.categories ? escapeHTML(prod.categories.name) : '<span style="color:var(--text-muted);">Uncategorized</span>'}</td>
+          <td>${badgesHTML}</td>
+          <td>${prod.whatsapp_enabled ? '<span style="color:#10b981;"><i class="fab fa-whatsapp"></i> Enabled</span>' : '<span style="color:var(--text-muted);">Disabled</span>'}</td>
+          <td>
+            <div class="cell-actions">
+              <button class="btn-icon btn-edit edit-product-btn" data-id="${prod.id}" title="Edit"><i class="fas fa-edit"></i></button>
+              <button class="btn-icon btn-delete delete-product-btn" data-id="${prod.id}" title="Delete"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Bind the container HTML
   workspace.innerHTML = `
     <div class="admin-header-row">
       <div class="admin-title-desc">
@@ -417,6 +464,14 @@ async function renderTabProducts(workspace) {
       <button class="btn btn-primary" id="admin-add-product-btn">
         <i class="fas fa-plus"></i> Add Product
       </button>
+    </div>
+    
+    <!-- Search Bar -->
+    <div style="margin-bottom: 18px; display: flex; gap: 12px; max-width: 450px; width: 100%;">
+      <div style="position: relative; flex: 1;">
+        <input type="text" id="admin-product-search" class="form-input" placeholder="Search by name, brand, slug, or category..." style="padding-left: 36px; margin: 0; width: 100%;">
+        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.95rem;"></i>
+      </div>
     </div>
     
     <div class="admin-table-container">
@@ -431,73 +486,65 @@ async function renderTabProducts(workspace) {
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          ${products.length > 0 ? products.map(prod => {
-            const firstImg = prod.product_images && prod.product_images.length > 0
-              ? prod.product_images[0].image_url
-              : 'https://via.placeholder.com/50?text=No+Img';
-            
-            let badges = [];
-            if (prod.featured) badges.push('<span style="color:#d97706; font-size:0.75rem; font-weight:700; white-space:nowrap;"><i class="fas fa-star"></i> Featured</span>');
-            if (prod.top_product) badges.push('<span style="color:#3b82f6; font-size:0.75rem; font-weight:700; white-space:nowrap;"><i class="fas fa-trophy"></i> Top</span>');
-            if (prod.best_seller) badges.push('<span style="color:#ec4899; font-size:0.75rem; font-weight:700; white-space:nowrap;"><i class="fas fa-crown"></i> Best Seller</span>');
-            if (prod.trending) badges.push('<span style="color:#ef4444; font-size:0.75rem; font-weight:700; white-space:nowrap;"><i class="fas fa-fire"></i> Trending</span>');
-            const badgesHTML = badges.length > 0 ? badges.join('<br>') : '<span style="color:var(--text-muted); font-size:0.75rem;">None</span>';
-
-            return `
-              <tr>
-                <td><img src="${firstImg}" style="width:40px; height:40px; object-fit:contain; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff;"></td>
-                <td><strong>${escapeHTML(prod.title)}</strong><br><small style="color:var(--text-muted);">${escapeHTML(prod.slug)}</small></td>
-                <td>${prod.categories ? escapeHTML(prod.categories.name) : '<span style="color:var(--text-muted);">Uncategorized</span>'}</td>
-                <td>${badgesHTML}</td>
-                <td>${prod.whatsapp_enabled ? '<span style="color:#10b981;"><i class="fab fa-whatsapp"></i> Enabled</span>' : '<span style="color:var(--text-muted);">Disabled</span>'}</td>
-                <td>
-                  <div class="cell-actions">
-                    <button class="btn-icon btn-edit edit-product-btn" data-id="${prod.id}" title="Edit"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon btn-delete delete-product-btn" data-id="${prod.id}" title="Delete"><i class="fas fa-trash-alt"></i></button>
-                  </div>
-                </td>
-              </tr>
-            `;
-          }).join('') : `
-            <tr>
-              <td colspan="6" style="text-align:center; padding: 48px 0; color:var(--text-secondary);">
-                <i class="fas fa-box-open" style="font-size:2.5rem; margin-bottom:12px; color:var(--text-muted);"></i>
-                <p>No products listing exists yet.</p>
-              </td>
-            </tr>
-          `}
+        <tbody id="admin-products-tbody">
+          ${buildTableRows(products)}
         </tbody>
       </table>
     </div>
   `;
 
+  // Helper to bind action listeners to dynamically rendered table rows
+  function bindRowListeners() {
+    // Bind edit buttons
+    workspace.querySelectorAll('.edit-product-btn').forEach(btn => {
+      btn.addEventListener('click', () => openProductModal(btn.dataset.id));
+    });
+
+    // Bind delete buttons
+    workspace.querySelectorAll('.delete-product-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const confirmDelete = confirm('Are you sure you want to delete this product? All image and verification links associated will be removed.');
+        if (confirmDelete) {
+          showLoader();
+          try {
+            await db.deleteProduct(btn.dataset.id);
+            showToast('Product deleted successfully', 'success');
+            renderActiveWorkspaceTab();
+          } catch (err) {
+            showToast('Failed to delete product', 'error');
+          } finally {
+            hideLoader();
+          }
+        }
+      });
+    });
+  }
+
   // Bind add button
   document.getElementById('admin-add-product-btn').addEventListener('click', () => openProductModal());
 
-  // Bind edit buttons
-  document.querySelectorAll('.edit-product-btn').forEach(btn => {
-    btn.addEventListener('click', () => openProductModal(btn.dataset.id));
-  });
+  // Initial bindings
+  bindRowListeners();
 
-  // Bind delete buttons
-  document.querySelectorAll('.delete-product-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const confirmDelete = confirm('Are you sure you want to delete this product? All image and verification links associated will be removed.');
-      if (confirmDelete) {
-        showLoader();
-        try {
-          await db.deleteProduct(btn.dataset.id);
-          showToast('Product deleted successfully', 'success');
-          renderActiveWorkspaceTab();
-        } catch (err) {
-          showToast('Failed to delete product', 'error');
-        } finally {
-          hideLoader();
-        }
-      }
+  // Search input change handler
+  const searchInput = document.getElementById('admin-product-search');
+  const tbody = document.getElementById('admin-products-tbody');
+  
+  if (searchInput && tbody) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const filtered = products.filter(prod => {
+        const titleMatch = prod.title && prod.title.toLowerCase().includes(query);
+        const brandMatch = prod.brand && prod.brand.toLowerCase().includes(query);
+        const slugMatch = prod.slug && prod.slug.toLowerCase().includes(query);
+        const catName = prod.categories && prod.categories.name;
+        const catMatch = catName && catName.toLowerCase().includes(query);
+        return titleMatch || brandMatch || slugMatch || catMatch;
+      });
+      tbody.innerHTML = buildTableRows(filtered);
+      bindRowListeners();
     });
-  });
+  }
 }
 
 // 2a. PRODUCT ADD/EDIT MODAL
