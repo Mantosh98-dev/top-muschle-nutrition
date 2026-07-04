@@ -145,7 +145,12 @@ async function init() {
   try {
     // 1. Check if Supabase keys exist
     if (!isSupabaseConfigured()) {
-      renderWelcomeSetup();
+      const isAdminPath = window.location.pathname.startsWith('/admin');
+      if (isAdminPath) {
+        renderWelcomeSetup();
+      } else {
+        renderConnectionError(new Error('Store is temporarily under maintenance. Please check back later.'));
+      }
       return;
     }
     
@@ -221,7 +226,12 @@ async function init() {
     if (isSupabaseConfigured()) {
       renderConnectionError(error);
     } else {
-      renderWelcomeSetup(); // Display setup fallback
+      const isAdminPath = window.location.pathname.startsWith('/admin');
+      if (isAdminPath) {
+        renderWelcomeSetup();
+      } else {
+        renderConnectionError(new Error('Store is temporarily under maintenance. Please check back later.'));
+      }
     }
   } finally {
     hideLoader();
@@ -313,10 +323,18 @@ function renderConnectionError(error) {
           </div>
           <h2>Connection Error</h2>
           <p>We are having trouble connecting to our servers. Please check your internet connection or try again later.</p>
-          <div style="margin-top: 20px; font-size: 0.82rem; color: var(--text-sub); background: rgba(0,0,0,0.03); padding: 12px; border-radius: var(--r-sm); font-family: monospace; text-align: left; word-break: break-all;">
-            ${escapeHTML(error.message || 'Unknown connection issue')}
-          </div>
-          <button id="retry-connection-btn" class="btn btn-primary" style="margin-top: 24px;">
+          
+          <!-- Collapsible technical details for clients/developers -->
+          <details style="margin-top: 20px; text-align: left; cursor: pointer; font-size: 0.8rem; color: var(--text-sub);">
+            <summary style="font-weight: 600; outline: none; margin-bottom: 8px; user-select: none; color: var(--primary-color);">
+              <i class="fas fa-bug" style="margin-right: 4px;"></i> Show Technical Details
+            </summary>
+            <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: var(--r-sm); font-family: monospace; word-break: break-all; margin-top: 6px; line-height: 1.4;">
+              ${escapeHTML(error.message || 'Unknown connection issue')}
+            </div>
+          </details>
+
+          <button id="retry-connection-btn" class="btn btn-primary" style="margin-top: 24px; width: 100%;">
             <i class="fas fa-sync"></i> Retry Connection
           </button>
         </div>
