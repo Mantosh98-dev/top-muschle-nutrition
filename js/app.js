@@ -1597,7 +1597,7 @@ async function renderProductDetails(params) {
                 ${product.whatsapp_enabled ? `
                   <a href="#" target="_blank" rel="noopener" class="pd-wa-btn" id="pd-whatsapp-order-btn">
                     <i class="fab fa-whatsapp"></i>
-                    Buy via WhatsApp
+                    Order via WhatsApp
                   </a>
                   <p class="pd-wa-note">Chat with us to confirm price & availability</p>
                 ` : `
@@ -1642,7 +1642,7 @@ async function renderProductDetails(params) {
                 </button>
                 <div class="faq-content">
                   <div class="faq-body">
-                    When you click "Buy via WhatsApp", a pre-filled chat message is automatically created specifying the product you are interested in. Once you send this message, our team will get in touch with you immediately to confirm the final price, shipping costs, and payment options.
+                    When you click "Order via WhatsApp", a pre-filled chat message is automatically created specifying the product you are interested in. Once you send this message, our team will get in touch with you immediately to confirm the final price, shipping costs, and payment options.
                   </div>
                 </div>
               </div>
@@ -1729,7 +1729,7 @@ async function renderProductDetails(params) {
         <div class="pd-mobile-buy-bar">
           <a href="#" target="_blank" rel="noopener" class="pd-wa-btn">
             <i class="fab fa-whatsapp"></i>
-            Buy via WhatsApp
+            Order via WhatsApp
           </a>
         </div>
       ` : ''}
@@ -1778,7 +1778,7 @@ async function renderProductDetails(params) {
       if (waButtons.length > 0) {
         const sizeStr = variant && variant.weight ? ` (Size: ${variant.weight})` : '';
         const priceStr = variant && variant.price ? ` for *₹${(variant.offer_price || variant.price).toLocaleString('en-IN')}*` : '';
-        const waMessage = `Hello! I'm interested in ordering:\n\n*${product.title}*${sizeStr}${priceStr}\n\nPlease confirm availability. Thank you!`;
+        const waMessage = `Hello, I would like to order: ${product.title} (Code: ${product.slug})${sizeStr}${priceStr}`;
         const cleanedNumber = (globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '');
         const waUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(waMessage)}`;
         waButtons.forEach(btn => btn.href = waUrl);
