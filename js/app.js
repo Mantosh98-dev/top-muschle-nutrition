@@ -176,11 +176,31 @@ async function init() {
       }
     });
     
-    // Admin routes will be handled by importing admin module
-    // We register a lazy hook for admin rendering
-    const adminModule = await import('./admin.js');
-    router.addRoute('/admin', adminModule.renderAdminPage);
-    router.addRoute('/admin/:tab', adminModule.renderAdminPage);
+    // Lazy-load Admin routes so visitors don't download admin code (110KB+)
+    router.addRoute('/admin', async () => {
+      showLoader();
+      try {
+        const adminModule = await import('./admin.js');
+        await adminModule.renderAdminPage();
+      } catch (err) {
+        console.error('Failed to load admin module:', err);
+        showToast('Error loading admin page', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+    router.addRoute('/admin/:tab', async (params) => {
+      showLoader();
+      try {
+        const adminModule = await import('./admin.js');
+        await adminModule.renderAdminPage(params);
+      } catch (err) {
+        console.error('Failed to load admin module:', err);
+        showToast('Error loading admin page', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
     
     // Initial route check
     router.handleRoute();
@@ -415,7 +435,7 @@ export function applyBranding(settings) {
   socials.forEach(s => {
     if (settings[s.key]) {
       footerSocials.innerHTML += `
-        <a href="${settings[s.key]}" target="_blank" class="social-icon" aria-label="${s.icon}">
+        <a href="${settings[s.key]}" target="_blank" rel="noopener" class="social-icon" aria-label="${s.icon}">
           <i class="fab fa-${s.icon}"></i>
         </a>
       `;
@@ -483,8 +503,10 @@ function hexToRgb(hex) {
 async function renderHome() {
   showLoader();
   try {
-    const allProducts = await db.fetchProducts();
-    const categories = await db.fetchCategories();
+    const [allProducts, categories] = await Promise.all([
+      db.fetchProducts(),
+      db.fetchCategories()
+    ]);
 
     const featuredProducts = allProducts.filter(p => p.featured);
     const topProducts = allProducts.filter(p => p.top_product);
@@ -593,7 +615,7 @@ async function renderHome() {
             <div class="hero-glow-sphere"></div>
             <div class="hero-product-images-container">
               ${heroImages.map((imgUrl, idx) => `
-                <img src="${imgUrl}" alt="Premium Supplement Jar ${idx + 1}" class="hero-product-image ${idx === 0 ? 'active' : ''}">
+                <img src="${imgUrl}" alt="Premium Supplement Jar ${idx + 1}" class="hero-product-image ${idx === 0 ? 'active' : ''}" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
               `).join('')}
             </div>
             <div class="floating-badge badge-1" style="${showBadge1 ? '' : 'display: none;'}">
@@ -814,7 +836,7 @@ async function renderHome() {
           <div class="container" style="position:relative; z-index:2; max-width: 680px; display:flex; flex-direction:column; gap:20px; align-items:center; margin: 0 auto;">
             <h2 style="color:#ffffff; font-size:clamp(1.7rem, 3.5vw, 2.4rem); font-weight:800; font-family:var(--font-heading); margin: 0;">${escapeHTML(globalSettings.cta_banner_title || 'Ready to Level Up Your Workouts?')}</h2>
             <p style="color:rgba(255,255,255,0.75); font-size:1.02rem; line-height:1.6; margin: 0;">${escapeHTML(globalSettings.cta_banner_desc || 'Chat with our experts on WhatsApp for personalized supplement guidance.')}</p>
-            <a href="https://wa.me/${(globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-primary" style="margin-top:8px; display:inline-flex; align-items:center; gap:8px;">
+            <a href="https://wa.me/${(globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '')}" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top:8px; display:inline-flex; align-items:center; gap:8px;">
               <i class="fab fa-whatsapp" style="font-size:1.15rem;"></i> ${escapeHTML(globalSettings.cta_banner_btn_text || 'Chat on WhatsApp')}
             </a>
           </div>
@@ -861,7 +883,7 @@ async function renderHome() {
                   </div>
                 </div>
               </div>
-              <a href="https://wa.me/${(globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-whatsapp" style="margin-top: 12px;">
+              <a href="https://wa.me/${(globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '')}" target="_blank" rel="noopener" class="btn btn-whatsapp" style="margin-top: 12px;">
                 <i class="fab fa-whatsapp"></i> Chat on WhatsApp
               </a>
             </div>
@@ -961,8 +983,10 @@ function initProductSliders() {
 async function renderProducts() {
   showLoader();
   try {
-    const products = await db.fetchProducts();
-    const categories = await db.fetchCategories();
+    const [products, categories] = await Promise.all([
+      db.fetchProducts(),
+      db.fetchCategories()
+    ]);
 
     const activeCategory = activeCategoryFilter ? categories.find(c => c.id === activeCategoryFilter) : null;
     const activeCategoryName = activeCategory ? activeCategory.name : 'All Categories';
@@ -1173,7 +1197,7 @@ function renderProductCard(prod, index = 0) {
       </button>
       ${prod.featured ? '<span class="product-badge"><i class="fas fa-star"></i> Featured</span>' : ''}
       <div class="product-img-wrap">
-        <img src="${mainImage}" alt="${prod.title}" loading="lazy">
+        <img src="${mainImage}" alt="${prod.title}" loading="lazy" decoding="async" width="300" height="300">
         <div class="veg-badge"><span class="veg-dot"></span></div>
       </div>
       <div class="product-info">
@@ -1185,7 +1209,7 @@ function renderProductCard(prod, index = 0) {
         ${priceHTML}
         <div class="product-actions-row">
           <a href="/product/${prod.slug}" class="btn btn-card-details">VIEW DETAILS</a>
-          <a href="${cardWaUrl}" target="_blank" class="btn btn-card-buy" onclick="event.stopPropagation();">BUY NOW</a>
+          <a href="${cardWaUrl}" target="_blank" rel="noopener" class="btn btn-card-buy" onclick="event.stopPropagation();">BUY NOW</a>
         </div>
       </div>
     </div>
@@ -1290,23 +1314,20 @@ async function renderProductDetails(params) {
       return;
     }
 
-    // Fetch reviews
+    // Fetch reviews and related products in parallel
     let reviews = [];
-    try {
-      reviews = await db.fetchReviews(product.id);
-    } catch (err) {
-      console.error('Failed to load reviews:', err);
-    }
-    
-    // Fetch related products in the same category
     let relatedProducts = [];
     try {
-      if (product.category_id) {
-        const allCatProducts = await db.fetchProducts({ category_id: product.category_id });
-        relatedProducts = allCatProducts.filter(p => p.id !== product.id).slice(0, 4);
-      }
+      const [fetchedReviews, allCatProducts] = await Promise.all([
+        db.fetchReviews(product.id).catch(err => { console.error('Failed to load reviews:', err); return []; }),
+        product.category_id 
+          ? db.fetchProducts({ category_id: product.category_id }).catch(err => { console.error('Failed to load related products:', err); return []; })
+          : Promise.resolve([])
+      ]);
+      reviews = fetchedReviews;
+      relatedProducts = allCatProducts.filter(p => p.id !== product.id).slice(0, 4);
     } catch (err) {
-      console.error('Failed to load related products:', err);
+      console.error('Failed to load dynamic details:', err);
     }
 
     const totalReviews = reviews.length;
@@ -1574,7 +1595,7 @@ async function renderProductDetails(params) {
 
                 <!-- WhatsApp Order Button -->
                 ${product.whatsapp_enabled ? `
-                  <a href="#" target="_blank" class="pd-wa-btn" id="pd-whatsapp-order-btn">
+                  <a href="#" target="_blank" rel="noopener" class="pd-wa-btn" id="pd-whatsapp-order-btn">
                     <i class="fab fa-whatsapp"></i>
                     Buy via WhatsApp
                   </a>
@@ -1706,7 +1727,7 @@ async function renderProductDetails(params) {
       <!-- Mobile Floating Buy Bar -->
       ${product.whatsapp_enabled ? `
         <div class="pd-mobile-buy-bar">
-          <a href="#" target="_blank" class="pd-wa-btn">
+          <a href="#" target="_blank" rel="noopener" class="pd-wa-btn">
             <i class="fab fa-whatsapp"></i>
             Buy via WhatsApp
           </a>
