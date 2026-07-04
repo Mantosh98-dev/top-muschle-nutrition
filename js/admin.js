@@ -14,7 +14,7 @@ let tempProductImages = [];
 export async function renderAdminPage(params) {
   if (!supabaseClient) {
     showToast('Supabase is not configured yet.', 'error');
-    router.navigate('#home');
+    router.navigate('/');
     return;
   }
 
@@ -101,7 +101,7 @@ function renderLogin() {
       
       currentSession = data.session;
       showToast('Welcome back, Admin!', 'success');
-      router.navigate('#admin/dashboard');
+      router.navigate('/admin/dashboard');
     } catch (err) {
       console.error('Login failed:', err);
       showToast(err.message || 'Authentication failed', 'error');
@@ -184,7 +184,7 @@ async function renderDashboard() {
       const tab = btn.dataset.tab;
       if (tab) {
         if (sidebarEl) sidebarEl.classList.remove('menu-open');
-        router.navigate(`#admin/${tab}`);
+        router.navigate(`/admin/${tab}`);
       }
     });
   });
@@ -237,10 +237,10 @@ async function renderDashboard() {
       activeTab = 'dashboard';
       showToast('Logged out successfully', 'success');
       
-      if (window.location.hash === '#admin') {
+      if (window.location.pathname === '/admin') {
         await renderAdminPage();
       } else {
-        router.navigate('#admin');
+        router.navigate('/admin');
       }
     } catch (err) {
       console.error('Logout handler crash:', err);
@@ -396,17 +396,17 @@ async function renderTabDashboard(workspace, banner) {
 
   document.getElementById('dash-add-product-btn').addEventListener('click', () => {
     activeTab = 'products';
-    router.navigate('#admin/products');
+    router.navigate('/admin/products');
     setTimeout(() => openProductModal(), 100);
   });
   document.getElementById('dash-gen-code-btn').addEventListener('click', () => {
     activeTab = 'codes';
-    router.navigate('#admin/codes');
+    router.navigate('/admin/codes');
     setTimeout(() => openCodeModal(), 100);
   });
   document.getElementById('dash-edit-settings-btn').addEventListener('click', () => {
     activeTab = 'settings';
-    router.navigate('#admin/settings');
+    router.navigate('/admin/settings');
   });
 }
 
@@ -2226,7 +2226,7 @@ async function renderTabCustomization(workspace) {
         </div>
         <div class="form-group" style="margin-bottom:24px;">
           <label class="form-label" for="settings-promo-banner-link">Banner Click Destination Link</label>
-          <input type="text" id="settings-promo-banner-link" class="form-input" placeholder="e.g. #products or category link" value="${escapeHTML(settings.promo_banner_link || '')}">
+          <input type="text" id="settings-promo-banner-link" class="form-input" placeholder="e.g. /products or category link" value="${escapeHTML(settings.promo_banner_link || '')}">
         </div>
 
         <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
@@ -2657,7 +2657,7 @@ async function renderTabCustomization(workspace) {
           const el = document.getElementById(`settings-hero-image-${idx}`);
           return el ? el.value.trim() : '';
         }).filter(Boolean),
-        hero_product_image_url: (document.getElementById('settings-hero-image-0') ? document.getElementById('settings-hero-image-0').value.trim() : '') || 'hero_product.png',
+        hero_product_image_url: (document.getElementById('settings-hero-image-0') ? document.getElementById('settings-hero-image-0').value.trim() : '') || '/hero_product.png',
         hero_badge_1_text: document.getElementById('settings-hero-badge-1-text').value.trim() || null,
         hero_badge_1_icon: document.getElementById('settings-hero-badge-1-icon').value.trim() || null,
         hero_badge_2_text: document.getElementById('settings-hero-badge-2-text').value.trim() || null,

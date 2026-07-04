@@ -14,7 +14,7 @@ export const DEFAULT_SETTINGS = {
   hero_description: "Premium quality supplements designed to power your workouts and speed up recovery. Order directly via WhatsApp.",
   hero_bg_type: "gradient",
   hero_bg_gradient: "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)",
-  hero_product_image_url: "hero_product.png",
+  hero_product_image_url: "/hero_product.png",
   hero_product_images: [],
   hero_badge_1_text: "100% Genuine",
   hero_badge_1_icon: "fas fa-shield-halved",
@@ -155,13 +155,13 @@ async function init() {
     applyBranding(globalSettings);
     
     // 3. Register routes
-    router.addRoute('#home', renderHome);
-    router.addRoute('#products', renderProducts);
-    router.addRoute('#product/:slug', renderProductDetails);
-    router.addRoute('#verify', renderProductVerification);
+    router.addRoute('/', renderHome);
+    router.addRoute('/products', renderProducts);
+    router.addRoute('/product/:slug', renderProductDetails);
+    router.addRoute('/verify', renderProductVerification);
     
     // Section scroll router helper for Contact
-    router.addRoute('#contact', () => {
+    router.addRoute('/contact', () => {
       const contactSection = document.getElementById('contact-section');
       if (contactSection) {
         contactSection.scrollIntoView({ behavior: 'smooth' });
@@ -178,8 +178,8 @@ async function init() {
     // Admin routes will be handled by importing admin module
     // We register a lazy hook for admin rendering
     const adminModule = await import('./admin.js');
-    router.addRoute('#admin', adminModule.renderAdminPage);
-    router.addRoute('#admin/:tab', adminModule.renderAdminPage);
+    router.addRoute('/admin', adminModule.renderAdminPage);
+    router.addRoute('/admin/:tab', adminModule.renderAdminPage);
     
     // Initial route check
     router.handleRoute();
@@ -552,7 +552,7 @@ async function renderHome() {
 
     const heroImages = Array.isArray(globalSettings.hero_product_images) && globalSettings.hero_product_images.length > 0
       ? globalSettings.hero_product_images
-      : [globalSettings.hero_product_image_url || 'hero_product.png'];
+      : [globalSettings.hero_product_image_url || '/hero_product.png'];
 
     // Hero Section
     let html = `
@@ -564,8 +564,8 @@ async function renderHome() {
             <h1 class="hero-title">${globalSettings.hero_title}</h1>
             <p class="hero-description">${globalSettings.hero_description}</p>
             <div class="hero-buttons">
-              <a href="#products" class="btn btn-primary">Shop Products <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i></a>
-              <a href="#verify" class="btn btn-secondary">Verify Product</a>
+              <a href="/products" class="btn btn-primary">Shop Products <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i></a>
+              <a href="/verify" class="btn btn-secondary">Verify Product</a>
             </div>
             <div class="hero-stats">
               <div class="hero-stat">
@@ -607,7 +607,7 @@ async function renderHome() {
       html += `
         <section class="section promo-banner-section" style="padding: 30px 0; background: var(--gray-50); border-bottom: 1px solid var(--border-color);">
           <div class="container">
-            <a href="${globalSettings.promo_banner_link || '#products'}" style="display:block; overflow:hidden; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+            <a href="${globalSettings.promo_banner_link || '/products'}" style="display:block; overflow:hidden; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
               <img src="${globalSettings.promo_banner_image_url}" alt="Promotional Banner" style="width:100%; height:auto; object-fit:cover; display:block;">
             </a>
           </div>
@@ -680,12 +680,12 @@ async function renderHome() {
               <i class="fas fa-box-open"></i>
               <h3>No Featured Products</h3>
               <p>Check back later or browse our full catalogue.</p>
-              <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+              <a href="/products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
             </div>
           `}
           ${featuredProducts.length > 0 ? `
             <div style="text-align: center; margin-top: 48px;" class="animate-on-scroll">
-              <a href="#products" class="btn btn-outline">View All Products <i class="fas fa-arrow-right" style="font-size: 0.8rem; margin-left: 4px;"></i></a>
+              <a href="/products" class="btn btn-outline">View All Products <i class="fas fa-arrow-right" style="font-size: 0.8rem; margin-left: 4px;"></i></a>
             </div>
           ` : ''}
         </div>
@@ -727,7 +727,7 @@ async function renderHome() {
                 <i class="fas fa-box-open"></i>
                 <h3>No Top Products Listed</h3>
                 <p>Check back later or browse our full catalogue.</p>
-                <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+                <a href="/products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
               </div>
             `}
           </div>
@@ -759,7 +759,7 @@ async function renderHome() {
                 <i class="fas fa-box-open"></i>
                 <h3>No Best Sellers Listed</h3>
                 <p>Check back later or browse our full catalogue.</p>
-                <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+                <a href="/products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
               </div>
             `}
           </div>
@@ -791,7 +791,7 @@ async function renderHome() {
                 <i class="fas fa-box-open"></i>
                 <h3>No Trending Products Listed</h3>
                 <p>Check back later or browse our full catalogue.</p>
-                <a href="#products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
+                <a href="/products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
               </div>
             `}
           </div>
@@ -879,7 +879,7 @@ async function renderHome() {
     document.querySelectorAll('.category-card').forEach(card => {
       card.addEventListener('click', () => {
         activeCategoryFilter = card.dataset.categoryId;
-        router.navigate('#products');
+        router.navigate('/products');
       });
     });
 
@@ -1160,7 +1160,7 @@ function renderProductCard(prod, index = 0) {
   `;
 
   return `
-    <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.btn-card-buy, .wishlist-btn')) window.location.hash = '#product/${prod.slug}';">
+    <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.btn-card-buy, .wishlist-btn')) router.navigate('/product/${prod.slug}');">
       <button class="wishlist-btn" aria-label="Add to Wishlist" onclick="event.stopPropagation(); this.querySelector('i').classList.toggle('fas'); this.querySelector('i').classList.toggle('far'); this.classList.toggle('active');">
         <i class="far fa-heart"></i>
       </button>
@@ -1177,7 +1177,7 @@ function renderProductCard(prod, index = 0) {
         <p class="product-desc-weight">${prod.weight ? escapeHTML(prod.weight) : (hasVariants && prod.variants[0].weight ? escapeHTML(prod.variants[0].weight) : 'Standard Size')}</p>
         ${priceHTML}
         <div class="product-actions-row">
-          <a href="#product/${prod.slug}" class="btn btn-card-details">VIEW DETAILS</a>
+          <a href="/product/${prod.slug}" class="btn btn-card-details">VIEW DETAILS</a>
           <a href="${cardWaUrl}" target="_blank" class="btn btn-card-buy" onclick="event.stopPropagation();">BUY NOW</a>
         </div>
       </div>
@@ -1275,7 +1275,7 @@ async function renderProductDetails(params) {
               <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:var(--primary);"></i>
               <h2>Product Not Found</h2>
               <p>The product you are looking for does not exist or has been removed.</p>
-              <a href="#products" class="btn btn-primary" style="margin-top:16px;"><i class="fas fa-arrow-left"></i> Back to Products</a>
+              <a href="/products" class="btn btn-primary" style="margin-top:16px;"><i class="fas fa-arrow-left"></i> Back to Products</a>
             </div>
           </div>
         </section>
@@ -1477,9 +1477,9 @@ async function renderProductDetails(params) {
             <span>Back</span>
           </button>
           <nav class="pd-breadcrumb">
-            <a href="#home">Home</a>
+            <a href="/">Home</a>
             <i class="fas fa-chevron-right"></i>
-            <a href="#products">Products</a>
+            <a href="/products">Products</a>
             <i class="fas fa-chevron-right"></i>
             <span>${escapeHTML(product.title)}</span>
           </nav>
@@ -1580,7 +1580,7 @@ async function renderProductDetails(params) {
                 `}
 
                 <!-- Verify authenticity link -->
-                <a href="#verify" class="pd-verify-link">
+                <a href="/verify" class="pd-verify-link">
                   <i class="fas fa-qrcode"></i> Verify product
                 </a>
               </div>

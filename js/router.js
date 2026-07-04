@@ -1,10 +1,44 @@
-// Hash-based client-side router for the SPA
+// Client-side router for the SPA using clean URLs
 
 class Router {
   constructor() {
     this.routes = {};
-    window.addEventListener('hashchange', () => this.handleRoute());
+    window.router = this; // Expose router globally for inline click event handlers
+    window.addEventListener('popstate', () => this.handleRoute());
     window.addEventListener('load', () => this.handleRoute());
+
+    // Intercept clicks on links for SPA routing
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('a');
+      if (!target) return;
+
+      // Ignore external links, new tabs, downloads, and modified clicks
+      if (
+        target.target === '_blank' ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey ||
+        e.button !== 0 ||
+        target.hasAttribute('download')
+      ) {
+        return;
+      }
+
+      const href = target.getAttribute('href');
+      if (!href) return;
+
+      // Only handle internal routing paths
+      try {
+        const url = new URL(target.href);
+        if (url.origin === window.location.origin) {
+          e.preventDefault();
+          this.navigate(url.pathname + url.search + url.hash);
+        }
+      } catch (err) {
+        // If not a valid URL, let it load naturally
+      }
+    });
   }
 
   // Register a route and its callback handler
@@ -14,7 +48,12 @@ class Router {
 
   // Handle route change
   handleRoute() {
-    const hash = window.location.hash || '#home';
+    let path = window.location.pathname || '/';
+
+    // Normalize path by removing trailing slash (except for '/')
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.slice(0, -1);
+    }
     
     let matchedHandler = null;
     let params = {};
@@ -28,7 +67,7 @@ class Router {
         .replace(/:[a-zA-Z0-9_]+/g, '([^\\/]+)') + '$';
       
       const regex = new RegExp(regexPattern);
-      const match = hash.match(regex);
+      const match = path.match(regex);
 
       if (match) {
         matchedHandler = this.routes[pattern];
@@ -45,31 +84,31 @@ class Router {
 
     // Run active view handler or redirect to Home
     if (matchedHandler) {
-      if (hash !== '#contact') {
+      if (path !== '/contact') {
         window.scrollTo({ top: 0, behavior: 'instant' });
       }
       matchedHandler(params);
-      this.updateNavbarActive(hash);
+      this.updateNavbarActive(path);
     } else {
-      console.warn(`Route "${hash}" not recognized, redirecting to #home.`);
-      window.location.hash = '#home';
+      console.warn(`Route "${path}" not recognized, redirecting to /.`);
+      this.navigate('/');
     }
   }
 
   // Visual helper to update active nav items
-  updateNavbarActive(hash) {
+  updateNavbarActive(path) {
     // Clear active links
     document.querySelectorAll('.nav-link').forEach(link => {
       link.classList.remove('active');
     });
 
-    // Match exact hash or parent hash (e.g., matching #product/xxx to Products menu)
-    let targetLink = document.querySelector(`.nav-link[href="${hash}"]`);
+    // Match exact path or parent path (e.g., matching /product/xxx to Products menu)
+    let targetLink = document.querySelector(`.nav-link[href="${path}"]`);
     
     if (!targetLink) {
-      if (hash.startsWith('#product/')) {
+      if (path.startsWith('/product/')) {
         targetLink = document.getElementById('nav-products');
-      } else if (hash.startsWith('#admin')) {
+      } else if (path.startsWith('/admin')) {
         targetLink = document.getElementById('nav-admin');
       }
     }
@@ -79,8 +118,13 @@ class Router {
     }
   }
 
-  navigate(hash) {
-    window.location.hash = hash;
+  navigate(path) {
+    // Normalize path by removing trailing slash (except for '/')
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.slice(0, -1);
+    }
+    history.pushState(null, '', path);
+    this.handleRoute();
   }
 }
 
