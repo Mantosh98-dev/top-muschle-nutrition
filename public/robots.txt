@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://topmusclenutrition.com/sitemap.xml
+Sitemap: https://www.topmusclenutrition.in/sitemap.xml
