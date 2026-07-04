@@ -10,6 +10,7 @@ export const DEFAULT_SETTINGS = {
   secondary_color: "#ffffff",
   seo_title: "Top Muscle Nutrition - Premium Supplements",
   seo_description: "Shop premium protein, glucose, and energy drinks. Verify product and order via WhatsApp.",
+  og_image_url: "",
   hero_title: "Fuel Your Performance",
   hero_description: "Premium quality supplements designed to power your workouts and speed up recovery. Order directly via WhatsApp.",
   hero_bg_type: "gradient",
@@ -302,7 +303,10 @@ export function applyBranding(settings) {
   if (ogDesc) ogDesc.setAttribute('content', settings.seo_description);
   
   const ogImage = document.getElementById('og-image');
-  if (ogImage && settings.brand_logo_url) ogImage.setAttribute('content', settings.brand_logo_url);
+  if (ogImage) {
+    const defaultOgUrl = window.location.origin + '/og-image.jpg';
+    ogImage.setAttribute('content', settings.og_image_url || defaultOgUrl);
+  }
   
   const twitterTitle = document.getElementById('twitter-title');
   if (twitterTitle) twitterTitle.setAttribute('content', settings.seo_title);
@@ -311,7 +315,10 @@ export function applyBranding(settings) {
   if (twitterDesc) twitterDesc.setAttribute('content', settings.seo_description);
   
   const twitterImage = document.getElementById('twitter-image');
-  if (twitterImage && settings.brand_logo_url) twitterImage.setAttribute('content', settings.brand_logo_url);
+  if (twitterImage) {
+    const defaultOgUrl = window.location.origin + '/og-image.jpg';
+    twitterImage.setAttribute('content', settings.og_image_url || defaultOgUrl);
+  }
 
   // Update JSON-LD Structured Data
   const structuredDataEl = document.getElementById('structured-data');
@@ -323,7 +330,7 @@ export function applyBranding(settings) {
         "name": settings.brand_name,
         "description": settings.seo_description,
         "url": window.location.origin + window.location.pathname,
-        "image": settings.brand_logo_url || (window.location.origin + "/logo_temp.png"),
+        "image": settings.og_image_url || (window.location.origin + "/og-image.jpg"),
         "contactPoint": {
           "@type": "ContactPoint",
           "telephone": settings.contact_phone,

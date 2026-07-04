@@ -1889,9 +1889,30 @@ async function renderTabSettings(workspace) {
           <input type="text" id="settings-seo-title" class="form-input" value="${escapeHTML(settings.seo_title)}">
         </div>
         
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:16px;">
           <label class="form-label" for="settings-seo-desc">Meta Description (SEO)</label>
-          <textarea id="settings-seo-desc" class="form-input" style="height:100px; resize:none;">${escapeHTML(settings.seo_description)}</textarea>
+          <textarea id="settings-seo-desc" class="form-input" style="height:80px; resize:none;">${escapeHTML(settings.seo_description)}</textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-og-image">Open Graph Share Image URL (SEO)</label>
+          <div style="display:flex; gap:12px;">
+            <input type="text" id="settings-og-image" class="form-input" placeholder="https://image-link.com/og-image.jpg" value="${escapeHTML(settings.og_image_url || '')}" ${'og_image_url' in settings ? '' : 'disabled'}>
+            <button class="btn btn-dark" id="settings-og-image-upload-btn" style="padding:12px;" type="button" aria-label="Upload OG image file" ${'og_image_url' in settings ? '' : 'disabled'}><i class="fas fa-upload"></i></button>
+            <input type="file" id="settings-og-image-file-input" style="display:none;" accept="image/*">
+          </div>
+          <div id="settings-og-image-preview-wrap">
+            ${settings.og_image_url ? `<img src="${escapeHTML(settings.og_image_url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
+          </div>
+          ${'og_image_url' in settings ? `
+            <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; display: block;">
+              Recommended size: 1200x630px. Keep file size under 300KB for WhatsApp previews. Falls back to default <code>/og-image.jpg</code>.
+            </span>
+          ` : `
+            <span style="font-size: 0.8rem; color: #e53935; margin-top: 4px; display: block;">
+              <i class="fas fa-exclamation-triangle"></i> To customize this from the admin panel, please add the <code>og_image_url</code> column to your Supabase <code>settings</code> table. (Falls back to default <code>/og-image.jpg</code>)
+            </span>
+          `}
         </div>
       </div>
       
@@ -2012,6 +2033,43 @@ async function renderTabSettings(workspace) {
     });
   }
 
+  // OG Image file upload handler
+  const ogFileBtn = document.getElementById('settings-og-image-upload-btn');
+  const ogFileInput = document.getElementById('settings-og-image-file-input');
+  if (ogFileBtn && ogFileInput) {
+    ogFileBtn.addEventListener('click', () => ogFileInput.click());
+    ogFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showLoader();
+      try {
+        const publicUrl = await db.uploadImage(file, 'brand-assets');
+        document.getElementById('settings-og-image').value = publicUrl;
+        const previewWrap = document.getElementById('settings-og-image-preview-wrap');
+        if (previewWrap) {
+          previewWrap.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">`;
+        }
+        showToast('Open Graph image uploaded successfully', 'success');
+      } catch (err) {
+        showToast('Open Graph image upload failed', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
+
+  // OG Image manual input preview syncing
+  const ogImageInput = document.getElementById('settings-og-image');
+  if (ogImageInput) {
+    ogImageInput.addEventListener('input', () => {
+      const url = ogImageInput.value.trim();
+      const previewWrap = document.getElementById('settings-og-image-preview-wrap');
+      if (previewWrap) {
+        previewWrap.innerHTML = url ? `<img src="${escapeHTML(url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : '';
+      }
+    });
+  }
+
   // Save Settings Click
   const saveBtn = document.getElementById('settings-save-btn');
   if (saveBtn) {
@@ -2045,6 +2103,10 @@ async function renderTabSettings(workspace) {
         seo_title: document.getElementById('settings-seo-title').value.trim(),
         seo_description: document.getElementById('settings-seo-desc').value.trim()
       };
+
+      if ('og_image_url' in settings) {
+        payload.og_image_url = document.getElementById('settings-og-image').value.trim() || null;
+      }
 
       showLoader();
       try {

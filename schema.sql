@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS settings (
   favicon_url TEXT,
   seo_title TEXT NOT NULL DEFAULT 'Top Muscle Nutrition - Premium Supplements',
   seo_description TEXT NOT NULL DEFAULT 'Shop premium protein, glucose, and energy drinks. Verify product authenticity and order via WhatsApp.',
+  og_image_url TEXT,
   hero_title TEXT NOT NULL DEFAULT 'Fuel Your Performance',
   hero_description TEXT NOT NULL DEFAULT 'Premium quality supplements designed to power your workouts and speed up recovery. Order directly via WhatsApp.',
   hero_bg_type TEXT NOT NULL DEFAULT 'gradient', -- 'gradient' or 'image'
