@@ -7,6 +7,23 @@ export function isSupabaseConfigured() {
   return !!(supabaseUrl && supabaseAnonKey);
 }
 
+let resolveReady;
+export const clientReady = new Promise((resolve) => {
+  resolveReady = resolve;
+});
+
+export let supabaseClient = null;
+
+function tryInitialize() {
+  if (supabaseClient) return true;
+  if (window.supabase && supabaseUrl && supabaseAnonKey) {
+    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    resolveReady(supabaseClient);
+    return true;
+  }
+  return false;
+}
+
 export function saveSupabaseConfig(url, key) {
   localStorage.setItem('SUPABASE_URL', url);
   localStorage.setItem('SUPABASE_ANON_KEY', key);
@@ -14,6 +31,7 @@ export function saveSupabaseConfig(url, key) {
   supabaseAnonKey = key;
   if (window.supabase) {
     supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    resolveReady(supabaseClient);
   }
 }
 
@@ -29,17 +47,20 @@ export function clearSupabaseConfig() {
   }
 }
 
-export let supabaseClient = null;
+// Try initializing immediately
+tryInitialize();
 
-if (window.supabase) {
-  if (supabaseUrl && supabaseAnonKey) {
-    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-  }
-} else {
-  // If Supabase CDN hasn't loaded yet, try to initialize it after a short delay or on DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', () => {
-    if (window.supabase && supabaseUrl && supabaseAnonKey) {
-      supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+// Also try on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', tryInitialize);
+
+// Poll every 50ms in case the Supabase script is still loading asynchronously
+if (!supabaseClient && supabaseUrl && supabaseAnonKey) {
+  const interval = setInterval(() => {
+    if (tryInitialize()) {
+      clearInterval(interval);
     }
-  });
+  }, 50);
+  
+  // Clean up interval after 5 seconds to avoid infinite loop
+  setTimeout(() => clearInterval(interval), 5000);
 }

@@ -1,6 +1,6 @@
 import { router } from './router.js';
 import * as db from './db.js';
-import { isSupabaseConfigured, saveSupabaseConfig } from './supabase-client.js';
+import { isSupabaseConfigured, saveSupabaseConfig, clientReady } from './supabase-client.js';
 
 export const DEFAULT_SETTINGS = {
   brand_name: "Top Muscle Nutrition",
@@ -149,8 +149,18 @@ async function init() {
       return;
     }
     
-    // 2. Fetch and apply branding settings
+    // Wait for Supabase SDK to load and client to initialize (with a 4-second timeout)
     showLoader();
+    try {
+      await Promise.race([
+        clientReady,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase client failed to load (timeout)')), 4000))
+      ]);
+    } catch (timeoutErr) {
+      throw new Error('Supabase SDK timeout. Please check your internet connection.');
+    }
+    
+    // 2. Fetch and apply branding settings
     const fetchedSettings = await db.fetchSettings();
     globalSettings = mergeSettings(fetchedSettings);
     applyBranding(globalSettings);
@@ -207,8 +217,12 @@ async function init() {
     
   } catch (error) {
     console.error('App init failed:', error);
-    showToast('Failed to load website settings. Is Supabase running?', 'error');
-    renderWelcomeSetup(); // Display setup fallback
+    showToast('Failed to connect to database.', 'error');
+    if (isSupabaseConfigured()) {
+      renderConnectionError(error);
+    } else {
+      renderWelcomeSetup(); // Display setup fallback
+    }
   } finally {
     hideLoader();
   }
@@ -285,6 +299,33 @@ function renderWelcomeSetup() {
     saveSupabaseConfig(url, key);
     showToast('Credentials saved successfully. Reloading...', 'success');
     setTimeout(() => window.location.reload(), 1000);
+  });
+}
+
+// Connection error screen if database query fails but credentials exist
+function renderConnectionError(error) {
+  appContent.innerHTML = `
+    <section class="section">
+      <div class="container verify-wrapper">
+        <div class="verify-card" style="border-top: 4px solid var(--primary-color);">
+          <div class="category-icon-box" style="margin: 0 auto; color: var(--primary-color);">
+            <i class="fas fa-wifi"></i>
+          </div>
+          <h2>Connection Error</h2>
+          <p>We are having trouble connecting to our servers. Please check your internet connection or try again later.</p>
+          <div style="margin-top: 20px; font-size: 0.82rem; color: var(--text-sub); background: rgba(0,0,0,0.03); padding: 12px; border-radius: var(--r-sm); font-family: monospace; text-align: left; word-break: break-all;">
+            ${escapeHTML(error.message || 'Unknown connection issue')}
+          </div>
+          <button id="retry-connection-btn" class="btn btn-primary" style="margin-top: 24px;">
+            <i class="fas fa-sync"></i> Retry Connection
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  document.getElementById('retry-connection-btn').addEventListener('click', () => {
+    window.location.reload();
   });
 }
 
