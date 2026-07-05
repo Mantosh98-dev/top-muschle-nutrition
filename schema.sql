@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  approved BOOLEAN DEFAULT TRUE
+  approved BOOLEAN DEFAULT FALSE
 );
 
 -- Enable RLS

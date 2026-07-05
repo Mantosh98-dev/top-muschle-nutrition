@@ -1,7 +1,7 @@
 import CONFIG from './config.js';
 
-let supabaseUrl = CONFIG.SUPABASE_URL || localStorage.getItem('SUPABASE_URL') || '';
-let supabaseAnonKey = CONFIG.SUPABASE_ANON_KEY || localStorage.getItem('SUPABASE_ANON_KEY') || '';
+let supabaseUrl = localStorage.getItem('SUPABASE_URL') || CONFIG.SUPABASE_URL || '';
+let supabaseAnonKey = localStorage.getItem('SUPABASE_ANON_KEY') || CONFIG.SUPABASE_ANON_KEY || '';
 
 export function isSupabaseConfigured() {
   return !!(supabaseUrl && supabaseAnonKey);

@@ -84,6 +84,47 @@ export function escapeHTML(str) {
   );
 }
 
+// Wishlist helper functions
+export function getWishlist() {
+  try {
+    return JSON.parse(localStorage.getItem('wishlist') || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+export function toggleWishlist(productId) {
+  let wishlist = getWishlist();
+  const index = wishlist.indexOf(productId);
+  let added = false;
+  if (index > -1) {
+    wishlist.splice(index, 1);
+  } else {
+    wishlist.push(productId);
+    added = true;
+  }
+  localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  return added;
+}
+
+export function isWishlisted(productId) {
+  return getWishlist().includes(productId);
+}
+
+// Expose toggleWishlist to the global scope for use in HTML onclick handlers
+window.toggleWishlist = toggleWishlist;
+
+export function handleWishlistToggleClick(buttonEl, productId) {
+  const added = toggleWishlist(productId);
+  const heartIcon = buttonEl.querySelector('i');
+  if (heartIcon) {
+    heartIcon.className = added ? 'fas fa-heart' : 'far fa-heart';
+  }
+  buttonEl.classList.toggle('active', added);
+  showToast(added ? 'Added to wishlist' : 'Removed from wishlist', 'success');
+}
+window.handleWishlistToggleClick = handleWishlistToggleClick;
+
 // Global variables
 export let globalSettings = null;
 let activeCategoryFilter = null;
@@ -169,6 +210,75 @@ async function init() {
     const fetchedSettings = await db.fetchSettings();
     globalSettings = mergeSettings(fetchedSettings);
     applyBranding(globalSettings);
+
+    // 2b. Fetch and render categories in dropdown
+    let categoriesList = [];
+    try {
+      categoriesList = await db.fetchCategories();
+    } catch (e) {
+      console.warn("Failed to fetch categories for navigation dropdown", e);
+    }
+
+    const navDropdown = document.getElementById('nav-products-dropdown');
+    if (navDropdown && categoriesList && categoriesList.length > 0) {
+      // Clear any dynamic elements except the first one ("All Products")
+      const firstItem = navDropdown.firstElementChild;
+      navDropdown.innerHTML = '';
+      if (firstItem) {
+        navDropdown.appendChild(firstItem);
+      }
+
+      categoriesList.forEach(cat => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `/products?category=${cat.id}`;
+        a.className = 'dropdown-sublink';
+        a.textContent = cat.name;
+
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          activeCategoryFilter = cat.id;
+          router.navigate(`/products`);
+
+          mobileMenuBtn.classList.remove('active');
+          navMenu.classList.remove('active');
+          mobileMenuBtn.setAttribute('aria-expanded', 'false');
+
+          const submenu = document.getElementById('nav-products-dropdown');
+          const toggleIcon = document.querySelector('.dropdown-toggle-btn i');
+          if (submenu) submenu.classList.remove('active');
+          if (toggleIcon) {
+            toggleIcon.className = 'fas fa-plus';
+            document.querySelector('.dropdown-toggle-btn').setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        li.appendChild(a);
+        navDropdown.appendChild(li);
+      });
+
+      // Bind "All Products" sublink click handler
+      const allProdSublink = navDropdown.querySelector('.dropdown-sublink');
+      if (allProdSublink) {
+        allProdSublink.addEventListener('click', (e) => {
+          e.preventDefault();
+          activeCategoryFilter = null;
+          router.navigate('/products');
+
+          mobileMenuBtn.classList.remove('active');
+          navMenu.classList.remove('active');
+          mobileMenuBtn.setAttribute('aria-expanded', 'false');
+
+          const submenu = document.getElementById('nav-products-dropdown');
+          const toggleIcon = document.querySelector('.dropdown-toggle-btn i');
+          if (submenu) submenu.classList.remove('active');
+          if (toggleIcon) {
+            toggleIcon.className = 'fas fa-plus';
+            document.querySelector('.dropdown-toggle-btn').setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+    }
     
     // 3. Register routes
     router.addRoute('/', renderHome);
@@ -265,6 +375,22 @@ function setupGlobalListeners() {
       navbar.classList.remove('scrolled');
     }
   });
+
+  // Mobile Navigation Submenu Toggle
+  const dropdownToggle = document.querySelector('.dropdown-toggle-btn');
+  const dropdownSubmenu = document.getElementById('nav-products-dropdown');
+  if (dropdownToggle && dropdownSubmenu) {
+    dropdownToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const isActive = dropdownSubmenu.classList.toggle('active');
+      dropdownToggle.setAttribute('aria-expanded', isActive);
+      const icon = dropdownToggle.querySelector('i');
+      if (icon) {
+        icon.className = isActive ? 'fas fa-minus' : 'fas fa-plus';
+      }
+    });
+  }
 }
 
 // Welcome setup view if database settings are not configured yet
@@ -1249,10 +1375,14 @@ function renderProductCard(prod, index = 0) {
     </div>
   `;
 
+  const wishlisted = isWishlisted(prod.id);
+  const heartClass = wishlisted ? 'fas' : 'far';
+  const activeClass = wishlisted ? 'active' : '';
+
   return `
     <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.btn-card-buy, .wishlist-btn')) router.navigate('/product/${prod.slug}');">
-      <button class="wishlist-btn" aria-label="Add to Wishlist" onclick="event.stopPropagation(); this.querySelector('i').classList.toggle('fas'); this.querySelector('i').classList.toggle('far'); this.classList.toggle('active');">
-        <i class="far fa-heart"></i>
+      <button class="wishlist-btn ${activeClass}" aria-label="Add to Wishlist" onclick="event.stopPropagation(); window.handleWishlistToggleClick(this, '${prod.id}');">
+        <i class="${heartClass} fa-heart"></i>
       </button>
       ${prod.featured ? '<span class="product-badge"><i class="fas fa-star"></i> Featured</span>' : ''}
       <div class="product-img-wrap">
@@ -1959,10 +2089,10 @@ async function renderProductDetails(params) {
             reviewer_name,
             rating,
             comment: comment || null,
-            approved: true
+            approved: false
           });
 
-          showToast('Review submitted successfully!', 'success');
+          showToast('Review submitted successfully! It will be visible once approved by the administrator.', 'success');
           renderProductDetails(params);
         } catch (err) {
           console.error('Failed to submit review:', err);

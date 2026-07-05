@@ -3913,4 +3913,120 @@ textarea.form-input { resize: vertical; }
   margin-left: 0;
 }
 
+/* ── Navigation Dropdown Styling ── */
+@media (min-width: 992px) {
+  .nav-item-dropdown {
+    position: relative;
+  }
+  
+  .dropdown-submenu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--white);
+    min-width: 200px;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 10px 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--t) var(--ease);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 1000;
+  }
+
+  .nav-item-dropdown:hover .dropdown-submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(4px);
+  }
+
+  .dropdown-sublink {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    padding: 8px 14px;
+    border-radius: var(--r-sm);
+    transition: all var(--t) var(--ease);
+    display: block;
+    white-space: nowrap;
+  }
+
+  .dropdown-sublink:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  
+  .dropdown-toggle-btn {
+    display: none;
+  }
+  
+  .nav-link-wrap {
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .nav-item-dropdown {
+    width: 100%;
+  }
+
+  .nav-link-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .nav-link-wrap .nav-link {
+    width: auto;
+    flex: 1;
+  }
+
+  .dropdown-toggle-btn {
+    background: none;
+    border: none;
+    font-size: 1.15rem;
+    color: var(--text-sub);
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t) var(--ease);
+  }
+
+  .dropdown-submenu {
+    display: none;
+    list-style: none;
+    padding-left: 20px;
+    width: 100%;
+    margin-top: 2px;
+    margin-bottom: 8px;
+  }
+
+  .dropdown-submenu.active {
+    display: block;
+  }
+
+  .dropdown-sublink {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-sub);
+    padding: 10px 18px;
+    display: block;
+    border-radius: var(--r-sm);
+  }
+
+  .dropdown-sublink:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+}
+
 
