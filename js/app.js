@@ -778,13 +778,17 @@ function renderHeroSlider(settings) {
           ${activeCards.map((card, idx) => {
             const desktopImg = card.image_url;
             const mobileImg = card.mobile_image_url || card.image_url;
+            const pictureHtml = `
+              <picture style="width:100%; height:100%; display:block;">
+                <source media="(max-width: 768px)" srcset="${mobileImg}">
+                <img src="${desktopImg}" alt="Hero Banner ${idx + 1}" class="slider-card-img" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
+              </picture>
+            `;
+            const innerHtml = card.link_url ? `<a href="${escapeHTML(card.link_url)}" style="display:block; width:100%; height:100%; cursor:pointer;">${pictureHtml}</a>` : pictureHtml;
 
             return `
               <div class="hero-slider-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
-                <picture style="width:100%; height:100%; display:block;">
-                  <source media="(max-width: 768px)" srcset="${mobileImg}">
-                  <img src="${desktopImg}" alt="Hero Banner ${idx + 1}" class="slider-card-img" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
-                </picture>
+                ${innerHtml}
               </div>
             `;
           }).join('')}
@@ -834,6 +838,7 @@ function initHeroSlider(settings) {
   let currentTranslate = 0;
   let prevTranslate = 0;
   let dragStartTime = 0;
+  let dragMoveDistance = 0;
 
   const getCardWidth = () => viewport.offsetWidth;
 
@@ -967,6 +972,7 @@ function initHeroSlider(settings) {
     isDragging = true;
     dragStartTime = Date.now();
     startX = e.clientX;
+    dragMoveDistance = 0;
     stopAutoSlide();
     track.style.transition = 'none';
     viewport.style.cursor = 'grabbing';
@@ -976,6 +982,7 @@ function initHeroSlider(settings) {
     if (!isDragging) return;
     const currentX = e.clientX;
     const diffX = currentX - startX;
+    dragMoveDistance = Math.abs(diffX);
     currentTranslate = prevTranslate + diffX;
     track.style.transform = `translateX(${currentTranslate}px)`;
   };
@@ -1008,6 +1015,14 @@ function initHeroSlider(settings) {
   track.addEventListener('pointermove', dragMove);
   track.addEventListener('pointerup', dragEnd);
   track.addEventListener('pointercancel', dragEnd);
+
+  // Prevent link click redirection when dragging slider
+  track.addEventListener('click', (e) => {
+    if (dragMoveDistance > 10) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
 
   // Prevent image drag defaults
   track.querySelectorAll('img').forEach(img => {

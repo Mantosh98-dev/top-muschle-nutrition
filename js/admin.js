@@ -2518,6 +2518,7 @@ async function renderTabCustomization(workspace) {
           <div style="font-weight:600; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Slide Banner #${idx + 1}</div>
           <div style="font-size:0.75rem; color:var(--text-sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
             Desktop: ${card.image_url ? escapeHTML(card.image_url.split('/').pop().split('?')[0]) : 'None'} | Mobile: ${card.mobile_image_url ? escapeHTML(card.mobile_image_url.split('/').pop().split('?')[0]) : 'None'}
+            ${card.link_url ? `| Link: ${escapeHTML(card.link_url)}` : ''}
           </div>
         </div>
         <div style="display:flex; gap:6px;">
@@ -2607,6 +2608,7 @@ async function renderTabCustomization(workspace) {
         id: 'card-' + Math.random().toString(36).substr(2, 9),
         image_url: '',
         mobile_image_url: '',
+        link_url: '',
         hidden: false
       };
     }
@@ -2642,6 +2644,12 @@ async function renderTabCustomization(workspace) {
               <button class="btn btn-dark" id="edit-card-mobile-image-upload-btn" type="button" aria-label="Upload Mobile Banner"><i class="fas fa-upload"></i></button>
               <input type="file" id="edit-card-mobile-image-file-input" style="display:none;" accept="image/*">
             </div>
+          </div>
+          
+          <!-- Action Link URL -->
+          <div class="form-group">
+            <label class="form-label" style="font-weight:600;" for="edit-card-link-url">Action Link URL (Optional)</label>
+            <input type="text" id="edit-card-link-url" class="form-input" placeholder="e.g. /products, /verify or external link" value="${escapeHTML(card.link_url || '')}">
           </div>
           
           <div style="display:flex; gap:20px; margin-top:4px;">
@@ -2749,6 +2757,7 @@ async function renderTabCustomization(workspace) {
         id: card.id,
         image_url: document.getElementById('edit-card-image-url').value.trim(),
         mobile_image_url: document.getElementById('edit-card-mobile-image-url').value.trim(),
+        link_url: document.getElementById('edit-card-link-url').value.trim(),
         hidden: document.getElementById('edit-card-hidden').checked
       };
       
