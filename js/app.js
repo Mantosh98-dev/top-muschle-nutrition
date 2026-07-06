@@ -10,12 +10,12 @@ export const DEFAULT_SLIDER_SETTINGS = {
   pause_on_click: true,
   infinite_loop: true,
   layout: {
-    card_width: "340px",
-    card_height: "460px",
+    card_width: "100%",
+    card_height: "580px",
     border_radius: "16px",
-    gap: "24px",
-    content_alignment: "center",
-    overlay_opacity: 0.45
+    gap: "0px",
+    content_alignment: "left",
+    overlay_opacity: 0.3
   },
   cards: [
     {
@@ -841,7 +841,7 @@ function renderHeroSlider(settings) {
   const textAlign = textAlignmentMap[alignment] || 'center';
 
   return `
-    <section class="hero-slider-section" id="hero-slider-section">
+    <section class="hero-slider-section" id="hero-slider-section" style="--slider-card-width: ${width}; --slider-card-height: ${height}; --slider-card-gap: ${gap}; --slider-card-radius: ${borderRadius};">
       <div class="slider-viewport">
         <div class="slider-track">
           ${activeCards.map((card, idx) => {
@@ -1452,6 +1452,54 @@ async function renderHome() {
       `;
     }
 
+    // 11. Relocated old Hero Section (moved above Contact & Support)
+    html += `
+      <section class="hero semi-footer" style="${heroBgStyle}">
+        <div class="hero-overlay"></div>
+        <div class="container">
+          <div class="hero-content">
+            <span class="hero-eyebrow">Premium Nutrition · Trusted Quality</span>
+            <h1 class="hero-title">${globalSettings.hero_title}</h1>
+            <p class="hero-description">${globalSettings.hero_description}</p>
+            <div class="hero-buttons">
+              <a href="/products" class="btn btn-primary">Shop Products <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i></a>
+              <a href="/verify" class="btn btn-secondary">Verify Product</a>
+            </div>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <span class="hero-stat-value">100%</span>
+                <span class="hero-stat-label">Genuine Products</span>
+              </div>
+              <div class="hero-stat">
+                <span class="hero-stat-value">FSSAI</span>
+                <span class="hero-stat-label">Certified</span>
+              </div>
+              <div class="hero-stat">
+                <span class="hero-stat-value">24/7</span>
+                <span class="hero-stat-label">WhatsApp Support</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-graphic animate-scale">
+            <div class="hero-glow-sphere"></div>
+            <div class="hero-product-images-container">
+              ${heroImages.map((imgUrl, idx) => `
+                <img src="${imgUrl}" alt="Premium Supplement Jar ${idx + 1}" class="hero-product-image ${idx === 0 ? 'active' : ''}" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
+              `).join('')}
+            </div>
+            <div class="floating-badge badge-1" style="${showBadge1 ? '' : 'display: none;'}">
+              <i class="${globalSettings.hero_badge_1_icon || 'fas fa-shield-halved'}"></i>
+              <span>${globalSettings.hero_badge_1_text || '100% Genuine'}</span>
+            </div>
+            <div class="floating-badge badge-2" style="${showBadge2 ? '' : 'display: none;'}">
+              <i class="${globalSettings.hero_badge_2_icon || 'fas fa-certificate'}"></i>
+              <span>${globalSettings.hero_badge_2_text || 'FSSAI Certified'}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+
     // Contact Section
     html += `
       <section class="section section-bg" id="contact-section">
@@ -1504,54 +1552,6 @@ async function renderHome() {
                   <p style="color:var(--text-sub);">Configure Google Maps iframe in the Admin Panel to show location map.</p>
                 </div>
               `}
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
-
-    // 11. Relocated old Hero Section as Semi-Footer
-    html += `
-      <section class="hero semi-footer" style="${heroBgStyle}">
-        <div class="hero-overlay"></div>
-        <div class="container">
-          <div class="hero-content">
-            <span class="hero-eyebrow">Premium Nutrition · Trusted Quality</span>
-            <h1 class="hero-title">${globalSettings.hero_title}</h1>
-            <p class="hero-description">${globalSettings.hero_description}</p>
-            <div class="hero-buttons">
-              <a href="/products" class="btn btn-primary">Shop Products <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i></a>
-              <a href="/verify" class="btn btn-secondary">Verify Product</a>
-            </div>
-            <div class="hero-stats">
-              <div class="hero-stat">
-                <span class="hero-stat-value">100%</span>
-                <span class="hero-stat-label">Genuine Products</span>
-              </div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">FSSAI</span>
-                <span class="hero-stat-label">Certified</span>
-              </div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">24/7</span>
-                <span class="hero-stat-label">WhatsApp Support</span>
-              </div>
-            </div>
-          </div>
-          <div class="hero-graphic animate-scale">
-            <div class="hero-glow-sphere"></div>
-            <div class="hero-product-images-container">
-              ${heroImages.map((imgUrl, idx) => `
-                <img src="${imgUrl}" alt="Premium Supplement Jar ${idx + 1}" class="hero-product-image ${idx === 0 ? 'active' : ''}" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
-              `).join('')}
-            </div>
-            <div class="floating-badge badge-1" style="${showBadge1 ? '' : 'display: none;'}">
-              <i class="${globalSettings.hero_badge_1_icon || 'fas fa-shield-halved'}"></i>
-              <span>${globalSettings.hero_badge_1_text || '100% Genuine'}</span>
-            </div>
-            <div class="floating-badge badge-2" style="${showBadge2 ? '' : 'display: none;'}">
-              <i class="${globalSettings.hero_badge_2_icon || 'fas fa-certificate'}"></i>
-              <span>${globalSettings.hero_badge_2_text || 'FSSAI Certified'}</span>
             </div>
           </div>
         </div>
