@@ -2144,8 +2144,7 @@ async function renderTabCustomization(workspace) {
     
     <!-- Sub tabs navigation -->
     <div class="admin-sub-tabs" style="display:flex; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:24px;">
-      <button class="btn btn-ghost customization-sub-tab-btn active" data-subtab="hero" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-image"></i> Hero Slide Section</button>
-      <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="slider" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-sliders-h"></i> Hero Slider</button>
+      <button class="btn btn-ghost customization-sub-tab-btn active" data-subtab="slider" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-sliders-h"></i> Hero Slider</button>
       <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="banners" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-bullhorn"></i> Announcements & Banners</button>
       <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="homepage" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-home"></i> Section Feeds & Videos</button>
       <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="footer" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-shoe-prints"></i> Footer Socials & Copyright</button>
@@ -2153,89 +2152,8 @@ async function renderTabCustomization(workspace) {
     
     <div class="customization-content-area" style="background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:24px; box-shadow:var(--shadow-sm);">
       
-      <!-- Subtab 1: Hero Settings -->
-      <div id="customization-subtab-hero" class="customization-subtab-panel" style="display:block;">
-        <h3 class="settings-section-title" style="margin-top:0;">Homepage Hero Section</h3>
-        
-        <div class="form-group" style="margin-bottom:16px;">
-          <label class="form-label" for="settings-hero-title">Hero Title Heading</label>
-          <input type="text" id="settings-hero-title" class="form-input" value="${escapeHTML(settings.hero_title)}">
-        </div>
-        
-        <div class="form-group" style="margin-bottom:16px;">
-          <label class="form-label" for="settings-hero-desc">Hero Subtitle / Description</label>
-          <textarea id="settings-hero-desc" class="form-input" style="height:80px; resize:none;">${escapeHTML(settings.hero_description)}</textarea>
-        </div>
-        
-        <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:12px; margin-bottom:16px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-bg-type">Hero Background Type</label>
-            <select id="settings-hero-bg-type" class="form-input">
-              <option value="gradient" ${settings.hero_bg_type === 'gradient' ? 'selected' : ''}>CSS Gradient</option>
-              <option value="image" ${settings.hero_bg_type === 'image' ? 'selected' : ''}>Background Image</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-bg-gradient">Background Details</label>
-            <input type="text" id="settings-hero-bg-gradient" class="form-input" style="display:${settings.hero_bg_type === 'gradient' ? 'block' : 'none'};" placeholder="e.g. linear-gradient(...)" value="${escapeHTML(settings.hero_bg_gradient)}">
-            
-            <div id="settings-hero-image-wrap" style="display:${settings.hero_bg_type === 'image' ? 'flex' : 'none'}; gap:8px;">
-              <input type="text" id="settings-hero-bg-image" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(settings.hero_bg_image_url || '')}">
-              <button class="btn btn-dark" id="settings-hero-bg-upload-btn" style="padding:12px;" type="button" aria-label="Upload hero background image"><i class="fas fa-upload"></i></button>
-              <input type="file" id="settings-hero-bg-file-input" style="display:none;" accept="image/*">
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-bottom:16px;">
-          <label class="form-label" style="font-weight:700; margin-bottom:12px; display:block;">Hero Product Image Carousel Slots (up to 6 images)</label>
-          <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
-            ${Array.from({ length: 6 }).map((_, index) => {
-              const url = (settings.hero_product_images && settings.hero_product_images[index]) || (index === 0 ? settings.hero_product_image_url : '') || '';
-              return `
-                <div class="hero-img-slot" style="display:flex; flex-direction:column; gap:6px; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-sm); background: rgba(0,0,0,0.01);">
-                  <span style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Image Slot ${index + 1} ${index === 0 ? '(Primary / Fallback)' : ''}</span>
-                  <div style="display:flex; gap:8px; align-items:center;">
-                    <div class="hero-thumb-preview" id="hero-thumb-preview-${index}" style="width:40px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-                      ${url ? `<img src="${escapeHTML(url)}" style="max-width:100%; max-height:100%; object-fit:contain;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
-                    </div>
-                    <input type="text" id="settings-hero-image-${index}" class="form-input hero-image-input" placeholder="Paste image URL here" value="${escapeHTML(url)}" style="flex:1;">
-                    <button class="btn btn-dark settings-hero-upload-btn" data-slot="${index}" style="padding:12px;" type="button" aria-label="Upload hero image slot ${index + 1}"><i class="fas fa-upload"></i></button>
-                    <button class="btn btn-ghost settings-hero-clear-btn" data-slot="${index}" style="padding:12px; color:var(--error-color); border-color:var(--error-color);" type="button" aria-label="Clear slot ${index + 1}"><i class="fas fa-times"></i></button>
-                    <input type="file" id="settings-hero-file-input-${index}" style="display:none;" accept="image/*">
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-badge-1-text">Hero Tag 1 (Genuine Tag Text)</label>
-            <input type="text" id="settings-hero-badge-1-text" class="form-input" value="${settings.hero_badge_1_text !== undefined ? escapeHTML(settings.hero_badge_1_text || '') : '100% Genuine'}" placeholder="Leave empty to hide badge">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-badge-1-icon">Hero Tag 1 Icon Class (FontAwesome)</label>
-            <input type="text" id="settings-hero-badge-1-icon" class="form-input" value="${settings.hero_badge_1_icon !== undefined ? escapeHTML(settings.hero_badge_1_icon || '') : 'fas fa-shield-halved'}" placeholder="e.g. fas fa-shield-halved">
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-badge-2-text">Hero Tag 2 (Certified Tag Text)</label>
-            <input type="text" id="settings-hero-badge-2-text" class="form-input" value="${settings.hero_badge_2_text !== undefined ? escapeHTML(settings.hero_badge_2_text || '') : 'FSSAI Certified'}" placeholder="Leave empty to hide badge">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settings-hero-badge-2-icon">Hero Tag 2 Icon Class (FontAwesome)</label>
-            <input type="text" id="settings-hero-badge-2-icon" class="form-input" value="${settings.hero_badge_2_icon !== undefined ? escapeHTML(settings.hero_badge_2_icon || '') : 'fas fa-certificate'}" placeholder="e.g. fas fa-certificate">
-          </div>
-        </div>
-      </div>
-      
-      <!-- Subtab 1b: Hero Slider Settings -->
-      <div id="customization-subtab-slider" class="customization-subtab-panel" style="display:none;">
+      <!-- Subtab 1: Hero Slider Settings (Active by default) -->
+      <div id="customization-subtab-slider" class="customization-subtab-panel" style="display:block;">
         <h3 class="settings-section-title" style="margin-top:0;">Hero Slider Settings</h3>
         
         <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 24px;">
@@ -2940,88 +2858,7 @@ async function renderTabCustomization(workspace) {
     });
   }
 
-  // Toggle Background types for Hero
-  const bgTypeEl = document.getElementById('settings-hero-bg-type');
-  const bgGradInput = document.getElementById('settings-hero-bg-gradient');
-  const bgImgWrap = document.getElementById('settings-hero-image-wrap');
-  if (bgTypeEl && bgGradInput && bgImgWrap) {
-    bgTypeEl.addEventListener('change', (e) => {
-      if (e.target.value === 'gradient') {
-        bgGradInput.style.display = 'block';
-        bgImgWrap.style.display = 'none';
-      } else {
-        bgGradInput.style.display = 'none';
-        bgImgWrap.style.display = 'flex';
-      }
-    });
-  }
 
-  // Background Image upload handler
-  const bgFileBtn = document.getElementById('settings-hero-bg-upload-btn');
-  const bgFileInput = document.getElementById('settings-hero-bg-file-input');
-  if (bgFileBtn && bgFileInput) {
-    bgFileBtn.addEventListener('click', () => bgFileInput.click());
-    bgFileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      showLoader();
-      try {
-        const publicUrl = await db.uploadImage(file, 'brand-assets');
-        document.getElementById('settings-hero-bg-image').value = publicUrl;
-        showToast('Hero background uploaded successfully', 'success');
-      } catch (err) {
-        showToast('Hero image upload failed', 'error');
-      } finally {
-        hideLoader();
-      }
-    });
-  }
-
-  // Hero Product Images upload and clear handlers
-  for (let i = 0; i < 6; i++) {
-    const uploadBtn = workspace.querySelector(`.settings-hero-upload-btn[data-slot="${i}"]`);
-    const fileInput = document.getElementById(`settings-hero-file-input-${i}`);
-    const clearBtn = workspace.querySelector(`.settings-hero-clear-btn[data-slot="${i}"]`);
-    const inputEl = document.getElementById(`settings-hero-image-${i}`);
-    const previewEl = document.getElementById(`hero-thumb-preview-${i}`);
-
-    if (uploadBtn && fileInput) {
-      uploadBtn.addEventListener('click', () => fileInput.click());
-      fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        showLoader();
-        try {
-          const publicUrl = await db.uploadImage(file, 'brand-assets');
-          if (inputEl) inputEl.value = publicUrl;
-          if (previewEl) previewEl.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-          showToast(`Hero image ${i + 1} uploaded successfully`, 'success');
-        } catch (err) {
-          showToast(`Hero image ${i + 1} upload failed`, 'error');
-        } finally {
-          hideLoader();
-        }
-      });
-    }
-
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        if (inputEl) inputEl.value = '';
-        if (previewEl) previewEl.innerHTML = `<i class="fas fa-image" style="color: var(--text-muted);"></i>`;
-      });
-    }
-
-    if (inputEl && previewEl) {
-      inputEl.addEventListener('input', () => {
-        const url = inputEl.value.trim();
-        if (url) {
-          previewEl.innerHTML = `<img src="${escapeHTML(url)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-        } else {
-          previewEl.innerHTML = `<i class="fas fa-image" style="color: var(--text-muted);"></i>`;
-        }
-      });
-    }
-  }
 
   // Video Section 1 source toggle
   const video1TypeSelect = document.getElementById('settings-video1-type');
@@ -3103,23 +2940,19 @@ async function renderTabCustomization(workspace) {
     saveBtn.addEventListener('click', async () => {
       const video1Select = document.getElementById('settings-video1-type');
       const video2Select = document.getElementById('settings-video2-type');
-      const heroBgSelect = document.getElementById('settings-hero-bg-type');
 
       const payload = {
-        hero_title: document.getElementById('settings-hero-title').value.trim(),
-        hero_description: document.getElementById('settings-hero-desc').value.trim(),
-        hero_bg_type: heroBgSelect ? heroBgSelect.value : 'gradient',
-        hero_bg_gradient: document.getElementById('settings-hero-bg-gradient').value.trim(),
-        hero_bg_image_url: document.getElementById('settings-hero-bg-image').value.trim() || null,
-        hero_product_images: Array.from({ length: 6 }).map((_, idx) => {
-          const el = document.getElementById(`settings-hero-image-${idx}`);
-          return el ? el.value.trim() : '';
-        }).filter(Boolean),
-        hero_product_image_url: (document.getElementById('settings-hero-image-0') ? document.getElementById('settings-hero-image-0').value.trim() : '') || '/hero_product.png',
-        hero_badge_1_text: document.getElementById('settings-hero-badge-1-text').value.trim() || null,
-        hero_badge_1_icon: document.getElementById('settings-hero-badge-1-icon').value.trim() || null,
-        hero_badge_2_text: document.getElementById('settings-hero-badge-2-text').value.trim() || null,
-        hero_badge_2_icon: document.getElementById('settings-hero-badge-2-icon').value.trim() || null,
+        hero_title: settings.hero_title || 'Fuel Your Strength. Build Your Legacy.',
+        hero_description: settings.hero_description || '',
+        hero_bg_type: settings.hero_bg_type || 'gradient',
+        hero_bg_gradient: settings.hero_bg_gradient || '',
+        hero_bg_image_url: settings.hero_bg_image_url || null,
+        hero_product_images: settings.hero_product_images || [],
+        hero_product_image_url: settings.hero_product_image_url || '/hero_product.png',
+        hero_badge_1_text: settings.hero_badge_1_text || null,
+        hero_badge_1_icon: settings.hero_badge_1_icon || null,
+        hero_badge_2_text: settings.hero_badge_2_text || null,
+        hero_badge_2_icon: settings.hero_badge_2_icon || null,
         announcement_show: document.getElementById('settings-announcement-show').checked,
         announcement_text: document.getElementById('settings-announcement-text').value.trim(),
         announcement_bg_color: document.getElementById('settings-announcement-bg-color-text').value.trim(),
