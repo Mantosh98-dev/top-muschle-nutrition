@@ -4036,7 +4036,7 @@ textarea.form-input { resize: vertical; }
 .hero-slider-section {
   position: relative;
   overflow: hidden;
-  padding: 40px 0 20px 0;
+  padding: 0;
   background: var(--bg);
   display: flex;
   align-items: center;
@@ -4047,10 +4047,10 @@ textarea.form-input { resize: vertical; }
 .hero-slider-section .slider-viewport {
   overflow: hidden;
   position: relative;
-  max-width: 1400px; /* Aligns perfectly with Navbar max-width */
+  max-width: 100%; /* Full screen width edge-to-edge */
   width: 100%;
-  margin: 0 auto;
-  padding: 30px 0;
+  margin: 0;
+  padding: 0;
   cursor: grab;
 }
 
@@ -4061,7 +4061,7 @@ textarea.form-input { resize: vertical; }
 .hero-slider-section .slider-track {
   display: flex;
   align-items: center;
-  gap: var(--slider-card-gap, 24px);
+  gap: var(--slider-card-gap, 0px);
   will-change: transform;
 }
 
@@ -4071,11 +4071,11 @@ textarea.form-input { resize: vertical; }
   display: flex;
   flex-direction: column;
   justify-content: center; /* Center content vertically */
-  padding: 60px 80px; /* Generous padding */
-  width: var(--slider-card-width, 100%);
+  padding: 0;
+  width: 100vw; /* Take full browser viewport width */
   height: var(--slider-card-height, 580px);
-  border-radius: var(--slider-card-radius, 16px);
-  box-shadow: var(--shadow-md);
+  border-radius: 0; /* Flat edge-to-edge corners */
+  box-shadow: none; /* Flat design */
   transition: opacity 0.6s ease;
   opacity: 0.95;
   transform: scale(1);
@@ -4086,7 +4086,7 @@ textarea.form-input { resize: vertical; }
 .hero-slider-card.active {
   opacity: 1;
   transform: scale(1);
-  box-shadow: var(--shadow-lg);
+  box-shadow: none;
   z-index: 2;
 }
 
@@ -4252,8 +4252,7 @@ textarea.form-input { resize: vertical; }
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .hero-slider-section {
-    --slider-card-width: 420px !important;
-    --slider-card-height: 520px !important;
+    --slider-card-height: 480px !important;
   }
 }
 
@@ -4262,11 +4261,7 @@ textarea.form-input { resize: vertical; }
     padding: 70px 0 !important;
   }
   .hero-slider-section {
-    --slider-card-width: 85vw !important;
-    --slider-card-height: 460px !important;
-  }
-  .hero-slider-card {
-    padding: 24px !important;
+    --slider-card-height: 380px !important;
   }
   .slider-arrow {
     display: none !important; /* Touch swipe preferred on smaller screens */

@@ -856,16 +856,19 @@ function renderHeroSlider(settings) {
                 <!-- Overlay -->
                 <div class="card-overlay" style="background:${overlayColor}; opacity:${opacity};"></div>
                 
-                <!-- Card Content -->
-                <div class="card-content" style="align-items:${flexAlign}; text-align:${textAlign}; color:${textColor};">
-                  ${card.subtitle ? `<span class="card-subtitle">${escapeHTML(card.subtitle)}</span>` : ''}
-                  <h2 class="card-title">${escapeHTML(card.title)}</h2>
-                  ${card.description ? `<p class="card-desc">${escapeHTML(card.description)}</p>` : ''}
-                  ${showCTA && card.btn_text ? `
-                    <div style="margin-top:8px;">
-                      <a href="${card.btn_url || '#'}" class="btn btn-primary slider-card-cta-btn">${escapeHTML(card.btn_text)} <i class="fas fa-arrow-right"></i></a>
-                    </div>
-                  ` : ''}
+                <!-- Content Container for alignment with Navbar -->
+                <div class="container card-content-container" style="height:100%; display:flex; align-items:center; pointer-events:none;">
+                  <!-- Card Content -->
+                  <div class="card-content" style="align-items:${flexAlign}; text-align:${textAlign}; color:${textColor}; width:100%;">
+                    ${card.subtitle ? `<span class="card-subtitle">${escapeHTML(card.subtitle)}</span>` : ''}
+                    <h2 class="card-title">${escapeHTML(card.title)}</h2>
+                    ${card.description ? `<p class="card-desc">${escapeHTML(card.description)}</p>` : ''}
+                    ${showCTA && card.btn_text ? `
+                      <div style="margin-top:8px;">
+                        <a href="${card.btn_url || '#'}" class="btn btn-primary slider-card-cta-btn">${escapeHTML(card.btn_text)} <i class="fas fa-arrow-right"></i></a>
+                      </div>
+                    ` : ''}
+                  </div>
                 </div>
               </div>
             `;
