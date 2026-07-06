@@ -4029,4 +4029,245 @@ textarea.form-input { resize: vertical; }
   }
 }
 
+/* ============================================================
+   HERO CARD SLIDER SECTION & ALIGNMENT FIXES
+   ============================================================ */
+
+.hero-slider-section {
+  position: relative;
+  overflow: hidden;
+  padding: 40px 0 20px 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.hero-slider-section .slider-viewport {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  padding: 30px 0;
+  cursor: grab;
+}
+
+.hero-slider-section .slider-viewport:active {
+  cursor: grabbing;
+}
+
+.hero-slider-section .slider-track {
+  display: flex;
+  align-items: center;
+  will-change: transform;
+}
+
+.hero-slider-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), 
+              box-shadow 0.5s ease, 
+              opacity 0.5s ease;
+  opacity: 0.55;
+  transform: scale(0.92);
+  z-index: 1;
+}
+
+.hero-slider-card.active {
+  opacity: 1;
+  transform: scale(1.03);
+  box-shadow: 0 20px 40px rgba(196, 30, 58, 0.22), 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 2;
+}
+
+.hero-slider-card .slider-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  pointer-events: none;
+  transition: transform 0.8s ease;
+}
+
+.hero-slider-card.active:hover .slider-card-img {
+  transform: scale(1.06);
+}
+
+.hero-slider-card .card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hero-slider-card .card-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  pointer-events: none;
+  transform: translateY(12px);
+  opacity: 0.8;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.hero-slider-card.active .card-content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.hero-slider-card .card-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.9;
+}
+
+.hero-slider-card .card-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.hero-slider-card .card-desc {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  opacity: 0.8;
+  margin: 0;
+  font-weight: 400;
+}
+
+.hero-slider-card .slider-card-cta-btn {
+  pointer-events: auto;
+}
+
+/* Nav arrows style */
+.slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all var(--t) var(--ease);
+}
+
+.slider-arrow:hover {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-red);
+}
+
+.slider-arrow.prev-btn {
+  left: 20px;
+}
+
+.slider-arrow.next-btn {
+  right: 20px;
+}
+
+/* Dots paginator */
+.slider-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.slider-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.slider-dot.active {
+  background: var(--primary);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* Modifier class for Semi-Footer Hero Section */
+.hero.semi-footer {
+  min-height: auto;
+  padding: 90px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--gray-900);
+}
+
+/* ============================================================
+   ALIGNMENT & SPACING STANDARDIZATION
+   ============================================================ */
+
+/* Standardize section paddings across the home page */
+.section {
+  padding: 100px 0 !important;
+}
+
+/* Perfect alignment for promo banners */
+.promo-banner-section {
+  padding: 40px 0 !important;
+}
+
+/* Equalized section headers */
+.section-header {
+  margin-bottom: 60px !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .hero-slider-card {
+    width: 320px !important;
+    height: 440px !important;
+    padding: 28px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 70px 0 !important;
+  }
+  .hero-slider-card {
+    width: 290px !important;
+    height: 410px !important;
+    padding: 24px !important;
+  }
+  .slider-arrow {
+    display: none !important; /* Touch swipe preferred on smaller screens */
+  }
+  .hero.semi-footer {
+    padding: 75px 0;
+  }
+}
+
+
 

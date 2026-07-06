@@ -327,3 +327,7 @@ CREATE POLICY "Allow public read brand-assets" ON storage.objects
 DROP POLICY IF EXISTS "Allow admin manage brand-assets" ON storage.objects;
 CREATE POLICY "Allow admin manage brand-assets" ON storage.objects
   FOR ALL TO authenticated USING (bucket_id = 'brand-assets') WITH CHECK (bucket_id = 'brand-assets');
+
+-- 7. ADD SLIDER SETTINGS TO SETTINGS TABLE
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS slider_settings JSONB DEFAULT NULL;
+

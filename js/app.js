@@ -2,6 +2,103 @@ import { router } from './router.js';
 import * as db from './db.js';
 import { isSupabaseConfigured, saveSupabaseConfig, clientReady } from './supabase-client.js';
 
+export const DEFAULT_SLIDER_SETTINGS = {
+  enabled: true,
+  auto_slide: true,
+  interval: 5,
+  pause_on_hover: true,
+  pause_on_click: true,
+  infinite_loop: true,
+  layout: {
+    card_width: "340px",
+    card_height: "460px",
+    border_radius: "16px",
+    gap: "24px",
+    content_alignment: "center",
+    overlay_opacity: 0.45
+  },
+  cards: [
+    {
+      id: "card-1",
+      image_url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop",
+      title: "Pure Whey Protein",
+      subtitle: "Fast Recovery & Muscle Growth",
+      description: "Fuel your muscles with 25g of high-quality whey protein isolate per serving.",
+      btn_text: "Shop Protein",
+      btn_url: "/products",
+      bg_overlay: "#000000",
+      text_color: "#ffffff",
+      cta_visible: true,
+      hidden: false
+    },
+    {
+      id: "card-2",
+      image_url: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=600&auto=format&fit=crop",
+      title: "Micronized Creatine",
+      subtitle: "Explosive Power & Strength",
+      description: "Increase high-intensity exercise performance and build explosive muscle strength.",
+      btn_text: "Shop Creatine",
+      btn_url: "/products",
+      bg_overlay: "#000000",
+      text_color: "#ffffff",
+      cta_visible: true,
+      hidden: false
+    },
+    {
+      id: "card-3",
+      image_url: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=600&auto=format&fit=crop",
+      title: "Essential BCAAs",
+      subtitle: "Intra-Workout Recovery",
+      description: "Reduce muscle soreness, speed up recovery, and prevent workout fatigue.",
+      btn_text: "Shop BCAAs",
+      btn_url: "/products",
+      bg_overlay: "#000000",
+      text_color: "#ffffff",
+      cta_visible: true,
+      hidden: false
+    },
+    {
+      id: "card-4",
+      image_url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop",
+      title: "Premium Pre-Workout",
+      subtitle: "High Energy & Intense Focus",
+      description: "Elevate your training with skin-splitting pumps, clean energy, and laser focus.",
+      btn_text: "Shop Pre-Workout",
+      btn_url: "/products",
+      bg_overlay: "#000000",
+      text_color: "#ffffff",
+      cta_visible: true,
+      hidden: false
+    },
+    {
+      id: "card-5",
+      image_url: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=600&auto=format&fit=crop",
+      title: "Daily Multi-Vitamins",
+      subtitle: "Active Health & Immunity",
+      description: "Complete spectrum of essential vitamins and minerals for active health.",
+      btn_text: "Shop Health",
+      btn_url: "/products",
+      bg_overlay: "#000000",
+      text_color: "#ffffff",
+      cta_visible: true,
+      hidden: false
+    },
+    {
+      id: "card-6",
+      image_url: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=600&auto=format&fit=crop",
+      title: "Isotonic Hydration Drink",
+      subtitle: "Rehydrate & Replenish",
+      description: "Instant energy and electrolyte replenishment to keep you performing at your peak.",
+      btn_text: "Shop Energy",
+      btn_url: "/products",
+      bg_overlay: "#000000",
+      text_color: "#ffffff",
+      cta_visible: true,
+      hidden: false
+    }
+  ]
+};
+
 export const DEFAULT_SETTINGS = {
   brand_name: "Top Muscle Nutrition",
   brand_logo_url: "https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png",
@@ -55,7 +152,8 @@ export const DEFAULT_SETTINGS = {
   cta_banner_title: "Ready to Level Up Your Workouts?",
   cta_banner_desc: "Chat with our experts on WhatsApp for personalized supplement guidance.",
   cta_banner_btn_text: "Chat on WhatsApp",
-  cta_banner_bg_color: "#1a1a1a"
+  cta_banner_bg_color: "#1a1a1a",
+  slider_settings: DEFAULT_SLIDER_SETTINGS
 };
 
 export function mergeSettings(settings) {
@@ -67,6 +165,33 @@ export function mergeSettings(settings) {
       }
     }
   }
+  
+  // Robust check for slider_settings parsing
+  if (typeof merged.slider_settings === 'string') {
+    try {
+      merged.slider_settings = JSON.parse(merged.slider_settings);
+    } catch (e) {
+      console.warn("Failed to parse slider_settings, using defaults", e);
+      merged.slider_settings = { ...DEFAULT_SLIDER_SETTINGS };
+    }
+  }
+  
+  // If it's missing or null, set defaults
+  if (!merged.slider_settings) {
+    merged.slider_settings = { ...DEFAULT_SLIDER_SETTINGS };
+  } else {
+    // Merge layout and cards to make sure all sub-fields exist
+    merged.slider_settings = {
+      ...DEFAULT_SLIDER_SETTINGS,
+      ...merged.slider_settings,
+      layout: {
+        ...DEFAULT_SLIDER_SETTINGS.layout,
+        ...(merged.slider_settings.layout || {})
+      },
+      cards: Array.isArray(merged.slider_settings.cards) ? merged.slider_settings.cards : DEFAULT_SLIDER_SETTINGS.cards
+    };
+  }
+
   return merged;
 }
 
@@ -685,6 +810,347 @@ function hexToRgb(hex) {
    ========================================== */
 
 // 1. HOME VIEW
+// Helper to render new Hero Slider
+function renderHeroSlider(settings) {
+  const sliderSettings = settings.slider_settings || DEFAULT_SLIDER_SETTINGS;
+  if (!sliderSettings.enabled) return '';
+
+  const activeCards = (sliderSettings.cards || []).filter(card => !card.hidden);
+  if (activeCards.length === 0) return '';
+
+  const layout = sliderSettings.layout || {};
+  const gap = layout.gap || '24px';
+  const width = layout.card_width || '340px';
+  const height = layout.card_height || '460px';
+  const borderRadius = layout.border_radius || '16px';
+  const alignment = layout.content_alignment || 'center';
+  const opacity = layout.overlay_opacity !== undefined ? layout.overlay_opacity : 0.4;
+
+  const flexAlignmentMap = {
+    'left': 'flex-start',
+    'center': 'center',
+    'right': 'flex-end'
+  };
+  const textAlignmentMap = {
+    'left': 'left',
+    'center': 'center',
+    'right': 'right'
+  };
+
+  const flexAlign = flexAlignmentMap[alignment] || 'center';
+  const textAlign = textAlignmentMap[alignment] || 'center';
+
+  return `
+    <section class="hero-slider-section" id="hero-slider-section">
+      <div class="slider-viewport">
+        <div class="slider-track">
+          ${activeCards.map((card, idx) => {
+            const overlayColor = card.bg_overlay || '#000000';
+            const textColor = card.text_color || '#ffffff';
+            const showCTA = card.cta_visible !== false;
+
+            return `
+              <div class="hero-slider-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
+                <!-- Background Image -->
+                <img src="${card.image_url}" alt="${escapeHTML(card.title)}" class="slider-card-img" loading="${idx < 3 ? 'eager' : 'lazy'}">
+                <!-- Overlay -->
+                <div class="card-overlay" style="background:${overlayColor}; opacity:${opacity};"></div>
+                
+                <!-- Card Content -->
+                <div class="card-content" style="align-items:${flexAlign}; text-align:${textAlign}; color:${textColor};">
+                  ${card.subtitle ? `<span class="card-subtitle">${escapeHTML(card.subtitle)}</span>` : ''}
+                  <h2 class="card-title">${escapeHTML(card.title)}</h2>
+                  ${card.description ? `<p class="card-desc">${escapeHTML(card.description)}</p>` : ''}
+                  ${showCTA && card.btn_text ? `
+                    <div style="margin-top:8px;">
+                      <a href="${card.btn_url || '#'}" class="btn btn-primary slider-card-cta-btn">${escapeHTML(card.btn_text)} <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        
+        <!-- Navigation Arrows -->
+        <button class="slider-arrow prev-btn" aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
+        <button class="slider-arrow next-btn" aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
+        
+        <!-- Pagination Dots -->
+        <div class="slider-dots">
+          ${activeCards.map((_, idx) => `<span class="slider-dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+// Helper to initialize new Hero Slider logic
+function initHeroSlider(settings) {
+  const section = document.getElementById('hero-slider-section');
+  if (!section) return;
+
+  const sliderSettings = settings.slider_settings || DEFAULT_SLIDER_SETTINGS;
+  const autoSlide = sliderSettings.auto_slide !== false;
+  const intervalTime = (sliderSettings.interval || 5) * 1000;
+  const pauseOnHover = sliderSettings.pause_on_hover !== false;
+  const pauseOnClick = sliderSettings.pause_on_click !== false;
+  const infiniteLoop = sliderSettings.infinite_loop !== false;
+
+  const viewport = section.querySelector('.slider-viewport');
+  const track = section.querySelector('.slider-track');
+  const cards = section.querySelectorAll('.hero-slider-card');
+  const dots = section.querySelectorAll('.slider-dot');
+  const prevBtn = section.querySelector('.prev-btn');
+  const nextBtn = section.querySelector('.next-btn');
+
+  if (!track || cards.length === 0) return;
+
+  let currentIndex = 0;
+  let slideInterval = null;
+  let isHovered = false;
+  let isClicked = false;
+  let clickTimeout = null;
+
+  // Pointer dragging variables
+  let startX = 0;
+  let currentTranslate = 0;
+  let prevTranslate = 0;
+  let isDragging = false;
+  let dragStartTime = 0;
+
+  // Parse card width & gap dynamically
+  const getCardWidth = () => cards[0].offsetWidth;
+  const getGap = () => {
+    const gapStyle = window.getComputedStyle(track).gap;
+    return parseInt(gapStyle) || 0;
+  };
+
+  // Center active card calculation
+  const updateSliderPosition = (useTransition = true) => {
+    if (useTransition) {
+      track.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+    } else {
+      track.style.transition = 'none';
+    }
+
+    const cardWidth = getCardWidth();
+    const gap = getGap();
+    const viewportWidth = viewport.offsetWidth;
+    const centerOffset = (viewportWidth - cardWidth) / 2;
+
+    const offset = -currentIndex * (cardWidth + gap) + centerOffset;
+    track.style.transform = `translateX(${offset}px)`;
+
+    // Update active class on cards
+    cards.forEach((card, idx) => {
+      if (idx === currentIndex) {
+        card.classList.add('active');
+      } else {
+        card.classList.remove('active');
+      }
+    });
+
+    // Update active dots
+    dots.forEach((dot, idx) => {
+      if (idx === currentIndex) {
+        dot.classList.add('active');
+      } else {
+        dot.classList.remove('active');
+      }
+    });
+
+    // Disable buttons if not infinite
+    if (!infiniteLoop) {
+      if (prevBtn) {
+        prevBtn.style.opacity = currentIndex === 0 ? '0.3' : '1';
+        prevBtn.style.pointerEvents = currentIndex === 0 ? 'none' : 'auto';
+      }
+      if (nextBtn) {
+        nextBtn.style.opacity = currentIndex === cards.length - 1 ? '0.3' : '1';
+        nextBtn.style.pointerEvents = currentIndex === cards.length - 1 ? 'none' : 'auto';
+      }
+    } else {
+      if (prevBtn) {
+        prevBtn.style.opacity = '1';
+        prevBtn.style.pointerEvents = 'auto';
+      }
+      if (nextBtn) {
+        nextBtn.style.opacity = '1';
+        nextBtn.style.pointerEvents = 'auto';
+      }
+    }
+
+    prevTranslate = offset;
+  };
+
+  const goToSlide = (index) => {
+    if (index < 0) {
+      if (infiniteLoop) {
+        currentIndex = cards.length - 1;
+      } else {
+        currentIndex = 0;
+      }
+    } else if (index >= cards.length) {
+      if (infiniteLoop) {
+        currentIndex = 0;
+      } else {
+        currentIndex = cards.length - 1;
+      }
+    } else {
+      currentIndex = index;
+    }
+    updateSliderPosition();
+  };
+
+  // Auto slide management
+  const startAutoSlide = () => {
+    if (!autoSlide) return;
+    stopAutoSlide();
+    slideInterval = setInterval(() => {
+      if (!isHovered && !isClicked && !isDragging) {
+        goToSlide(currentIndex + 1);
+      }
+    }, intervalTime);
+  };
+
+  const stopAutoSlide = () => {
+    if (slideInterval) {
+      clearInterval(slideInterval);
+      slideInterval = null;
+    }
+  };
+
+  // Pause on Click helper
+  const triggerClickPause = () => {
+    if (!pauseOnClick) return;
+    isClicked = true;
+    if (clickTimeout) clearTimeout(clickTimeout);
+    clickTimeout = setTimeout(() => {
+      isClicked = false;
+      startAutoSlide();
+    }, 5000); // Resume auto-slide after 5s idle period
+  };
+
+  // Event Listeners for Nav Arrows
+  if (prevBtn) {
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      goToSlide(currentIndex - 1);
+      triggerClickPause();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      goToSlide(currentIndex + 1);
+      triggerClickPause();
+    });
+  }
+
+  // Event Listeners for Dots
+  dots.forEach(dot => {
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const index = parseInt(dot.dataset.index);
+      goToSlide(index);
+      triggerClickPause();
+    });
+  });
+
+  // Pause on Hover
+  if (pauseOnHover) {
+    viewport.addEventListener('mouseenter', () => {
+      isHovered = true;
+    });
+    viewport.addEventListener('mouseleave', () => {
+      isHovered = false;
+    });
+  }
+
+  // Click card to focus
+  cards.forEach(card => {
+    card.addEventListener('click', (e) => {
+      // If clicked the CTA button inside the card, allow it to route/go to URL
+      if (e.target.closest('.slider-card-cta-btn')) {
+        return;
+      }
+      const index = parseInt(card.dataset.index);
+      goToSlide(index);
+      triggerClickPause();
+    });
+  });
+
+  // Drag / Swipe Gestures using pointer events
+  const dragStart = (e) => {
+    isDragging = true;
+    dragStartTime = Date.now();
+    startX = e.clientX;
+    stopAutoSlide();
+    track.style.transition = 'none';
+    viewport.style.cursor = 'grabbing';
+  };
+
+  const dragMove = (e) => {
+    if (!isDragging) return;
+    const currentX = e.clientX;
+    const diffX = currentX - startX;
+    currentTranslate = prevTranslate + diffX;
+    track.style.transform = `translateX(${currentTranslate}px)`;
+  };
+
+  const dragEnd = (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    viewport.style.cursor = 'grab';
+
+    const endX = e.clientX;
+    const diffX = endX - startX;
+    const dragDuration = Date.now() - dragStartTime;
+
+    // Thresholds: scroll if swiped > 80px or swiped fast (> 40px in < 300ms)
+    const threshold = 80;
+    const fastSwipeThreshold = 40;
+
+    if (diffX < -threshold || (diffX < -fastSwipeThreshold && dragDuration < 300)) {
+      goToSlide(currentIndex + 1);
+    } else if (diffX > threshold || (diffX > fastSwipeThreshold && dragDuration < 300)) {
+      goToSlide(currentIndex - 1);
+    } else {
+      updateSliderPosition(); // Snap back
+    }
+
+    triggerClickPause();
+  };
+
+  track.addEventListener('pointerdown', dragStart);
+  track.addEventListener('pointermove', dragMove);
+  track.addEventListener('pointerup', dragEnd);
+  track.addEventListener('pointercancel', dragEnd);
+
+  // Prevent image drag defaults
+  track.querySelectorAll('img').forEach(img => {
+    img.addEventListener('dragstart', (e) => e.preventDefault());
+  });
+
+  // Resize handler
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      updateSliderPosition(false);
+    }, 100);
+  });
+
+  // Initial layout
+  setTimeout(() => {
+    updateSliderPosition(false);
+    startAutoSlide();
+  }, 150);
+}
+
+// 1. HOME VIEW
 async function renderHome() {
   showLoader();
   try {
@@ -768,53 +1234,10 @@ async function renderHome() {
       ? globalSettings.hero_product_images
       : [globalSettings.hero_product_image_url || '/hero_product.png'];
 
-    // Hero Section
-    let html = `
-      <section class="hero" style="${heroBgStyle}">
-        <div class="hero-overlay"></div>
-        <div class="container">
-          <div class="hero-content">
-            <span class="hero-eyebrow">Premium Nutrition · Trusted Quality</span>
-            <h1 class="hero-title">${globalSettings.hero_title}</h1>
-            <p class="hero-description">${globalSettings.hero_description}</p>
-            <div class="hero-buttons">
-              <a href="/products" class="btn btn-primary">Shop Products <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i></a>
-              <a href="/verify" class="btn btn-secondary">Verify Product</a>
-            </div>
-            <div class="hero-stats">
-              <div class="hero-stat">
-                <span class="hero-stat-value">100%</span>
-                <span class="hero-stat-label">Genuine Products</span>
-              </div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">FSSAI</span>
-                <span class="hero-stat-label">Certified</span>
-              </div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">24/7</span>
-                <span class="hero-stat-label">WhatsApp Support</span>
-              </div>
-            </div>
-          </div>
-          <div class="hero-graphic animate-scale">
-            <div class="hero-glow-sphere"></div>
-            <div class="hero-product-images-container">
-              ${heroImages.map((imgUrl, idx) => `
-                <img src="${imgUrl}" alt="Premium Supplement Jar ${idx + 1}" class="hero-product-image ${idx === 0 ? 'active' : ''}" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
-              `).join('')}
-            </div>
-            <div class="floating-badge badge-1" style="${showBadge1 ? '' : 'display: none;'}">
-              <i class="${globalSettings.hero_badge_1_icon || 'fas fa-shield-halved'}"></i>
-              <span>${globalSettings.hero_badge_1_text || '100% Genuine'}</span>
-            </div>
-            <div class="floating-badge badge-2" style="${showBadge2 ? '' : 'display: none;'}">
-              <i class="${globalSettings.hero_badge_2_icon || 'fas fa-certificate'}"></i>
-              <span>${globalSettings.hero_badge_2_text || 'FSSAI Certified'}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
+    let html = '';
+
+    // 1. New Hero Slider at the top
+    html += renderHeroSlider(globalSettings);
 
     // Promotional Banner Section
     if (globalSettings.promo_banner_show && globalSettings.promo_banner_image_url) {
@@ -1087,6 +1510,54 @@ async function renderHome() {
       </section>
     `;
 
+    // 11. Relocated old Hero Section as Semi-Footer
+    html += `
+      <section class="hero semi-footer" style="${heroBgStyle}">
+        <div class="hero-overlay"></div>
+        <div class="container">
+          <div class="hero-content">
+            <span class="hero-eyebrow">Premium Nutrition · Trusted Quality</span>
+            <h1 class="hero-title">${globalSettings.hero_title}</h1>
+            <p class="hero-description">${globalSettings.hero_description}</p>
+            <div class="hero-buttons">
+              <a href="/products" class="btn btn-primary">Shop Products <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i></a>
+              <a href="/verify" class="btn btn-secondary">Verify Product</a>
+            </div>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <span class="hero-stat-value">100%</span>
+                <span class="hero-stat-label">Genuine Products</span>
+              </div>
+              <div class="hero-stat">
+                <span class="hero-stat-value">FSSAI</span>
+                <span class="hero-stat-label">Certified</span>
+              </div>
+              <div class="hero-stat">
+                <span class="hero-stat-value">24/7</span>
+                <span class="hero-stat-label">WhatsApp Support</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-graphic animate-scale">
+            <div class="hero-glow-sphere"></div>
+            <div class="hero-product-images-container">
+              ${heroImages.map((imgUrl, idx) => `
+                <img src="${imgUrl}" alt="Premium Supplement Jar ${idx + 1}" class="hero-product-image ${idx === 0 ? 'active' : ''}" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
+              `).join('')}
+            </div>
+            <div class="floating-badge badge-1" style="${showBadge1 ? '' : 'display: none;'}">
+              <i class="${globalSettings.hero_badge_1_icon || 'fas fa-shield-halved'}"></i>
+              <span>${globalSettings.hero_badge_1_text || '100% Genuine'}</span>
+            </div>
+            <div class="floating-badge badge-2" style="${showBadge2 ? '' : 'display: none;'}">
+              <i class="${globalSettings.hero_badge_2_icon || 'fas fa-certificate'}"></i>
+              <span>${globalSettings.hero_badge_2_text || 'FSSAI Certified'}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+
     appContent.innerHTML = html;
 
     // Bind Category Clicks
@@ -1115,6 +1586,9 @@ async function renderHome() {
         heroImageElements[currentIdx].classList.add('active');
       }, 4000);
     }
+
+    // Initialize New Hero Slider
+    initHeroSlider(globalSettings);
 
     // Initialize Product Sliders
     initProductSliders();

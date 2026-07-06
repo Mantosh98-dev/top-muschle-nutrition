@@ -1,6 +1,6 @@
 import { supabaseClient, clearSupabaseConfig } from './supabase-client.js';
 import * as db from './db.js';
-import { showToast, showLoader, hideLoader, applyBranding, globalSettings, mergeSettings, escapeHTML } from './app.js';
+import { showToast, showLoader, hideLoader, applyBranding, globalSettings, mergeSettings, escapeHTML, DEFAULT_SLIDER_SETTINGS } from './app.js';
 import { router } from './router.js';
 
 let activeTab = 'dashboard';
@@ -2131,6 +2131,9 @@ async function renderTabCustomization(workspace) {
   const fetchedSettings = await db.fetchSettings();
   const settings = mergeSettings(fetchedSettings);
 
+  // Local store of slider settings to modify in memory before saving
+  let localSliderSettings = JSON.parse(JSON.stringify(settings.slider_settings || DEFAULT_SLIDER_SETTINGS));
+
   workspace.innerHTML = `
     <div class="admin-header-row" style="margin-bottom:20px;">
       <div class="admin-title-desc">
@@ -2142,6 +2145,7 @@ async function renderTabCustomization(workspace) {
     <!-- Sub tabs navigation -->
     <div class="admin-sub-tabs" style="display:flex; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:24px;">
       <button class="btn btn-ghost customization-sub-tab-btn active" data-subtab="hero" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-image"></i> Hero Slide Section</button>
+      <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="slider" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-sliders-h"></i> Hero Slider</button>
       <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="banners" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-bullhorn"></i> Announcements & Banners</button>
       <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="homepage" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-home"></i> Section Feeds & Videos</button>
       <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="footer" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-shoe-prints"></i> Footer Socials & Copyright</button>
@@ -2226,6 +2230,103 @@ async function renderTabCustomization(workspace) {
           <div class="form-group">
             <label class="form-label" for="settings-hero-badge-2-icon">Hero Tag 2 Icon Class (FontAwesome)</label>
             <input type="text" id="settings-hero-badge-2-icon" class="form-input" value="${settings.hero_badge_2_icon !== undefined ? escapeHTML(settings.hero_badge_2_icon || '') : 'fas fa-certificate'}" placeholder="e.g. fas fa-certificate">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Subtab 1b: Hero Slider Settings -->
+      <div id="customization-subtab-slider" class="customization-subtab-panel" style="display:none;">
+        <h3 class="settings-section-title" style="margin-top:0;">Hero Slider Settings</h3>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 24px;">
+          <!-- Left side: General & Layout -->
+          <div>
+            <div class="settings-card" style="padding:16px; border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:16px; background:rgba(0,0,0,0.01);">
+              <h4 style="margin-top:0; margin-bottom:12px; font-weight:700;"><i class="fas fa-toggle-on"></i> General Controls</h4>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <label class="switch-label" for="settings-slider-enabled" style="margin:0;">
+                  <input type="checkbox" id="settings-slider-enabled" class="switch-input">
+                  <span class="switch-slider"></span>
+                  <span>Enable Hero Slider</span>
+                </label>
+                <label class="switch-label" for="settings-slider-auto-slide" style="margin:0;">
+                  <input type="checkbox" id="settings-slider-auto-slide" class="switch-input">
+                  <span class="switch-slider"></span>
+                  <span>Enable Auto-Sliding</span>
+                </label>
+                <div class="form-group">
+                  <label class="form-label" for="settings-slider-interval">Auto-Slide Interval (seconds)</label>
+                  <input type="number" id="settings-slider-interval" class="form-input" min="1" max="20">
+                </div>
+                <label class="switch-label" for="settings-slider-pause-hover" style="margin:0;">
+                  <input type="checkbox" id="settings-slider-pause-hover" class="switch-input">
+                  <span class="switch-slider"></span>
+                  <span>Pause on Hover</span>
+                </label>
+                <label class="switch-label" for="settings-slider-pause-click" style="margin:0;">
+                  <input type="checkbox" id="settings-slider-pause-click" class="switch-input">
+                  <span class="switch-slider"></span>
+                  <span>Pause on Card Click</span>
+                </label>
+                <label class="switch-label" for="settings-slider-infinite" style="margin:0;">
+                  <input type="checkbox" id="settings-slider-infinite" class="switch-input">
+                  <span class="switch-slider"></span>
+                  <span>Infinite Loop Navigation</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="settings-card" style="padding:16px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:rgba(0,0,0,0.01);">
+              <h4 style="margin-top:0; margin-bottom:12px; font-weight:700;"><i class="fas fa-th-large"></i> Layout & Design Controls</h4>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                  <div class="form-group">
+                    <label class="form-label" for="settings-slider-width">Card Width</label>
+                    <input type="text" id="settings-slider-width" class="form-input" placeholder="e.g. 340px">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="settings-slider-height">Card Height</label>
+                    <input type="text" id="settings-slider-height" class="form-input" placeholder="e.g. 460px">
+                  </div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                  <div class="form-group">
+                    <label class="form-label" for="settings-slider-radius">Border Radius</label>
+                    <input type="text" id="settings-slider-radius" class="form-input" placeholder="e.g. 16px">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="settings-slider-gap">Gap Between Cards</label>
+                    <input type="text" id="settings-slider-gap" class="form-input" placeholder="e.g. 24px">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="settings-slider-alignment">Content Alignment</label>
+                  <select id="settings-slider-alignment" class="form-input">
+                    <option value="left">Left Aligned</option>
+                    <option value="center">Centered</option>
+                    <option value="right">Right Aligned</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="settings-slider-opacity">Overlay Opacity: <span id="settings-slider-opacity-val">0.45</span></label>
+                  <input type="range" id="settings-slider-opacity" min="0" max="1" step="0.05" class="form-input" style="padding:0;">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right side: Card management -->
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4 style="margin:0; font-weight:700;"><i class="fas fa-images"></i> Manage Slide Cards</h4>
+              <button class="btn btn-dark btn-sm" id="slider-add-card-btn" style="padding: 6px 12px; font-size: 0.8rem;" type="button">
+                <i class="fas fa-plus"></i> Add Card
+              </button>
+            </div>
+            
+            <div id="slider-cards-list-container" style="display:flex; flex-direction:column; gap:10px; max-height: 600px; overflow-y: auto; padding: 4px; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); background: rgba(0,0,0,0.01);">
+              <!-- Cards dynamically rendered here -->
+            </div>
           </div>
         </div>
       </div>
@@ -2464,6 +2565,355 @@ async function renderTabCustomization(workspace) {
       
     </div>
   `;
+
+  // Set initial form values for slider
+  const sliderEnabledEl = document.getElementById('settings-slider-enabled');
+  const sliderAutoSlideEl = document.getElementById('settings-slider-auto-slide');
+  const sliderIntervalEl = document.getElementById('settings-slider-interval');
+  const sliderPauseHoverEl = document.getElementById('settings-slider-pause-hover');
+  const sliderPauseClickEl = document.getElementById('settings-slider-pause-click');
+  const sliderInfiniteEl = document.getElementById('settings-slider-infinite');
+  
+  const sliderWidthEl = document.getElementById('settings-slider-width');
+  const sliderHeightEl = document.getElementById('settings-slider-height');
+  const sliderRadiusEl = document.getElementById('settings-slider-radius');
+  const sliderGapEl = document.getElementById('settings-slider-gap');
+  const sliderAlignEl = document.getElementById('settings-slider-alignment');
+  const sliderOpacityEl = document.getElementById('settings-slider-opacity');
+  const sliderOpacityValEl = document.getElementById('settings-slider-opacity-val');
+
+  if (sliderEnabledEl) sliderEnabledEl.checked = !!localSliderSettings.enabled;
+  if (sliderAutoSlideEl) sliderAutoSlideEl.checked = !!localSliderSettings.auto_slide;
+  if (sliderIntervalEl) sliderIntervalEl.value = localSliderSettings.interval || 5;
+  if (sliderPauseHoverEl) sliderPauseHoverEl.checked = localSliderSettings.pause_on_hover !== false;
+  if (sliderPauseClickEl) sliderPauseClickEl.checked = localSliderSettings.pause_on_click !== false;
+  if (sliderInfiniteEl) sliderInfiniteEl.checked = localSliderSettings.infinite_loop !== false;
+
+  const layout = localSliderSettings.layout || {};
+  if (sliderWidthEl) sliderWidthEl.value = layout.card_width || '340px';
+  if (sliderHeightEl) sliderHeightEl.value = layout.card_height || '460px';
+  if (sliderRadiusEl) sliderRadiusEl.value = layout.border_radius || '16px';
+  if (sliderGapEl) sliderGapEl.value = layout.gap || '24px';
+  if (sliderAlignEl) sliderAlignEl.value = layout.content_alignment || 'center';
+  if (sliderOpacityEl) {
+    sliderOpacityEl.value = layout.overlay_opacity !== undefined ? layout.overlay_opacity : 0.45;
+    if (sliderOpacityValEl) sliderOpacityValEl.textContent = sliderOpacityEl.value;
+    sliderOpacityEl.addEventListener('input', (e) => {
+      if (sliderOpacityValEl) sliderOpacityValEl.textContent = e.target.value;
+    });
+  }
+
+  // Render function for cards list
+  const renderSliderCardsList = () => {
+    const container = document.getElementById('slider-cards-list-container');
+    if (!container) return;
+    
+    if (localSliderSettings.cards.length === 0) {
+      container.innerHTML = `<span style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:24px 0; display:block;">No cards added yet. Click "Add Card" to begin.</span>`;
+      return;
+    }
+    
+    container.innerHTML = localSliderSettings.cards.map((card, idx) => `
+      <div class="slider-card-item" draggable="true" data-id="${card.id}" style="display:flex; gap:12px; align-items:center; border:1px solid var(--border-color); padding:10px; border-radius:var(--radius-sm); background:#fff; cursor:move; transition: all 0.2s ease;">
+        <div style="color:var(--text-muted); cursor:grab;"><i class="fas fa-grip-vertical"></i></div>
+        <div style="width:40px; height:40px; border-radius:var(--radius-xs); overflow:hidden; border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; background:#f9f9f9; flex-shrink:0;">
+          ${card.image_url ? `<img src="${card.image_url}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
+        </div>
+        <div style="flex:1; overflow:hidden;">
+          <div style="font-weight:600; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(card.title || 'Untitled Card')}</div>
+          <div style="font-size:0.75rem; color:var(--text-sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(card.subtitle || 'No subtitle')}</div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-ghost btn-icon slider-card-toggle-hide-btn" data-id="${card.id}" type="button" style="padding:6px; color:${card.hidden ? 'var(--text-muted)' : 'var(--success)'};" title="Toggle Hide/Show"><i class="${card.hidden ? 'fas fa-eye-slash' : 'fas fa-eye'}"></i></button>
+          <button class="btn btn-ghost btn-icon slider-card-edit-btn" data-id="${card.id}" type="button" style="padding:6px; color:var(--primary);" title="Edit Card"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-ghost btn-icon slider-card-delete-btn" data-id="${card.id}" type="button" style="padding:6px; color:var(--error);" title="Delete Card"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `).join('');
+    
+    // Bind Drag & Drop Events
+    let draggedId = null;
+    container.querySelectorAll('.slider-card-item').forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        draggedId = item.dataset.id;
+        e.dataTransfer.effectAllowed = 'move';
+        item.style.opacity = '0.5';
+      });
+      item.addEventListener('dragend', () => {
+        item.style.opacity = '';
+        draggedId = null;
+      });
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+      item.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetId = item.dataset.id;
+        if (draggedId && draggedId !== targetId) {
+          const draggedIndex = localSliderSettings.cards.findIndex(c => c.id === draggedId);
+          const targetIndex = localSliderSettings.cards.findIndex(c => c.id === targetId);
+          if (draggedIndex > -1 && targetIndex > -1) {
+            const [removed] = localSliderSettings.cards.splice(draggedIndex, 1);
+            localSliderSettings.cards.splice(targetIndex, 0, removed);
+            renderSliderCardsList();
+          }
+        }
+      });
+    });
+    
+    // Bind Hide/Show Toggle Buttons
+    container.querySelectorAll('.slider-card-toggle-hide-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const card = localSliderSettings.cards.find(c => c.id === id);
+        if (card) {
+          card.hidden = !card.hidden;
+          renderSliderCardsList();
+        }
+      });
+    });
+    
+    // Bind Edit Buttons
+    container.querySelectorAll('.slider-card-edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        openSliderCardModal(id);
+      });
+    });
+    
+    // Bind Delete Buttons
+    container.querySelectorAll('.slider-card-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        if (confirm('Are you sure you want to delete this slide card?')) {
+          localSliderSettings.cards = localSliderSettings.cards.filter(c => c.id !== id);
+          renderSliderCardsList();
+        }
+      });
+    });
+  };
+
+  // Dialog / Modal handler to edit card
+  const openSliderCardModal = (cardId = null) => {
+    const modal = document.getElementById('admin-modal');
+    if (!modal) return;
+    
+    let card;
+    if (cardId) {
+      card = localSliderSettings.cards.find(c => c.id === cardId);
+    } else {
+      card = {
+        id: 'card-' + Math.random().toString(36).substr(2, 9),
+        image_url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop',
+        title: '',
+        subtitle: '',
+        description: '',
+        btn_text: 'Shop Now',
+        btn_url: '/products',
+        bg_overlay: '#000000',
+        text_color: '#ffffff',
+        cta_visible: true,
+        hidden: false
+      };
+    }
+    
+    modal.innerHTML = `
+      <div class="modal-dialog" style="max-width: 580px; width: 100%;">
+        <div class="modal-header">
+          <h3>${cardId ? 'Edit Slide Card' : 'Add Slide Card'}</h3>
+          <button class="modal-close" id="slider-card-modal-close" aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Card Background Image URL</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <div id="slider-card-thumb-preview" style="width:50px; height:50px; border-radius:var(--radius-sm); border:1px solid var(--border-color); overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f9f9f9; flex-shrink:0;">
+                ${card.image_url ? `<img src="${card.image_url}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
+              </div>
+              <input type="text" id="edit-card-image-url" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(card.image_url)}" style="flex:1;">
+              <button class="btn btn-dark" id="edit-card-image-upload-btn" type="button" aria-label="Upload card image"><i class="fas fa-upload"></i></button>
+              <input type="file" id="edit-card-image-file-input" style="display:none;" accept="image/*">
+            </div>
+          </div>
+          
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="edit-card-title">Card Title</label>
+              <input type="text" id="edit-card-title" class="form-input" value="${escapeHTML(card.title)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-card-subtitle">Card Subtitle</label>
+              <input type="text" id="edit-card-subtitle" class="form-input" value="${escapeHTML(card.subtitle)}">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="edit-card-desc">Description</label>
+            <textarea id="edit-card-desc" class="form-input" style="height:60px; resize:none;">${escapeHTML(card.description)}</textarea>
+          </div>
+          
+          <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="edit-card-btn-text">Button Text</label>
+              <input type="text" id="edit-card-btn-text" class="form-input" value="${escapeHTML(card.btn_text)}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-card-btn-url">Button URL</label>
+              <input type="text" id="edit-card-btn-url" class="form-input" value="${escapeHTML(card.btn_url)}">
+            </div>
+          </div>
+          
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="edit-card-overlay-color">Background Overlay Color</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="color" id="edit-card-overlay-color" value="${card.bg_overlay || '#000000'}" style="width:36px; height:36px; border:none; cursor:pointer;">
+                <input type="text" id="edit-card-overlay-color-text" class="form-input" style="flex:1;" value="${card.bg_overlay || '#000000'}">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-card-text-color">Text Color</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="color" id="edit-card-text-color" value="${card.text_color || '#ffffff'}" style="width:36px; height:36px; border:none; cursor:pointer;">
+                <input type="text" id="edit-card-text-color-text" class="form-input" style="flex:1;" value="${card.text_color || '#ffffff'}">
+              </div>
+            </div>
+          </div>
+          
+          <div style="display:flex; gap:20px; margin-top:4px;">
+            <label class="switch-label" for="edit-card-cta-visible" style="margin:0;">
+              <input type="checkbox" id="edit-card-cta-visible" class="switch-input" ${card.cta_visible !== false ? 'checked' : ''}>
+              <span class="switch-slider"></span>
+              <span>Show CTA Button</span>
+            </label>
+            
+            <label class="switch-label" for="edit-card-hidden" style="margin:0;">
+              <input type="checkbox" id="edit-card-hidden" class="switch-input" ${card.hidden ? 'checked' : ''}>
+              <span class="switch-slider"></span>
+              <span>Hide Card</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+          <button class="btn btn-secondary" id="slider-card-modal-cancel">Cancel</button>
+          <button class="btn btn-primary" id="slider-card-modal-save">Apply Changes</button>
+        </div>
+      </div>
+    `;
+    
+    // Sync colors input fields
+    const overlayInput = document.getElementById('edit-card-overlay-color');
+    const overlayText = document.getElementById('edit-card-overlay-color-text');
+    if (overlayInput && overlayText) {
+      overlayInput.addEventListener('input', (e) => overlayText.value = e.target.value);
+      overlayText.addEventListener('input', (e) => {
+        if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) overlayInput.value = e.target.value;
+      });
+    }
+
+    const textInput = document.getElementById('edit-card-text-color');
+    const textText = document.getElementById('edit-card-text-color-text');
+    if (textInput && textText) {
+      textInput.addEventListener('input', (e) => textText.value = e.target.value);
+      textText.addEventListener('input', (e) => {
+        if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) textInput.value = e.target.value;
+      });
+    }
+    
+    // Upload image inside card modal
+    const cardUploadBtn = document.getElementById('edit-card-image-upload-btn');
+    const cardFileInput = document.getElementById('edit-card-image-file-input');
+    if (cardUploadBtn && cardFileInput) {
+      cardUploadBtn.addEventListener('click', () => cardFileInput.click());
+      cardFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        showLoader();
+        try {
+          const publicUrl = await db.uploadImage(file, 'brand-assets');
+          document.getElementById('edit-card-image-url').value = publicUrl;
+          const preview = document.getElementById('slider-card-thumb-preview');
+          if (preview) {
+            preview.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="width:100%; height:100%; object-fit:cover;">`;
+          }
+          showToast('Image uploaded successfully', 'success');
+        } catch (err) {
+          showToast('Image upload failed', 'error');
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+    
+    // Live update thumbnail on manual URL typing
+    const cardUrlInput = document.getElementById('edit-card-image-url');
+    if (cardUrlInput) {
+      cardUrlInput.addEventListener('input', () => {
+        const url = cardUrlInput.value.trim();
+        const preview = document.getElementById('slider-card-thumb-preview');
+        if (preview) {
+          preview.innerHTML = url ? `<img src="${escapeHTML(url)}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`;
+        }
+      });
+    }
+    
+    // Save card modal
+    const saveCardBtn = document.getElementById('slider-card-modal-save');
+    const cancelCardBtn = document.getElementById('slider-card-modal-cancel');
+    const closeCardBtn = document.getElementById('slider-card-modal-close');
+    
+    const closeModal = () => {
+      modal.classList.remove('active');
+    };
+    
+    closeCardBtn.addEventListener('click', closeModal);
+    cancelCardBtn.addEventListener('click', closeModal);
+    
+    saveCardBtn.addEventListener('click', () => {
+      const updatedCard = {
+        id: card.id,
+        image_url: document.getElementById('edit-card-image-url').value.trim() || card.image_url,
+        title: document.getElementById('edit-card-title').value.trim() || 'Untitled Slide',
+        subtitle: document.getElementById('edit-card-subtitle').value.trim() || '',
+        description: document.getElementById('edit-card-desc').value.trim() || '',
+        btn_text: document.getElementById('edit-card-btn-text').value.trim() || '',
+        btn_url: document.getElementById('edit-card-btn-url').value.trim() || '',
+        bg_overlay: document.getElementById('edit-card-overlay-color-text').value.trim() || '#000000',
+        text_color: document.getElementById('edit-card-text-color-text').value.trim() || '#ffffff',
+        cta_visible: document.getElementById('edit-card-cta-visible').checked,
+        hidden: document.getElementById('edit-card-hidden').checked
+      };
+      
+      if (cardId) {
+        // Edit existing card
+        const idx = localSliderSettings.cards.findIndex(c => c.id === cardId);
+        if (idx > -1) localSliderSettings.cards[idx] = updatedCard;
+      } else {
+        // Add new card
+        localSliderSettings.cards.push(updatedCard);
+      }
+      
+      closeModal();
+      renderSliderCardsList();
+    });
+    
+    modal.classList.add('active');
+  };
+
+  // Populate dynamic cards list
+  renderSliderCardsList();
+
+  // Bind Add Card Button
+  const addCardBtn = document.getElementById('slider-add-card-btn');
+  if (addCardBtn) {
+    addCardBtn.addEventListener('click', () => {
+      openSliderCardModal(null);
+    });
+  }
 
   // Bind sub-tabs toggle
   const subTabBtns = workspace.querySelectorAll('.customization-sub-tab-btn');
@@ -2755,12 +3205,33 @@ async function renderTabCustomization(workspace) {
         social_facebook: document.getElementById('settings-fb').value.trim() || null,
         social_instagram: document.getElementById('settings-ig').value.trim() || null,
         social_twitter: document.getElementById('settings-twitter').value.trim() || null,
-        social_linkedin: document.getElementById('settings-linkedin').value.trim() || null
+        social_linkedin: document.getElementById('settings-linkedin').value.trim() || null,
+        
+        // Compile slider settings into JSON
+        slider_settings: {
+          enabled: document.getElementById('settings-slider-enabled').checked,
+          auto_slide: document.getElementById('settings-slider-auto-slide').checked,
+          interval: parseInt(document.getElementById('settings-slider-interval').value) || 5,
+          pause_on_hover: document.getElementById('settings-slider-pause-hover').checked,
+          pause_on_click: document.getElementById('settings-slider-pause-click').checked,
+          infinite_loop: document.getElementById('settings-slider-infinite').checked,
+          layout: {
+            card_width: document.getElementById('settings-slider-width').value.trim() || '340px',
+            card_height: document.getElementById('settings-slider-height').value.trim() || '460px',
+            border_radius: document.getElementById('settings-slider-radius').value.trim() || '16px',
+            gap: document.getElementById('settings-slider-gap').value.trim() || '24px',
+            content_alignment: document.getElementById('settings-slider-alignment').value || 'center',
+            overlay_opacity: parseFloat(document.getElementById('settings-slider-opacity').value)
+          },
+          cards: localSliderSettings.cards
+        }
       };
 
       showLoader();
       try {
         const newSettings = await db.updateSettings(payload);
+        // Succeeded: clean up localStorage fallback
+        localStorage.removeItem('fallback_slider_settings');
         showToast('Website customizations saved successfully', 'success');
         applyBranding(newSettings);
         setTimeout(() => renderActiveWorkspaceTab(), 1000);
