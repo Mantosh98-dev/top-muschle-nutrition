@@ -2242,7 +2242,7 @@ async function renderTabCustomization(workspace) {
           <!-- Left side: General & Layout -->
           <div>
             <div class="settings-card" style="padding:16px; border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:16px; background:rgba(0,0,0,0.01);">
-              <h4 style="margin-top:0; margin-bottom:12px; font-weight:700;"><i class="fas fa-toggle-on"></i> General Controls</h4>
+              <h4 style="margin-top:0; margin-bottom:12px; font-weight:700;"><i class="fas fa-toggle-on"></i> General & Navigation Controls</h4>
               <div style="display:flex; flex-direction:column; gap:12px;">
                 <label class="switch-label" for="settings-slider-enabled" style="margin:0;">
                   <input type="checkbox" id="settings-slider-enabled" class="switch-input">
@@ -2254,62 +2254,54 @@ async function renderTabCustomization(workspace) {
                   <span class="switch-slider"></span>
                   <span>Enable Auto-Sliding</span>
                 </label>
-                <div class="form-group">
-                  <label class="form-label" for="settings-slider-interval">Auto-Slide Interval (seconds)</label>
-                  <input type="number" id="settings-slider-interval" class="form-input" min="1" max="20">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div class="form-group">
+                    <label class="form-label" for="settings-slider-interval">Slide Duration (sec)</label>
+                    <input type="number" id="settings-slider-interval" class="form-input" min="1" max="20">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="settings-slider-transition-speed">Transition Speed (sec)</label>
+                    <input type="number" id="settings-slider-transition-speed" class="form-input" min="0.1" max="5" step="0.1">
+                  </div>
                 </div>
-                <label class="switch-label" for="settings-slider-pause-hover" style="margin:0;">
-                  <input type="checkbox" id="settings-slider-pause-hover" class="switch-input">
-                  <span class="switch-slider"></span>
-                  <span>Pause on Hover</span>
-                </label>
-                <label class="switch-label" for="settings-slider-pause-click" style="margin:0;">
-                  <input type="checkbox" id="settings-slider-pause-click" class="switch-input">
-                  <span class="switch-slider"></span>
-                  <span>Pause on Card Click</span>
-                </label>
                 <label class="switch-label" for="settings-slider-infinite" style="margin:0;">
                   <input type="checkbox" id="settings-slider-infinite" class="switch-input">
                   <span class="switch-slider"></span>
                   <span>Infinite Loop Navigation</span>
                 </label>
+                <label class="switch-label" for="settings-slider-show-arrows" style="margin:0;">
+                  <input type="checkbox" id="settings-slider-show-arrows" class="switch-input">
+                  <span class="switch-slider"></span>
+                  <span>Show Nav Arrows</span>
+                </label>
+                <label class="switch-label" for="settings-slider-show-dots" style="margin:0;">
+                  <input type="checkbox" id="settings-slider-show-dots" class="switch-input">
+                  <span class="switch-slider"></span>
+                  <span>Show Pagination Dots</span>
+                </label>
               </div>
             </div>
             
             <div class="settings-card" style="padding:16px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:rgba(0,0,0,0.01);">
-              <h4 style="margin-top:0; margin-bottom:12px; font-weight:700;"><i class="fas fa-th-large"></i> Layout & Design Controls</h4>
+              <h4 style="margin-top:0; margin-bottom:12px; font-weight:700;"><i class="fas fa-crop-simple"></i> Banner Aspect Ratios</h4>
               <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                  <div class="form-group">
-                    <label class="form-label" for="settings-slider-width">Card Width</label>
-                    <input type="text" id="settings-slider-width" class="form-input" placeholder="e.g. 340px">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label" for="settings-slider-height">Card Height</label>
-                    <input type="text" id="settings-slider-height" class="form-input" placeholder="e.g. 460px">
-                  </div>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                  <div class="form-group">
-                    <label class="form-label" for="settings-slider-radius">Border Radius</label>
-                    <input type="text" id="settings-slider-radius" class="form-input" placeholder="e.g. 16px">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label" for="settings-slider-gap">Gap Between Cards</label>
-                    <input type="text" id="settings-slider-gap" class="form-input" placeholder="e.g. 24px">
-                  </div>
-                </div>
                 <div class="form-group">
-                  <label class="form-label" for="settings-slider-alignment">Content Alignment</label>
-                  <select id="settings-slider-alignment" class="form-input">
-                    <option value="left">Left Aligned</option>
-                    <option value="center">Centered</option>
-                    <option value="right">Right Aligned</option>
+                  <label class="form-label" for="settings-slider-aspect-desktop">Desktop Aspect Ratio</label>
+                  <select id="settings-slider-aspect-desktop" class="form-input">
+                    <option value="16:9">16:9 (Standard Wide)</option>
+                    <option value="21:9">21:9 (Ultra Wide)</option>
+                    <option value="3:1">3:1 (Super Panoramic)</option>
+                    <option value="4:3">4:3 (Traditional)</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="settings-slider-opacity">Overlay Opacity: <span id="settings-slider-opacity-val">0.45</span></label>
-                  <input type="range" id="settings-slider-opacity" min="0" max="1" step="0.05" class="form-input" style="padding:0;">
+                  <label class="form-label" for="settings-slider-aspect-mobile">Mobile Aspect Ratio</label>
+                  <select id="settings-slider-aspect-mobile" class="form-input">
+                    <option value="1:1">1:1 (Square)</option>
+                    <option value="4:5">4:5 (Vertical/Portrait)</option>
+                    <option value="16:9">16:9 (Landscape Mobile)</option>
+                    <option value="9:16">9:16 (Tall Portrait)</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -2570,38 +2562,23 @@ async function renderTabCustomization(workspace) {
   const sliderEnabledEl = document.getElementById('settings-slider-enabled');
   const sliderAutoSlideEl = document.getElementById('settings-slider-auto-slide');
   const sliderIntervalEl = document.getElementById('settings-slider-interval');
-  const sliderPauseHoverEl = document.getElementById('settings-slider-pause-hover');
-  const sliderPauseClickEl = document.getElementById('settings-slider-pause-click');
   const sliderInfiniteEl = document.getElementById('settings-slider-infinite');
   
-  const sliderWidthEl = document.getElementById('settings-slider-width');
-  const sliderHeightEl = document.getElementById('settings-slider-height');
-  const sliderRadiusEl = document.getElementById('settings-slider-radius');
-  const sliderGapEl = document.getElementById('settings-slider-gap');
-  const sliderAlignEl = document.getElementById('settings-slider-alignment');
-  const sliderOpacityEl = document.getElementById('settings-slider-opacity');
-  const sliderOpacityValEl = document.getElementById('settings-slider-opacity-val');
+  const sliderTransitionEl = document.getElementById('settings-slider-transition-speed');
+  const sliderShowArrowsEl = document.getElementById('settings-slider-show-arrows');
+  const sliderShowDotsEl = document.getElementById('settings-slider-show-dots');
+  const sliderAspectDesktopEl = document.getElementById('settings-slider-aspect-desktop');
+  const sliderAspectMobileEl = document.getElementById('settings-slider-aspect-mobile');
 
   if (sliderEnabledEl) sliderEnabledEl.checked = !!localSliderSettings.enabled;
   if (sliderAutoSlideEl) sliderAutoSlideEl.checked = !!localSliderSettings.auto_slide;
-  if (sliderIntervalEl) sliderIntervalEl.value = localSliderSettings.interval || 5;
-  if (sliderPauseHoverEl) sliderPauseHoverEl.checked = localSliderSettings.pause_on_hover !== false;
-  if (sliderPauseClickEl) sliderPauseClickEl.checked = localSliderSettings.pause_on_click !== false;
+  if (sliderIntervalEl) sliderIntervalEl.value = localSliderSettings.interval || 6;
+  if (sliderTransitionEl) sliderTransitionEl.value = localSliderSettings.transition_speed || 0.5;
   if (sliderInfiniteEl) sliderInfiniteEl.checked = localSliderSettings.infinite_loop !== false;
-
-  const layout = localSliderSettings.layout || {};
-  if (sliderWidthEl) sliderWidthEl.value = layout.card_width || '340px';
-  if (sliderHeightEl) sliderHeightEl.value = layout.card_height || '460px';
-  if (sliderRadiusEl) sliderRadiusEl.value = layout.border_radius || '16px';
-  if (sliderGapEl) sliderGapEl.value = layout.gap || '24px';
-  if (sliderAlignEl) sliderAlignEl.value = layout.content_alignment || 'center';
-  if (sliderOpacityEl) {
-    sliderOpacityEl.value = layout.overlay_opacity !== undefined ? layout.overlay_opacity : 0.45;
-    if (sliderOpacityValEl) sliderOpacityValEl.textContent = sliderOpacityEl.value;
-    sliderOpacityEl.addEventListener('input', (e) => {
-      if (sliderOpacityValEl) sliderOpacityValEl.textContent = e.target.value;
-    });
-  }
+  if (sliderShowArrowsEl) sliderShowArrowsEl.checked = localSliderSettings.show_arrows !== false;
+  if (sliderShowDotsEl) sliderShowDotsEl.checked = localSliderSettings.show_dots !== false;
+  if (sliderAspectDesktopEl) sliderAspectDesktopEl.value = localSliderSettings.aspect_ratio_desktop || '16:9';
+  if (sliderAspectMobileEl) sliderAspectMobileEl.value = localSliderSettings.aspect_ratio_mobile || '1:1';
 
   // Render function for cards list
   const renderSliderCardsList = () => {
@@ -2620,8 +2597,10 @@ async function renderTabCustomization(workspace) {
           ${card.image_url ? `<img src="${card.image_url}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
         </div>
         <div style="flex:1; overflow:hidden;">
-          <div style="font-weight:600; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(card.title || 'Untitled Card')}</div>
-          <div style="font-size:0.75rem; color:var(--text-sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(card.subtitle || 'No subtitle')}</div>
+          <div style="font-weight:600; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Slide Banner #${idx + 1}</div>
+          <div style="font-size:0.75rem; color:var(--text-sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            Desktop: ${card.image_url ? escapeHTML(card.image_url.split('/').pop().split('?')[0]) : 'None'} | Mobile: ${card.mobile_image_url ? escapeHTML(card.mobile_image_url.split('/').pop().split('?')[0]) : 'None'}
+          </div>
         </div>
         <div style="display:flex; gap:6px;">
           <button class="btn btn-ghost btn-icon slider-card-toggle-hide-btn" data-id="${card.id}" type="button" style="padding:6px; color:${card.hidden ? 'var(--text-muted)' : 'var(--success)'};" title="Toggle Hide/Show"><i class="${card.hidden ? 'fas fa-eye-slash' : 'fas fa-eye'}"></i></button>
@@ -2708,15 +2687,8 @@ async function renderTabCustomization(workspace) {
     } else {
       card = {
         id: 'card-' + Math.random().toString(36).substr(2, 9),
-        image_url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop',
-        title: '',
-        subtitle: '',
-        description: '',
-        btn_text: 'Shop Now',
-        btn_url: '/products',
-        bg_overlay: '#000000',
-        text_color: '#ffffff',
-        cta_visible: true,
+        image_url: '',
+        mobile_image_url: '',
         hidden: false
       };
     }
@@ -2728,69 +2700,33 @@ async function renderTabCustomization(workspace) {
           <button class="modal-close" id="slider-card-modal-close" aria-label="Close dialog">&times;</button>
         </div>
         <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+          <!-- Desktop Banner Image -->
           <div class="form-group">
-            <label class="form-label">Card Background Image URL</label>
+            <label class="form-label" style="font-weight:600;">Desktop Banner Image *</label>
             <div style="display:flex; gap:10px; align-items:center;">
               <div id="slider-card-thumb-preview" style="width:50px; height:50px; border-radius:var(--radius-sm); border:1px solid var(--border-color); overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f9f9f9; flex-shrink:0;">
                 ${card.image_url ? `<img src="${card.image_url}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
               </div>
-              <input type="text" id="edit-card-image-url" class="form-input" placeholder="https://image-link.com" value="${escapeHTML(card.image_url)}" style="flex:1;">
-              <button class="btn btn-dark" id="edit-card-image-upload-btn" type="button" aria-label="Upload card image"><i class="fas fa-upload"></i></button>
+              <input type="text" id="edit-card-image-url" class="form-input" placeholder="https://image-link.com/desktop.webp" value="${escapeHTML(card.image_url || '')}" style="flex:1;">
+              <button class="btn btn-dark" id="edit-card-image-upload-btn" type="button" aria-label="Upload Desktop Banner"><i class="fas fa-upload"></i></button>
               <input type="file" id="edit-card-image-file-input" style="display:none;" accept="image/*">
             </div>
           </div>
-          
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <div class="form-group">
-              <label class="form-label" for="edit-card-title">Card Title</label>
-              <input type="text" id="edit-card-title" class="form-input" value="${escapeHTML(card.title)}">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="edit-card-subtitle">Card Subtitle</label>
-              <input type="text" id="edit-card-subtitle" class="form-input" value="${escapeHTML(card.subtitle)}">
-            </div>
-          </div>
-          
+
+          <!-- Mobile Banner Image -->
           <div class="form-group">
-            <label class="form-label" for="edit-card-desc">Description</label>
-            <textarea id="edit-card-desc" class="form-input" style="height:60px; resize:none;">${escapeHTML(card.description)}</textarea>
-          </div>
-          
-          <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:12px;">
-            <div class="form-group">
-              <label class="form-label" for="edit-card-btn-text">Button Text</label>
-              <input type="text" id="edit-card-btn-text" class="form-input" value="${escapeHTML(card.btn_text)}">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="edit-card-btn-url">Button URL</label>
-              <input type="text" id="edit-card-btn-url" class="form-input" value="${escapeHTML(card.btn_url)}">
-            </div>
-          </div>
-          
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <div class="form-group">
-              <label class="form-label" for="edit-card-overlay-color">Background Overlay Color</label>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <input type="color" id="edit-card-overlay-color" value="${card.bg_overlay || '#000000'}" style="width:36px; height:36px; border:none; cursor:pointer;">
-                <input type="text" id="edit-card-overlay-color-text" class="form-input" style="flex:1;" value="${card.bg_overlay || '#000000'}">
+            <label class="form-label" style="font-weight:600;">Mobile Banner Image (Optional)</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <div id="slider-card-mobile-thumb-preview" style="width:50px; height:50px; border-radius:var(--radius-sm); border:1px solid var(--border-color); overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f9f9f9; flex-shrink:0;">
+                ${card.mobile_image_url ? `<img src="${card.mobile_image_url}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-mobile-alt" style="color:var(--text-muted);"></i>`}
               </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="edit-card-text-color">Text Color</label>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <input type="color" id="edit-card-text-color" value="${card.text_color || '#ffffff'}" style="width:36px; height:36px; border:none; cursor:pointer;">
-                <input type="text" id="edit-card-text-color-text" class="form-input" style="flex:1;" value="${card.text_color || '#ffffff'}">
-              </div>
+              <input type="text" id="edit-card-mobile-image-url" class="form-input" placeholder="https://image-link.com/mobile.webp" value="${escapeHTML(card.mobile_image_url || '')}" style="flex:1;">
+              <button class="btn btn-dark" id="edit-card-mobile-image-upload-btn" type="button" aria-label="Upload Mobile Banner"><i class="fas fa-upload"></i></button>
+              <input type="file" id="edit-card-mobile-image-file-input" style="display:none;" accept="image/*">
             </div>
           </div>
           
           <div style="display:flex; gap:20px; margin-top:4px;">
-            <label class="switch-label" for="edit-card-cta-visible" style="margin:0;">
-              <input type="checkbox" id="edit-card-cta-visible" class="switch-input" ${card.cta_visible !== false ? 'checked' : ''}>
-              <span class="switch-slider"></span>
-              <span>Show CTA Button</span>
-            </label>
-            
             <label class="switch-label" for="edit-card-hidden" style="margin:0;">
               <input type="checkbox" id="edit-card-hidden" class="switch-input" ${card.hidden ? 'checked' : ''}>
               <span class="switch-slider"></span>
@@ -2805,26 +2741,7 @@ async function renderTabCustomization(workspace) {
       </div>
     `;
     
-    // Sync colors input fields
-    const overlayInput = document.getElementById('edit-card-overlay-color');
-    const overlayText = document.getElementById('edit-card-overlay-color-text');
-    if (overlayInput && overlayText) {
-      overlayInput.addEventListener('input', (e) => overlayText.value = e.target.value);
-      overlayText.addEventListener('input', (e) => {
-        if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) overlayInput.value = e.target.value;
-      });
-    }
-
-    const textInput = document.getElementById('edit-card-text-color');
-    const textText = document.getElementById('edit-card-text-color-text');
-    if (textInput && textText) {
-      textInput.addEventListener('input', (e) => textText.value = e.target.value);
-      textText.addEventListener('input', (e) => {
-        if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) textInput.value = e.target.value;
-      });
-    }
-    
-    // Upload image inside card modal
+    // Upload desktop image inside card modal
     const cardUploadBtn = document.getElementById('edit-card-image-upload-btn');
     const cardFileInput = document.getElementById('edit-card-image-file-input');
     if (cardUploadBtn && cardFileInput) {
@@ -2840,7 +2757,32 @@ async function renderTabCustomization(workspace) {
           if (preview) {
             preview.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="width:100%; height:100%; object-fit:cover;">`;
           }
-          showToast('Image uploaded successfully', 'success');
+          showToast('Desktop image uploaded successfully', 'success');
+        } catch (err) {
+          showToast('Image upload failed', 'error');
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    // Upload mobile image inside card modal
+    const mobileUploadBtn = document.getElementById('edit-card-mobile-image-upload-btn');
+    const mobileFileInput = document.getElementById('edit-card-mobile-image-file-input');
+    if (mobileUploadBtn && mobileFileInput) {
+      mobileUploadBtn.addEventListener('click', () => mobileFileInput.click());
+      mobileFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        showLoader();
+        try {
+          const publicUrl = await db.uploadImage(file, 'brand-assets');
+          document.getElementById('edit-card-mobile-image-url').value = publicUrl;
+          const preview = document.getElementById('slider-card-mobile-thumb-preview');
+          if (preview) {
+            preview.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="width:100%; height:100%; object-fit:cover;">`;
+          }
+          showToast('Mobile image uploaded successfully', 'success');
         } catch (err) {
           showToast('Image upload failed', 'error');
         } finally {
@@ -2860,6 +2802,17 @@ async function renderTabCustomization(workspace) {
         }
       });
     }
+
+    const mobileUrlInput = document.getElementById('edit-card-mobile-image-url');
+    if (mobileUrlInput) {
+      mobileUrlInput.addEventListener('input', () => {
+        const url = mobileUrlInput.value.trim();
+        const preview = document.getElementById('slider-card-mobile-thumb-preview');
+        if (preview) {
+          preview.innerHTML = url ? `<img src="${escapeHTML(url)}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-mobile-alt" style="color:var(--text-muted);"></i>`;
+        }
+      });
+    }
     
     // Save card modal
     const saveCardBtn = document.getElementById('slider-card-modal-save');
@@ -2876,15 +2829,8 @@ async function renderTabCustomization(workspace) {
     saveCardBtn.addEventListener('click', () => {
       const updatedCard = {
         id: card.id,
-        image_url: document.getElementById('edit-card-image-url').value.trim() || card.image_url,
-        title: document.getElementById('edit-card-title').value.trim() || 'Untitled Slide',
-        subtitle: document.getElementById('edit-card-subtitle').value.trim() || '',
-        description: document.getElementById('edit-card-desc').value.trim() || '',
-        btn_text: document.getElementById('edit-card-btn-text').value.trim() || '',
-        btn_url: document.getElementById('edit-card-btn-url').value.trim() || '',
-        bg_overlay: document.getElementById('edit-card-overlay-color-text').value.trim() || '#000000',
-        text_color: document.getElementById('edit-card-text-color-text').value.trim() || '#ffffff',
-        cta_visible: document.getElementById('edit-card-cta-visible').checked,
+        image_url: document.getElementById('edit-card-image-url').value.trim(),
+        mobile_image_url: document.getElementById('edit-card-mobile-image-url').value.trim(),
         hidden: document.getElementById('edit-card-hidden').checked
       };
       
@@ -3211,18 +3157,13 @@ async function renderTabCustomization(workspace) {
         slider_settings: {
           enabled: document.getElementById('settings-slider-enabled').checked,
           auto_slide: document.getElementById('settings-slider-auto-slide').checked,
-          interval: parseInt(document.getElementById('settings-slider-interval').value) || 5,
-          pause_on_hover: document.getElementById('settings-slider-pause-hover').checked,
-          pause_on_click: document.getElementById('settings-slider-pause-click').checked,
+          interval: parseInt(document.getElementById('settings-slider-interval').value) || 6,
+          transition_speed: parseFloat(document.getElementById('settings-slider-transition-speed').value) || 0.5,
           infinite_loop: document.getElementById('settings-slider-infinite').checked,
-          layout: {
-            card_width: document.getElementById('settings-slider-width').value.trim() || '340px',
-            card_height: document.getElementById('settings-slider-height').value.trim() || '460px',
-            border_radius: document.getElementById('settings-slider-radius').value.trim() || '16px',
-            gap: document.getElementById('settings-slider-gap').value.trim() || '24px',
-            content_alignment: document.getElementById('settings-slider-alignment').value || 'center',
-            overlay_opacity: parseFloat(document.getElementById('settings-slider-opacity').value)
-          },
+          show_arrows: document.getElementById('settings-slider-show-arrows').checked,
+          show_dots: document.getElementById('settings-slider-show-dots').checked,
+          aspect_ratio_desktop: document.getElementById('settings-slider-aspect-desktop').value,
+          aspect_ratio_mobile: document.getElementById('settings-slider-aspect-mobile').value,
           cards: localSliderSettings.cards
         }
       };

@@ -5,95 +5,30 @@ import { isSupabaseConfigured, saveSupabaseConfig, clientReady } from './supabas
 export const DEFAULT_SLIDER_SETTINGS = {
   enabled: true,
   auto_slide: true,
-  interval: 5,
-  pause_on_hover: true,
-  pause_on_click: true,
+  interval: 6,
+  transition_speed: 0.5,
   infinite_loop: true,
-  layout: {
-    card_width: "100%",
-    card_height: "580px",
-    border_radius: "16px",
-    gap: "0px",
-    content_alignment: "left",
-    overlay_opacity: 0.3
-  },
+  show_arrows: true,
+  show_dots: true,
+  aspect_ratio_desktop: "16:9",
+  aspect_ratio_mobile: "1:1",
   cards: [
     {
       id: "card-1",
-      image_url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop",
-      title: "Pure Whey Protein",
-      subtitle: "Fast Recovery & Muscle Growth",
-      description: "Fuel your muscles with 25g of high-quality whey protein isolate per serving.",
-      btn_text: "Shop Protein",
-      btn_url: "/products",
-      bg_overlay: "#000000",
-      text_color: "#ffffff",
-      cta_visible: true,
+      image_url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1920&auto=format&fit=crop",
+      mobile_image_url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=720&auto=format&fit=crop",
       hidden: false
     },
     {
       id: "card-2",
-      image_url: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=600&auto=format&fit=crop",
-      title: "Micronized Creatine",
-      subtitle: "Explosive Power & Strength",
-      description: "Increase high-intensity exercise performance and build explosive muscle strength.",
-      btn_text: "Shop Creatine",
-      btn_url: "/products",
-      bg_overlay: "#000000",
-      text_color: "#ffffff",
-      cta_visible: true,
+      image_url: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1920&auto=format&fit=crop",
+      mobile_image_url: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=720&auto=format&fit=crop",
       hidden: false
     },
     {
       id: "card-3",
-      image_url: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=600&auto=format&fit=crop",
-      title: "Essential BCAAs",
-      subtitle: "Intra-Workout Recovery",
-      description: "Reduce muscle soreness, speed up recovery, and prevent workout fatigue.",
-      btn_text: "Shop BCAAs",
-      btn_url: "/products",
-      bg_overlay: "#000000",
-      text_color: "#ffffff",
-      cta_visible: true,
-      hidden: false
-    },
-    {
-      id: "card-4",
-      image_url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop",
-      title: "Premium Pre-Workout",
-      subtitle: "High Energy & Intense Focus",
-      description: "Elevate your training with skin-splitting pumps, clean energy, and laser focus.",
-      btn_text: "Shop Pre-Workout",
-      btn_url: "/products",
-      bg_overlay: "#000000",
-      text_color: "#ffffff",
-      cta_visible: true,
-      hidden: false
-    },
-    {
-      id: "card-5",
-      image_url: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=600&auto=format&fit=crop",
-      title: "Daily Multi-Vitamins",
-      subtitle: "Active Health & Immunity",
-      description: "Complete spectrum of essential vitamins and minerals for active health.",
-      btn_text: "Shop Health",
-      btn_url: "/products",
-      bg_overlay: "#000000",
-      text_color: "#ffffff",
-      cta_visible: true,
-      hidden: false
-    },
-    {
-      id: "card-6",
-      image_url: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=600&auto=format&fit=crop",
-      title: "Isotonic Hydration Drink",
-      subtitle: "Rehydrate & Replenish",
-      description: "Instant energy and electrolyte replenishment to keep you performing at your peak.",
-      btn_text: "Shop Energy",
-      btn_url: "/products",
-      bg_overlay: "#000000",
-      text_color: "#ffffff",
-      cta_visible: true,
+      image_url: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1920&auto=format&fit=crop",
+      mobile_image_url: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=720&auto=format&fit=crop",
       hidden: false
     }
   ]
@@ -180,14 +115,10 @@ export function mergeSettings(settings) {
   if (!merged.slider_settings) {
     merged.slider_settings = { ...DEFAULT_SLIDER_SETTINGS };
   } else {
-    // Merge layout and cards to make sure all sub-fields exist
+    // Merge cards to make sure all sub-fields exist
     merged.slider_settings = {
       ...DEFAULT_SLIDER_SETTINGS,
       ...merged.slider_settings,
-      layout: {
-        ...DEFAULT_SLIDER_SETTINGS.layout,
-        ...(merged.slider_settings.layout || {})
-      },
       cards: Array.isArray(merged.slider_settings.cards) ? merged.slider_settings.cards : DEFAULT_SLIDER_SETTINGS.cards
     };
   }
@@ -818,71 +749,59 @@ function renderHeroSlider(settings) {
   const activeCards = (sliderSettings.cards || []).filter(card => !card.hidden);
   if (activeCards.length === 0) return '';
 
-  const layout = sliderSettings.layout || {};
-  const gap = layout.gap || '24px';
-  const width = layout.card_width || '340px';
-  const height = layout.card_height || '460px';
-  const borderRadius = layout.border_radius || '16px';
-  const alignment = layout.content_alignment || 'center';
-  const opacity = layout.overlay_opacity !== undefined ? layout.overlay_opacity : 0.4;
+  const aspectRatioDesktop = (sliderSettings.aspect_ratio_desktop || '16:9').replace(':', '/');
+  const aspectRatioMobile = (sliderSettings.aspect_ratio_mobile || '1:1').replace(':', '/');
 
-  const flexAlignmentMap = {
-    'left': 'flex-start',
-    'center': 'center',
-    'right': 'flex-end'
-  };
-  const textAlignmentMap = {
-    'left': 'left',
-    'center': 'center',
-    'right': 'right'
-  };
+  // Dynamically add a link preload tag for the first banner to speed up LCP
+  const firstCard = activeCards[0];
+  if (firstCard) {
+    const isMobile = window.innerWidth <= 768;
+    const preloadUrl = (isMobile && firstCard.mobile_image_url) ? firstCard.mobile_image_url : firstCard.image_url;
+    let preloadLink = document.getElementById('hero-preload');
+    if (!preloadLink) {
+      preloadLink = document.createElement('link');
+      preloadLink.id = 'hero-preload';
+      preloadLink.rel = 'preload';
+      preloadLink.as = 'image';
+      document.head.appendChild(preloadLink);
+    }
+    preloadLink.href = preloadUrl;
+  }
 
-  const flexAlign = flexAlignmentMap[alignment] || 'center';
-  const textAlign = textAlignmentMap[alignment] || 'center';
+  const showArrows = sliderSettings.show_arrows !== false;
+  const showDots = sliderSettings.show_dots !== false;
 
   return `
-    <section class="hero-slider-section" id="hero-slider-section" style="--slider-card-width: ${width}; --slider-card-height: ${height}; --slider-card-gap: ${gap}; --slider-card-radius: ${borderRadius};">
+    <section class="hero-slider-section" id="hero-slider-section" style="--slider-aspect-ratio-desktop: ${aspectRatioDesktop}; --slider-aspect-ratio-mobile: ${aspectRatioMobile};">
       <div class="slider-viewport">
         <div class="slider-track">
           ${activeCards.map((card, idx) => {
-            const overlayColor = card.bg_overlay || '#000000';
-            const textColor = card.text_color || '#ffffff';
-            const showCTA = card.cta_visible !== false;
+            const desktopImg = card.image_url;
+            const mobileImg = card.mobile_image_url || card.image_url;
 
             return `
               <div class="hero-slider-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
-                <!-- Background Image -->
-                <img src="${card.image_url}" alt="${escapeHTML(card.title)}" class="slider-card-img" loading="${idx < 3 ? 'eager' : 'lazy'}">
-                <!-- Overlay -->
-                <div class="card-overlay" style="background:${overlayColor}; opacity:${opacity};"></div>
-                
-                <!-- Content Container for alignment with Navbar -->
-                <div class="container card-content-container" style="height:100%; display:flex; align-items:center; pointer-events:none;">
-                  <!-- Card Content -->
-                  <div class="card-content" style="align-items:${flexAlign}; text-align:${textAlign}; color:${textColor}; width:100%;">
-                    ${card.subtitle ? `<span class="card-subtitle">${escapeHTML(card.subtitle)}</span>` : ''}
-                    <h2 class="card-title">${escapeHTML(card.title)}</h2>
-                    ${card.description ? `<p class="card-desc">${escapeHTML(card.description)}</p>` : ''}
-                    ${showCTA && card.btn_text ? `
-                      <div style="margin-top:8px;">
-                        <a href="${card.btn_url || '#'}" class="btn btn-primary slider-card-cta-btn">${escapeHTML(card.btn_text)} <i class="fas fa-arrow-right"></i></a>
-                      </div>
-                    ` : ''}
-                  </div>
-                </div>
+                <picture style="width:100%; height:100%; display:block;">
+                  <source media="(max-width: 768px)" srcset="${mobileImg}">
+                  <img src="${desktopImg}" alt="Hero Banner ${idx + 1}" class="slider-card-img" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
+                </picture>
               </div>
             `;
           }).join('')}
         </div>
         
         <!-- Navigation Arrows -->
-        <button class="slider-arrow prev-btn" aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
-        <button class="slider-arrow next-btn" aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
+        ${showArrows ? `
+          <button class="slider-arrow prev-btn" aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
+          <button class="slider-arrow next-btn" aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
+        ` : ''}
         
         <!-- Pagination Dots -->
-        <div class="slider-dots">
-          ${activeCards.map((_, idx) => `<span class="slider-dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}
-        </div>
+        ${showDots && activeCards.length > 1 ? `
+          <div class="slider-dots">
+            ${activeCards.map((_, idx) => `<span class="slider-dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}
+          </div>
+        ` : ''}
       </div>
     </section>
   `;
@@ -895,9 +814,8 @@ function initHeroSlider(settings) {
 
   const sliderSettings = settings.slider_settings || DEFAULT_SLIDER_SETTINGS;
   const autoSlide = sliderSettings.auto_slide !== false;
-  const intervalTime = (sliderSettings.interval || 5) * 1000;
-  const pauseOnHover = sliderSettings.pause_on_hover !== false;
-  const pauseOnClick = sliderSettings.pause_on_click !== false;
+  const intervalTime = (sliderSettings.interval || 6) * 1000;
+  const transitionSpeed = sliderSettings.transition_speed !== undefined ? parseFloat(sliderSettings.transition_speed) : 0.5;
   const infiniteLoop = sliderSettings.infinite_loop !== false;
 
   const viewport = section.querySelector('.slider-viewport');
@@ -911,38 +829,23 @@ function initHeroSlider(settings) {
 
   let currentIndex = 0;
   let slideInterval = null;
-  let isHovered = false;
-  let isClicked = false;
-  let clickTimeout = null;
-
-  // Pointer dragging variables
+  let isDragging = false;
   let startX = 0;
   let currentTranslate = 0;
   let prevTranslate = 0;
-  let isDragging = false;
   let dragStartTime = 0;
 
-  // Parse card width & gap dynamically
-  const getCardWidth = () => cards[0].offsetWidth;
-  const getGap = () => {
-    const gapStyle = window.getComputedStyle(track).gap;
-    return parseInt(gapStyle) || 0;
-  };
+  const getCardWidth = () => viewport.offsetWidth;
 
-  // Center active card calculation
   const updateSliderPosition = (useTransition = true) => {
     if (useTransition) {
-      track.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+      track.style.transition = `transform ${transitionSpeed}s cubic-bezier(0.25, 1, 0.5, 1)`;
     } else {
       track.style.transition = 'none';
     }
 
     const cardWidth = getCardWidth();
-    const gap = getGap();
-    const viewportWidth = viewport.offsetWidth;
-    const centerOffset = (viewportWidth - cardWidth) / 2;
-
-    const offset = -currentIndex * (cardWidth + gap) + centerOffset;
+    const offset = -currentIndex * cardWidth;
     track.style.transform = `translateX(${offset}px)`;
 
     // Update active class on cards
@@ -1006,12 +909,11 @@ function initHeroSlider(settings) {
     updateSliderPosition();
   };
 
-  // Auto slide management
   const startAutoSlide = () => {
     if (!autoSlide) return;
     stopAutoSlide();
     slideInterval = setInterval(() => {
-      if (!isHovered && !isClicked && !isDragging) {
+      if (!isDragging) {
         goToSlide(currentIndex + 1);
       }
     }, intervalTime);
@@ -1024,23 +926,12 @@ function initHeroSlider(settings) {
     }
   };
 
-  // Pause on Click helper
-  const triggerClickPause = () => {
-    if (!pauseOnClick) return;
-    isClicked = true;
-    if (clickTimeout) clearTimeout(clickTimeout);
-    clickTimeout = setTimeout(() => {
-      isClicked = false;
-      startAutoSlide();
-    }, 5000); // Resume auto-slide after 5s idle period
-  };
-
   // Event Listeners for Nav Arrows
   if (prevBtn) {
     prevBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       goToSlide(currentIndex - 1);
-      triggerClickPause();
+      startAutoSlide();
     });
   }
 
@@ -1048,7 +939,7 @@ function initHeroSlider(settings) {
     nextBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       goToSlide(currentIndex + 1);
-      triggerClickPause();
+      startAutoSlide();
     });
   }
 
@@ -1058,35 +949,21 @@ function initHeroSlider(settings) {
       e.stopPropagation();
       const index = parseInt(dot.dataset.index);
       goToSlide(index);
-      triggerClickPause();
+      startAutoSlide();
     });
   });
 
   // Pause on Hover
-  if (pauseOnHover) {
-    viewport.addEventListener('mouseenter', () => {
-      isHovered = true;
-    });
-    viewport.addEventListener('mouseleave', () => {
-      isHovered = false;
-    });
-  }
-
-  // Click card to focus
-  cards.forEach(card => {
-    card.addEventListener('click', (e) => {
-      // If clicked the CTA button inside the card, allow it to route/go to URL
-      if (e.target.closest('.slider-card-cta-btn')) {
-        return;
-      }
-      const index = parseInt(card.dataset.index);
-      goToSlide(index);
-      triggerClickPause();
-    });
+  viewport.addEventListener('mouseenter', () => {
+    stopAutoSlide();
+  });
+  viewport.addEventListener('mouseleave', () => {
+    startAutoSlide();
   });
 
   // Drag / Swipe Gestures using pointer events
   const dragStart = (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     isDragging = true;
     dragStartTime = Date.now();
     startX = e.clientX;
@@ -1112,19 +989,19 @@ function initHeroSlider(settings) {
     const diffX = endX - startX;
     const dragDuration = Date.now() - dragStartTime;
 
-    // Thresholds: scroll if swiped > 80px or swiped fast (> 40px in < 300ms)
-    const threshold = 80;
-    const fastSwipeThreshold = 40;
+    const cardWidth = getCardWidth();
+    const threshold = cardWidth * 0.2;
+    const fastSwipeThreshold = 30;
 
     if (diffX < -threshold || (diffX < -fastSwipeThreshold && dragDuration < 300)) {
       goToSlide(currentIndex + 1);
     } else if (diffX > threshold || (diffX > fastSwipeThreshold && dragDuration < 300)) {
       goToSlide(currentIndex - 1);
     } else {
-      updateSliderPosition(); // Snap back
+      updateSliderPosition();
     }
 
-    triggerClickPause();
+    startAutoSlide();
   };
 
   track.addEventListener('pointerdown', dragStart);
@@ -1167,16 +1044,7 @@ async function renderHome() {
     const bestSellers = allProducts.filter(p => p.best_seller);
     const trendingProducts = allProducts.filter(p => p.trending);
     
-    // Set up Hero Background
-    let heroBgStyle = '';
-    if (globalSettings.hero_bg_type === 'image' && globalSettings.hero_bg_image_url) {
-      heroBgStyle = `background: linear-gradient(135deg, rgba(20, 20, 22, 0.75), rgba(20, 20, 22, 0.9)), url('${globalSettings.hero_bg_image_url}') center/cover no-repeat;`;
-    } else {
-      heroBgStyle = `background: ${globalSettings.hero_bg_gradient};`;
-    }
 
-    const showBadge1 = globalSettings.hero_badge_1_text !== null && globalSettings.hero_badge_1_text !== '';
-    const showBadge2 = globalSettings.hero_badge_2_text !== null && globalSettings.hero_badge_2_text !== '';
 
     // Reusable video section builder function
     function renderVideoSection(sectionNum, show, title, desc, type, mp4Url, youtubeUrl) {
@@ -1233,9 +1101,7 @@ async function renderHome() {
       `;
     }
 
-    const heroImages = Array.isArray(globalSettings.hero_product_images) && globalSettings.hero_product_images.length > 0
-      ? globalSettings.hero_product_images
-      : [globalSettings.hero_product_image_url || '/hero_product.png'];
+
 
     let html = '';
 
@@ -1455,53 +1321,7 @@ async function renderHome() {
       `;
     }
 
-    // 11. Relocated old Hero Section (moved above Contact & Support)
-    html += `
-      <section class="hero semi-footer" style="${heroBgStyle}">
-        <div class="hero-overlay"></div>
-        <div class="container">
-          <div class="hero-content">
-            <span class="hero-eyebrow">Premium Nutrition · Trusted Quality</span>
-            <h1 class="hero-title">${globalSettings.hero_title}</h1>
-            <p class="hero-description">${globalSettings.hero_description}</p>
-            <div class="hero-buttons">
-              <a href="/products" class="btn btn-primary">Shop Products <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i></a>
-              <a href="/verify" class="btn btn-secondary">Verify Product</a>
-            </div>
-            <div class="hero-stats">
-              <div class="hero-stat">
-                <span class="hero-stat-value">100%</span>
-                <span class="hero-stat-label">Genuine Products</span>
-              </div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">FSSAI</span>
-                <span class="hero-stat-label">Certified</span>
-              </div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">24/7</span>
-                <span class="hero-stat-label">WhatsApp Support</span>
-              </div>
-            </div>
-          </div>
-          <div class="hero-graphic animate-scale">
-            <div class="hero-glow-sphere"></div>
-            <div class="hero-product-images-container">
-              ${heroImages.map((imgUrl, idx) => `
-                <img src="${imgUrl}" alt="Premium Supplement Jar ${idx + 1}" class="hero-product-image ${idx === 0 ? 'active' : ''}" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
-              `).join('')}
-            </div>
-            <div class="floating-badge badge-1" style="${showBadge1 ? '' : 'display: none;'}">
-              <i class="${globalSettings.hero_badge_1_icon || 'fas fa-shield-halved'}"></i>
-              <span>${globalSettings.hero_badge_1_text || '100% Genuine'}</span>
-            </div>
-            <div class="floating-badge badge-2" style="${showBadge2 ? '' : 'display: none;'}">
-              <i class="${globalSettings.hero_badge_2_icon || 'fas fa-certificate'}"></i>
-              <span>${globalSettings.hero_badge_2_text || 'FSSAI Certified'}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
+
 
     // Contact Section
     html += `
