@@ -1,430 +1,180 @@
-# FINAL WEBSITE POLISH & RESPONSIVE OPTIMIZATION
+1. Announcement Bar
 
-## Goal
+Improve the announcement bar.
 
-Perform a complete UI/UX audit of the entire website and make it production-ready.
+Requirements
+Add a close (×) button on the right side.
+If the user closes it, save the state in localStorage so it stays hidden.
+On small screens, do not increase the height.
+Instead of wrapping into multiple lines, make the text auto-scroll horizontally (marquee/ticker effect).
+Pause the scrolling when the user touches or hovers over it.
+Resume after interaction.
+2. Navbar
 
-Do not only fix individual components—review every page, section, and component to ensure a premium, modern, responsive experience.
+Keep the current navbar exactly the same.
 
-The target quality should be comparable to Apple, Nike, Amazon, Gymshark, Stripe, and Vercel.
+No redesign.
 
----
+No spacing changes.
 
-# 1. Overall Scaling
+No color changes.
 
-The entire website currently appears oversized.
+Only maintain responsiveness.
 
-Reduce the overall visual scale by approximately 10–20% while maintaining readability.
+3. Homepage Order
 
-Everything should feel more refined and balanced.
+Homepage sections should appear in this exact order:
 
-Scale down:
+Announcement Bar
+Navbar
+Hero Slider
+Features Section
+Shop by Category
+Featured Products
+Best Sellers
+Shop by Brand (hidden for now via Admin toggle)
+Why Choose Us Banner
+Customer Reviews (disabled from Admin for now)
+Footer
+4. Features Section
 
-- Containers
-- Cards
-- Buttons
-- Images
-- Product Cards
-- Navigation
-- Hero
-- Icons
-- Section spacing
-- Typography (where appropriate)
+Add a premium feature strip below the Hero.
 
-The layout should feel elegant, not oversized.
+Include:
 
----
+🚚 Fast Delivery
+✅ Authentic Products
+🔒 Secure Payment
+📞 Customer Support
 
-# 2. Perfect Container System
+Also include 2 CTA Buttons
 
-Create one consistent container across the entire website.
+Shop Products
+Verify Product
 
-Example
+Keep the same design language.
 
-Max Width:
-1400px
+5. Shop by Brand
 
-Width:
-100%
+Create the complete section.
 
-Padding:
-Desktop: 32px
-Tablet: 24px
-Mobile: 16px
+But make it disabled by default.
 
-Every section must align perfectly with the Navbar.
+Admin can enable/disable it later.
 
-No section should have different left/right alignment.
+No UI redesign.
 
----
+6. Customer Reviews
 
-# 3. Responsive Layout
+Build the complete component.
 
-Audit every screen size.
+Keep it hidden by default.
 
+Admin can enable it later.
+
+7. Why Choose Us
+
+Instead of cards,
+
+Create a premium full-width banner section.
+
+Include:
+
+Authentic Products
+Trusted Brands
+Fast Delivery
+Customer Support
+
+Maintain current design style.
+
+8. Product Card Fix (Very Important)
+
+Currently the Buy Now button gets cut off on some devices.
+
+Fix every product card so:
+
+Buy Now button is always fully visible.
+Equal card heights.
+Proper spacing.
+Buttons never overflow.
+No text clipping.
+Images maintain aspect ratio.
+Responsive on every screen width.
+
+Do not redesign the cards.
+
+Only fix responsiveness and layout issues.
+
+9. Responsiveness
+
+Fix all remaining responsive issues.
+
+Ensure perfect display on:
+
+320px
+360px
+375px
+390px
+412px
+768px
+1024px
 Desktop
-Laptop
-Tablet
-Mobile
 
-Nothing should:
+No overflow.
 
-- Overflow
-- Break
-- Shift
-- Stretch
-- Compress
-- Overlap
-
-No horizontal scrolling.
-
-No unexpected whitespace.
-
----
-
-# 4. Typography
-
-Improve typography hierarchy.
-
-Use consistent font sizes.
-
-Better line heights.
-
-Balanced spacing.
-
-Avoid oversized headings.
-
-Text should always remain readable.
-
----
-
-# 5. Spacing System
-
-Use one consistent spacing system throughout.
-
-Equal spacing between:
-
-- Sections
-- Cards
-- Buttons
-- Titles
-- Images
-- Product grids
-
-Everything should follow the same design language.
-
----
-
-# 6. Cards
-
-Review every card.
-
-Maintain:
-
-Equal height
-
-Equal width
-
-Equal padding
-
-Equal border radius
-
-Equal shadows
-
-Equal hover effects
-
-No stretched content.
-
----
-
-# 7. Images
-
-Optimize every image.
-
-Images should never:
-
-Crop unexpectedly
-
-Stretch
-
-Become blurry
-
-Overflow
-
-Lose quality
-
-Scale proportionally.
-
----
-
-# 8. Product Grid
-
-Products should align perfectly.
-
-Equal spacing.
-
-Equal image sizes.
-
-Equal button positions.
-
-Equal title alignment.
-
-No jumping layouts.
-
----
-
-# 9. Buttons
-
-Make every button consistent.
-
-Equal:
-
-Height
-
-Padding
-
-Border Radius
-
-Hover Animation
-
-Transition
-
-Typography
-
-Primary buttons should stand out.
-
-Secondary buttons should remain subtle.
-
----
-
-# 10. Navbar
-
-Review the entire navigation.
-
-Perfect alignment.
-
-Equal spacing.
-
-Smooth dropdowns.
-
-Sticky behaviour should remain smooth.
-
-Mobile navigation should feel native.
-
----
-
-# 11. Hero
-
-Keep the new Hero Banner Slider.
-
-It should:
-
-100% responsive
-
-Image only
-
-No crop
-
-No blur
-
-No stretch
-
-Maintain aspect ratio
-
-Auto slide
-
-Touch swipe
-
-Mouse drag
-
-Smooth transitions
-
-Desktop and Mobile banners should switch automatically.
-
----
-
-# 12. Footer
-
-Review the footer.
-
-Improve spacing.
-
-Better alignment.
-
-Better responsiveness.
-
-Better typography.
-
-Equal columns.
-
----
-
-# 13. Animations
-
-Use subtle premium animations.
-
-No excessive motion.
-
-Smooth transitions.
-
-Hover animations should feel premium.
-
-Target 60 FPS.
-
----
-
-# 14. Accessibility
-
-Keyboard navigation.
-
-Visible focus states.
-
-Proper contrast.
-
-ARIA labels.
-
-Semantic HTML.
-
----
-
-# 15. Performance
-
-Improve Lighthouse score.
-
-Optimize:
-
-CLS
-
-LCP
-
-INP
-
-FCP
-
-TBT
-
-Use:
-
-Lazy Loading
-
-Image Optimization
-
-Code Splitting
-
-Dynamic Imports
-
-Caching
-
-Preloading
-
-Remove unnecessary re-renders.
-
----
-
-# 16. Consistency
-
-Every page should follow exactly the same design system.
-
-Same:
-
-Typography
-
-Spacing
-
-Containers
-
-Border Radius
-
-Buttons
-
-Cards
-
-Colors
-
-Icons
-
-Animations
-
----
-
-# 17. Mobile Optimization
-
-Completely optimize mobile experience.
-
-Touch-friendly controls.
-
-Correct spacing.
-
-Readable text.
-
-Proper image scaling.
+No clipped buttons.
 
 No broken layouts.
 
----
+10. Code Quality
+Keep existing component structure.
+Do not break routing.
+Do not modify existing functionality.
+Maintain current animations.
+Clean responsive CSS.
+No unnecessary libraries.
+Preserve current UI exactly.
 
-# 18. Desktop Optimization
 
-Desktop should use available screen width intelligently.
+Fix all UI, UX, responsiveness, and routing issues on my website.
 
-Avoid giant empty spaces.
+Current Issues:
 
-Avoid oversized elements.
+1. Vercel Routing
+- Home page works.
+- Product pages show 404 NOT_FOUND when refreshed or opened directly.
+- Fix routing permanently without breaking SEO or dynamic routes.
 
-Maintain a premium balanced layout.
+2. Product Cards
+- "VIEW DETAIL" button text is getting cut and only "EW DETAIL" is visible.
+- Ensure buttons always display full text.
+- Make button width responsive.
+- Prevent text clipping, overflow, or wrapping.
+- Keep equal spacing between both buttons.
 
----
+3. Responsive Layout
+- Check every page on mobile, tablet, and desktop.
+- Fix any overflow, broken alignment, uneven spacing, or inconsistent card heights.
+- Ensure product cards have equal height and clean alignment.
 
-# 19. Final Design Review
+4. Sticky Navbar
+- Navbar should stay fixed.
+- When user scrolls DOWN, hide the navbar with a smooth animation.
+- When user scrolls UP, show the navbar again.
+- On reaching the top, navbar should remain fully visible.
+- Animation should be smooth without layout shift.
 
-Review the website as if preparing it for production.
+5. General UI Improvements
+- Remove any text clipping.
+- Fix button padding.
+- Improve touch targets for mobile.
+- Ensure all elements are perfectly responsive.
+- Prevent horizontal scrolling.
+- Optimize spacing and typography.
 
-Fix every:
-
-Alignment issue
-
-Spacing issue
-
-Responsive issue
-
-Scaling issue
-
-Overflow
-
-Padding inconsistency
-
-Margin inconsistency
-
-Typography inconsistency
-
-Animation inconsistency
-
-Image issue
-
-Component inconsistency
-
-Do not leave any section unreviewed.
-
----
-
-# Expected Result
-
-The final website should feel like a modern premium e-commerce platform.
-
-Clean.
-
-Balanced.
-
-Fast.
-
-Responsive.
-
-Pixel-perfect.
-
-Professional.
-
-Every element should be visually aligned and consistently scaled across all devices.
-
-The user should immediately feel that the website is polished to the quality level of Apple, Nike, Stripe, Vercel, Amazon, or Gymshark.
-
-Do not redesign the branding—only improve layout, responsiveness, consistency, spacing, scaling, and overall user experience while preserving existing functionality.
+6. Verification
+- Test every page.
+- Test every product page.
+- Test refresh on every route.
+- Test on Android Chrome and desktop.
+- Explain every change made and provide the final modified code for each updated file.

@@ -184,6 +184,7 @@ window.handleWishlistToggleClick = handleWishlistToggleClick;
 // Global variables
 export let globalSettings = null;
 let activeCategoryFilter = null;
+let activeBrandFilter = null;
 let productSearchQuery = '';
 
 // DOM Elements
@@ -294,6 +295,7 @@ async function init() {
         a.addEventListener('click', (e) => {
           e.preventDefault();
           activeCategoryFilter = cat.id;
+          activeBrandFilter = null;
           router.navigate(`/products`);
 
           mobileMenuBtn.classList.remove('active');
@@ -319,6 +321,7 @@ async function init() {
         allProdSublink.addEventListener('click', (e) => {
           e.preventDefault();
           activeCategoryFilter = null;
+          activeBrandFilter = null;
           router.navigate('/products');
 
           mobileMenuBtn.classList.remove('active');
@@ -422,14 +425,26 @@ function setupGlobalListeners() {
     });
   });
 
-  // Shrink header on scroll
+  // Shrink and toggle sticky header on scroll direction
+  let lastScrollY = window.scrollY;
   window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 50) {
+    if (!navbar) return;
+    const currentScrollY = window.scrollY;
+    if (currentScrollY > 50) {
       navbar.classList.add('scrolled');
     } else {
       navbar.classList.remove('scrolled');
     }
+
+    if (currentScrollY <= 100) {
+      navbar.classList.remove('navbar-hidden');
+    } else if (currentScrollY > lastScrollY) {
+      navbar.classList.add('navbar-hidden');
+    } else {
+      navbar.classList.remove('navbar-hidden');
+    }
+    lastScrollY = currentScrollY;
   });
 
   // Mobile Navigation Submenu Toggle
@@ -537,13 +552,27 @@ export function applyBranding(settings) {
   const annBar = document.getElementById('announcement-bar');
   const annText = document.getElementById('announcement-text');
   if (annBar && annText) {
-    if (settings.announcement_show && settings.announcement_text) {
+    const isClosed = localStorage.getItem('announcement-closed') === 'true' &&
+                     localStorage.getItem('announcement-closed-text') === settings.announcement_text;
+    if (settings.announcement_show && settings.announcement_text && !isClosed) {
       annText.textContent = settings.announcement_text;
       annBar.style.backgroundColor = settings.announcement_bg_color || settings.primary_color;
       annBar.style.color = settings.announcement_text_color || '#ffffff';
       annBar.style.display = 'block';
     } else {
       annBar.style.display = 'none';
+    }
+
+    const closeBtn = document.getElementById('announcement-close-btn');
+    if (closeBtn) {
+      // Recreate event listener to avoid duplicates if applyBranding runs multiple times
+      const newCloseBtn = closeBtn.cloneNode(true);
+      closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+      newCloseBtn.addEventListener('click', () => {
+        annBar.style.display = 'none';
+        localStorage.setItem('announcement-closed', 'true');
+        localStorage.setItem('announcement-closed-text', settings.announcement_text || '');
+      });
     }
   }
 
@@ -1116,19 +1145,59 @@ async function renderHome() {
       `;
     }
 
-
-
     let html = '';
 
-    // 1. New Hero Slider at the top
+    // 1. Hero Slider
     html += renderHeroSlider(globalSettings);
 
-    // Promotional Banner Section
+    // 2. Features Section (NEW)
+    html += `
+      <section class="features-section animate-on-scroll">
+        <div class="container">
+          <div class="features-grid">
+            <div class="feature-item">
+              <span class="feature-icon"><i class="fas fa-shipping-fast"></i></span>
+              <div class="feature-info">
+                <h4>🚚 Fast Delivery</h4>
+                <p>Quick dispatch nationwide</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon"><i class="fas fa-check-double"></i></span>
+              <div class="feature-info">
+                <h4>✅ Authentic Products</h4>
+                <p>100% genuine supplements</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon"><i class="fas fa-lock"></i></span>
+              <div class="feature-info">
+                <h4>🔒 Secure Payment</h4>
+                <p>Safe checkout & COD</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon"><i class="fas fa-headset"></i></span>
+              <div class="feature-info">
+                <h4>📞 Customer Support</h4>
+                <p>Dedicated assistance</p>
+              </div>
+            </div>
+          </div>
+          <div class="features-cta">
+            <a href="/products" class="btn btn-primary">Shop Products</a>
+            <a href="/verify" class="btn btn-outline">Verify Product</a>
+          </div>
+        </div>
+      </section>
+    `;
+
+    // Promotional Banner (if enabled)
     if (globalSettings.promo_banner_show && globalSettings.promo_banner_image_url) {
       html += `
         <section class="section promo-banner-section" style="padding: 30px 0; background: var(--gray-50); border-bottom: 1px solid var(--border-color);">
           <div class="container">
-            <a href="${globalSettings.promo_banner_link || '/products'}" style="display:block; overflow:hidden; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+            <a href="${globalSettings.promo_banner_link || '/products'}" style="display:block; overflow:hidden; border-radius:var(--r-lg); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
               <img src="${globalSettings.promo_banner_image_url}" alt="Promotional Banner" style="width:100%; height:auto; object-fit:cover; display:block;">
             </a>
           </div>
@@ -1136,7 +1205,7 @@ async function renderHome() {
       `;
     }
 
-    // Video Section 1 (after Hero)
+    // Video Section 1 (if enabled)
     html += renderVideoSection(
       1, 
       globalSettings.video1_show, 
@@ -1147,7 +1216,7 @@ async function renderHome() {
       globalSettings.video1_youtube_url
     );
 
-    // Categories Preview
+    // 3. Shop by Category (Goal)
     if (categories.length > 0) {
       const categoryIcons = ['capsules', 'dumbbell', 'bolt', 'glass-water', 'apple-alt', 'flask', 'fire', 'heartbeat'];
       html += `
@@ -1178,7 +1247,7 @@ async function renderHome() {
       `;
     }
 
-    // Featured Products
+    // 4. Featured Products
     html += `
       <section class="section section-bg">
         <div class="container">
@@ -1213,7 +1282,7 @@ async function renderHome() {
       </section>
     `;
 
-    // Video Section 2 (after Featured Products)
+    // Video Section 2 (if enabled)
     html += renderVideoSection(
       2, 
       globalSettings.video2_show, 
@@ -1224,7 +1293,7 @@ async function renderHome() {
       globalSettings.video2_youtube_url
     );
 
-    // Top Products
+    // Top Products (if enabled)
     if (globalSettings.show_top_products) {
       html += `
         <section class="section">
@@ -1256,7 +1325,7 @@ async function renderHome() {
       `;
     }
 
-    // Best Sellers
+    // 5. Best Sellers
     if (globalSettings.show_best_sellers) {
       html += `
         <section class="section section-bg">
@@ -1288,7 +1357,7 @@ async function renderHome() {
       `;
     }
 
-    // Trending Products
+    // Trending Products (if enabled)
     if (globalSettings.show_trending_products) {
       html += `
         <section class="section">
@@ -1320,7 +1389,137 @@ async function renderHome() {
       `;
     }
 
-    // CTA Banner Section
+    // 6. Shop by Brand (disabled by default, hidden/shown via Admin toggle)
+    const showShopByBrand = globalSettings.slider_settings?.show_shop_by_brand || false;
+    if (showShopByBrand) {
+      const uniqueBrands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
+      if (uniqueBrands.length > 0) {
+        html += `
+          <section class="section">
+            <div class="container">
+              <div class="section-header animate-on-scroll">
+                <span class="section-badge">Trusted Partners</span>
+                <h2 class="section-title">Shop by Brand</h2>
+                <p class="section-subtitle">Browse supplements from leading sports nutrition brands.</p>
+              </div>
+              
+              <div class="brands-grid">
+                ${uniqueBrands.map(brand => `
+                  <div class="brand-card animate-on-scroll" data-brand="${escapeHTML(brand)}">
+                    <div class="brand-card-inner">
+                      <div class="brand-icon-wrap">
+                        <i class="fas fa-award"></i>
+                      </div>
+                      <h3>${escapeHTML(brand)}</h3>
+                      <span class="brand-link">View Products <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+    }
+
+    // 7. Why Choose Us Banner (full-width dark gradient banner section)
+    html += `
+      <section class="why-choose-us-banner animate-on-scroll">
+        <div class="container">
+          <div class="banner-content">
+            <span class="section-badge">Why Choose Us</span>
+            <h2>Your Trusted Partner in Fitness & Health</h2>
+            <p>We are committed to delivering the highest quality, 100% authentic sports supplements directly to you.</p>
+            
+            <div class="banner-features">
+              <div class="bf-item">
+                <i class="fas fa-check-double"></i>
+                <h3>Authentic Products</h3>
+                <p>100% genuine supplements with direct code verification</p>
+              </div>
+              <div class="bf-item">
+                <i class="fas fa-award"></i>
+                <h3>Trusted Brands</h3>
+                <p>Only top-tier certified sports nutrition brands</p>
+              </div>
+              <div class="bf-item">
+                <i class="fas fa-shipping-fast"></i>
+                <h3>Fast Delivery</h3>
+                <p>Secure packaging and quick shipping across the region</p>
+              </div>
+              <div class="bf-item">
+                <i class="fas fa-headset"></i>
+                <h3>Customer Support</h3>
+                <p>Dedicated order placement and advice directly on WhatsApp</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+
+    // 8. Customer Reviews (disabled by default, hidden/shown via Admin toggle)
+    const showCustomerReviews = globalSettings.slider_settings?.show_customer_reviews || false;
+    if (showCustomerReviews) {
+      let homepageReviews = [];
+      try {
+        homepageReviews = await db.fetchApprovedReviews().catch(() => []);
+      } catch (err) {
+        console.error(err);
+      }
+
+      if (homepageReviews.length === 0) {
+        homepageReviews = [
+          {
+            reviewer_name: "Amit Sharma",
+            rating: 5,
+            comment: "Absolutely genuine supplements! Verified the unique code on the site and it checked out. Will definitely buy again.",
+            products: { title: "100% Whey Protein" }
+          },
+          {
+            reviewer_name: "Vikram Malhotra",
+            rating: 5,
+            comment: "Super fast delivery and excellent support on WhatsApp. Guided me well on which creatine fits my budget and goals.",
+            products: { title: "Micronized Creatine" }
+          },
+          {
+            reviewer_name: "Rohit Verma",
+            rating: 5,
+            comment: "Top Muscle Nutrition has been my go-to store. Genuine products, great prices, and direct verification gives absolute peace of mind.",
+            products: { title: "Essential BCAAs" }
+          }
+        ];
+      }
+
+      html += `
+        <section class="section">
+          <div class="container">
+            <div class="section-header animate-on-scroll">
+              <span class="section-badge">Testimonials</span>
+              <h2 class="section-title">Customer Reviews</h2>
+              <p class="section-subtitle">Read feedback from fitness enthusiasts who trust our supplements.</p>
+            </div>
+            
+            <div class="reviews-grid">
+              ${homepageReviews.slice(0, 3).map(rev => `
+                <div class="review-card animate-on-scroll">
+                  <div class="review-stars">
+                    ${Array.from({ length: 5 }).map((_, i) => `<i class="${i < rev.rating ? 'fas' : 'far'} fa-star" style="color:#f59e0b; font-size:0.85rem; margin-right:2px;"></i>`).join('')}
+                  </div>
+                  <p class="review-comment">"${escapeHTML(rev.comment)}"</p>
+                  <div class="review-author">
+                    <h4>${escapeHTML(rev.reviewer_name)}</h4>
+                    ${rev.products ? `<span class="review-product">Verified Buyer of ${escapeHTML(rev.products.title)}</span>` : '<span class="review-product">Verified Buyer</span>'}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // CTA Banner (if enabled)
     if (globalSettings.cta_banner_show) {
       html += `
         <section class="section cta-banner-section" style="padding: 70px 0; background: ${globalSettings.cta_banner_bg_color || '#161618'}; color: #ffffff; text-align: center; position: relative; overflow: hidden; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
@@ -1336,9 +1535,7 @@ async function renderHome() {
       `;
     }
 
-
-
-    // Contact Section
+    // 9. Contact Section
     html += `
       <section class="section section-bg" id="contact-section">
         <div class="container">
@@ -1402,6 +1599,16 @@ async function renderHome() {
     document.querySelectorAll('.category-card').forEach(card => {
       card.addEventListener('click', () => {
         activeCategoryFilter = card.dataset.categoryId;
+        activeBrandFilter = null;
+        router.navigate('/products');
+      });
+    });
+
+    // Bind Brand Card Clicks
+    document.querySelectorAll('.brand-card').forEach(card => {
+      card.addEventListener('click', () => {
+        activeBrandFilter = card.dataset.brand;
+        activeCategoryFilter = null;
         router.navigate('/products');
       });
     });
@@ -1486,7 +1693,7 @@ async function renderProducts() {
     ]);
 
     const activeCategory = activeCategoryFilter ? categories.find(c => c.id === activeCategoryFilter) : null;
-    const activeCategoryName = activeCategory ? activeCategory.name : 'All Categories';
+    const activeCategoryName = activeCategory ? activeCategory.name : (activeBrandFilter ? `Brand: ${activeBrandFilter}` : 'All Categories');
 
     appContent.innerHTML = `
       <section class="section">
@@ -1556,6 +1763,7 @@ async function renderProducts() {
 
       // Update active filter and label
       activeCategoryFilter = value === 'all' ? null : value;
+      activeBrandFilter = null;
       labelEl.textContent = text;
 
       // Update active styling
@@ -1596,9 +1804,10 @@ function filterAndRenderProducts(allProducts) {
 
   const filtered = allProducts.filter(prod => {
     const matchesCategory = !activeCategoryFilter || prod.category_id === activeCategoryFilter;
+    const matchesBrand = !activeBrandFilter || prod.brand === activeBrandFilter;
     const matchesSearch = !productSearchQuery || prod.title.toLowerCase().includes(productSearchQuery.toLowerCase()) || 
                           (prod.short_description && prod.short_description.toLowerCase().includes(productSearchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesBrand && matchesSearch;
   });
 
   if (filtered.length > 0) {

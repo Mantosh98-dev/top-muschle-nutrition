@@ -2355,6 +2355,16 @@ async function renderTabCustomization(workspace) {
             <span class="switch-slider"></span>
             <span>Show Trending</span>
           </label>
+          <label class="switch-label" for="settings-show-shop-by-brand" style="margin:0;">
+            <input type="checkbox" id="settings-show-shop-by-brand" class="switch-input" ${(settings.slider_settings && settings.slider_settings.show_shop_by_brand) ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Show Shop by Brand</span>
+          </label>
+          <label class="switch-label" for="settings-show-customer-reviews" style="margin:0;">
+            <input type="checkbox" id="settings-show-customer-reviews" class="switch-input" ${(settings.slider_settings && settings.slider_settings.show_customer_reviews) ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Show Customer Reviews</span>
+          </label>
         </div>
 
         <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
@@ -3006,7 +3016,9 @@ async function renderTabCustomization(workspace) {
           show_dots: document.getElementById('settings-slider-show-dots').checked,
           aspect_ratio_desktop: document.getElementById('settings-slider-aspect-desktop').value,
           aspect_ratio_mobile: document.getElementById('settings-slider-aspect-mobile').value,
-          cards: localSliderSettings.cards
+          cards: localSliderSettings.cards,
+          show_shop_by_brand: document.getElementById('settings-show-shop-by-brand').checked,
+          show_customer_reviews: document.getElementById('settings-show-customer-reviews').checked
         }
       };
 

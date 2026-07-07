@@ -279,10 +279,13 @@ button {
   padding: 8px;
   border-radius: var(--r-sm);
   transition: background var(--t) var(--ease);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.menu-toggle:hover {
+.menu-toggle:hover, .menu-toggle:focus {
   background: var(--gray-50);
+  outline: none;
 }
 
 .menu-toggle span {
@@ -2970,13 +2973,13 @@ textarea.form-input { resize: vertical; }
   .menu-toggle { display: block; }
 
   .menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
+    transform: translateY(6px) rotate(45deg);
   }
 
   .menu-toggle.active span:nth-child(2) { opacity: 0; }
 
   .menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(6px, -7px);
+    transform: translateY(-6px) rotate(-45deg);
   }
 
   .footer-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -4258,4 +4261,437 @@ body, html {
 /* Ensure all sections respect container */
 section, .section {
   overflow: hidden;
+}
+
+
+/* ============================================================
+   ADDITIONS - Premium Improvements
+   ============================================================ */
+
+/* ── Announcement Bar Ticker & Close button ── */
+.announcement-bar {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1001;
+  box-sizing: border-box;
+}
+
+.announcement-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  padding: 6px 40px 6px 16px;
+  min-height: 32px;
+  box-sizing: border-box;
+}
+
+.announcement-track-wrap {
+  flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.announcement-track {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: announcement-marquee 18s linear infinite;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+@keyframes announcement-marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
+
+.announcement-close-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+}
+
+.announcement-close-btn:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.15);
+}
+
+.announcement-bar:hover .announcement-track {
+  animation-play-state: paused;
+}
+
+
+/* ── Sticky Navbar Scroll Transitions ── */
+.navbar {
+  transition: transform 0.3s var(--ease), background var(--t) var(--ease), box-shadow var(--t) var(--ease), border-bottom var(--t) var(--ease) !important;
+}
+.navbar.navbar-hidden {
+  transform: translateY(-100%);
+}
+
+
+/* ── Features Section Strip ── */
+.features-section {
+  padding: 40px 0;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--gray-25);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  transition: all var(--t) var(--ease);
+}
+
+.feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--primary-glow);
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+  color: var(--primary);
+  background: var(--primary-light);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.feature-info h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.feature-info p {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+}
+
+.features-cta {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+
+/* ── Brands Grid Section ── */
+.brands-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+}
+
+.brand-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 30px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--t) var(--ease);
+}
+
+.brand-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.brand-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon-wrap {
+  width: 54px;
+  height: 54px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.brand-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.brand-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  opacity: 0.8;
+  transition: opacity 0.25s;
+}
+
+.brand-card:hover .brand-link {
+  opacity: 1;
+}
+
+
+/* ── Why Choose Us Full-Width Banner ── */
+.why-choose-us-banner {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #1D1D1F 0%, #0c0c0e 100%);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.why-choose-us-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(196, 30, 58, 0.12) 0%, transparent 50%),
+              radial-gradient(circle at bottom right, rgba(196, 30, 58, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.why-choose-us-banner .banner-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.why-choose-us-banner h2 {
+  color: #ffffff;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 800;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.why-choose-us-banner p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+  max-width: 700px;
+  margin: 0 auto 48px;
+  line-height: 1.6;
+}
+
+.banner-features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.bf-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 30px 20px;
+  border-radius: var(--r-lg);
+  transition: all var(--t) var(--ease);
+}
+
+.bf-item:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(196, 30, 58, 0.3);
+}
+
+.bf-item i {
+  font-size: 2.2rem;
+  color: var(--primary);
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.bf-item h3 {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.bf-item p {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+
+/* ── Reviews Grid Section ── */
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 30px;
+}
+
+.review-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all var(--t) var(--ease);
+}
+
+.review-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-glow);
+}
+
+.review-stars {
+  display: flex;
+}
+
+.review-comment {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.5;
+  font-style: italic;
+  flex: 1;
+}
+
+.review-author h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.review-product {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  font-weight: 500;
+}
+
+
+/* ── Product Card Button Align Fix ── */
+.product-actions-row {
+  margin-top: auto !important; /* Forces buttons to stick to bottom of card */
+}
+
+
+/* ── Responsive Mobile Refinements ── */
+@media (max-width: 992px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .banner-features {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .features-cta {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+  .features-cta .btn {
+    text-align: center;
+    width: 100%;
+  }
+  .brands-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .brand-card {
+    padding: 20px 12px;
+  }
+  .brand-card h3 {
+    font-size: 1rem;
+  }
+  .banner-features {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .why-choose-us-banner {
+    padding: 60px 0;
+  }
+  .bf-item {
+    padding: 24px 16px;
+  }
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  /* Stack buttons inside product card vertically on mobile to prevent cut-off */
+  .product-info {
+    padding: 12px 12px 16px !important;
+  }
+  .product-img-wrap {
+    padding: 12px !important;
+  }
+  .product-actions-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .btn-card-details, .btn-card-buy {
+    font-size: 0.72rem !important;
+    padding: 8px 4px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
 }

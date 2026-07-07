@@ -60,8 +60,11 @@
 
   <!-- Announcement Bar -->
   <div id="announcement-bar" class="announcement-bar" style="display: none;" role="banner" aria-live="polite">
-    <div class="container" style="text-align: center; padding: 7px 24px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em;">
-      <span id="announcement-text"></span>
+    <div class="announcement-container">
+      <div class="announcement-track-wrap">
+        <span id="announcement-text" class="announcement-track"></span>
+      </div>
+      <button id="announcement-close-btn" class="announcement-close-btn" aria-label="Close announcement">&times;</button>
     </div>
   </div>
 

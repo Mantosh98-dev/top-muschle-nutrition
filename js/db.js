@@ -297,6 +297,21 @@ export async function fetchReviews(productId) {
   return data;
 }
 
+export async function fetchApprovedReviews() {
+  checkConfig();
+  const { data, error } = await supabaseClient
+    .from('reviews')
+    .select(`
+      *,
+      products (id, title)
+    `)
+    .eq('approved', true)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
 export async function saveReview(reviewData) {
   checkConfig();
   const { data, error } = await supabaseClient
