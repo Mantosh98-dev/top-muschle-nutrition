@@ -419,9 +419,11 @@ function setupGlobalListeners() {
   // Close mobile menu when links are clicked
   document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
-      mobileMenuBtn.classList.remove('active');
-      navMenu.classList.remove('active');
-      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      setTimeout(() => {
+        mobileMenuBtn.classList.remove('active');
+        navMenu.classList.remove('active');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      }, 0);
     });
   });
 
@@ -1047,7 +1049,7 @@ function initHeroSlider(settings) {
 
   // Prevent link click redirection when dragging slider
   track.addEventListener('click', (e) => {
-    if (dragMoveDistance > 10) {
+    if (dragMoveDistance > 25) {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -1901,7 +1903,7 @@ function renderProductCard(prod, index = 0) {
   const activeClass = wishlisted ? 'active' : '';
 
   return `
-    <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.btn-card-buy, .wishlist-btn')) router.navigate('/product/${prod.slug}');">
+    <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.btn-card-buy, .wishlist-btn, .btn-card-details')) router.navigate('/product/${prod.slug}');">
       <button class="wishlist-btn ${activeClass}" aria-label="Add to Wishlist" onclick="event.stopPropagation(); window.handleWishlistToggleClick(this, '${prod.id}');">
         <i class="${heartClass} fa-heart"></i>
       </button>
