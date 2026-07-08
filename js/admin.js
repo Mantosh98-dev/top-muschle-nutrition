@@ -6,6 +6,8 @@ import { router } from './router.js';
 let activeTab = 'dashboard';
 let currentSession = null;
 let currentModal = null;
+let activeSettingsSubTab = 'identity';
+let activeCustomizationSubTab = 'slider';
 
 // Track product form state (especially uploaded/added images list)
 let tempProductImages = [];
@@ -259,6 +261,8 @@ async function renderActiveWorkspaceTab() {
   const workspace = document.getElementById('admin-workspace');
   if (!workspace) return;
 
+  const currentScroll = window.scrollY;
+
   // Renders a banner if Supabase keys are in local storage instead of config.js file
   const credentialsBanner = !localStorage.getItem('SUPABASE_URL') ? '' : `
     <div class="admin-credentials-banner">
@@ -323,6 +327,11 @@ async function renderActiveWorkspaceTab() {
     }
   } finally {
     hideLoader();
+    if (currentScroll > 0) {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: currentScroll, behavior: 'instant' });
+      });
+    }
   }
 }
 
@@ -1775,6 +1784,10 @@ async function renderTabSettings(workspace) {
   const fetchedSettings = await db.fetchSettings();
   const settings = mergeSettings(fetchedSettings);
 
+  const isIdentityActive = activeSettingsSubTab === 'identity';
+  const isContactsActive = activeSettingsSubTab === 'contacts';
+  const isSeoActive = activeSettingsSubTab === 'seo';
+
   workspace.innerHTML = `
     <div class="admin-header-row" style="margin-bottom:20px;">
       <div class="admin-title-desc">
@@ -1785,15 +1798,15 @@ async function renderTabSettings(workspace) {
     
     <!-- Sub tabs navigation -->
     <div class="admin-sub-tabs" style="display:flex; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:24px;">
-      <button class="btn btn-ghost settings-sub-tab-btn active" data-subtab="identity" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-id-card"></i> Brand Identity</button>
-      <button class="btn btn-ghost settings-sub-tab-btn" data-subtab="contacts" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-address-book"></i> Contacts & Support</button>
-      <button class="btn btn-ghost settings-sub-tab-btn" data-subtab="seo" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-search"></i> SEO Metadata</button>
+      <button class="btn btn-ghost settings-sub-tab-btn ${isIdentityActive ? 'active' : ''}" data-subtab="identity" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-id-card"></i> Brand Identity</button>
+      <button class="btn btn-ghost settings-sub-tab-btn ${isContactsActive ? 'active' : ''}" data-subtab="contacts" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-address-book"></i> Contacts & Support</button>
+      <button class="btn btn-ghost settings-sub-tab-btn ${isSeoActive ? 'active' : ''}" data-subtab="seo" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-search"></i> SEO Metadata</button>
     </div>
     
     <div class="settings-content-area" style="background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:24px; box-shadow:var(--shadow-sm);">
       
       <!-- Subtab 1: Identity & Colors -->
-      <div id="settings-subtab-identity" class="settings-subtab-panel" style="display:block;">
+      <div id="settings-subtab-identity" class="settings-subtab-panel" style="display:${isIdentityActive ? 'block' : 'none'};">
         <h3 class="settings-section-title" style="margin-top:0;">Brand Identity Assets</h3>
         
         <div class="form-group" style="margin-bottom:16px;">
@@ -1850,7 +1863,7 @@ async function renderTabSettings(workspace) {
       </div>
       
       <!-- Subtab 2: Contacts & Map -->
-      <div id="settings-subtab-contacts" class="settings-subtab-panel" style="display:none;">
+      <div id="settings-subtab-contacts" class="settings-subtab-panel" style="display:${isContactsActive ? 'block' : 'none'};">
         <h3 class="settings-section-title" style="margin-top:0;">Support & Contact Details</h3>
         
         <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px; margin-bottom:16px;">
@@ -1881,7 +1894,7 @@ async function renderTabSettings(workspace) {
       </div>
       
       <!-- Subtab 3: SEO -->
-      <div id="settings-subtab-seo" class="settings-subtab-panel" style="display:none;">
+      <div id="settings-subtab-seo" class="settings-subtab-panel" style="display:${isSeoActive ? 'block' : 'none'};">
         <h3 class="settings-section-title" style="margin-top:0;">SEO Metadata Configurations</h3>
         
         <div class="form-group" style="margin-bottom:16px;">
@@ -1932,6 +1945,7 @@ async function renderTabSettings(workspace) {
   subTabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.dataset.subtab;
+      activeSettingsSubTab = tabId; // Keep track of the active sub-tab
       subTabBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       subTabPanels.forEach(panel => {
@@ -2074,6 +2088,8 @@ async function renderTabSettings(workspace) {
   const saveBtn = document.getElementById('settings-save-btn');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
+      if (saveBtn.disabled) return;
+      
       const primaryColor = cPrimText.value.trim();
       const secondaryColor = cSecText.value.trim();
       
@@ -2085,6 +2101,10 @@ async function renderTabSettings(workspace) {
         showToast('Secondary color theme must be a valid 6-character hex code (e.g. #FFFFFF)', 'error');
         return;
       }
+
+      saveBtn.disabled = true;
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
       const waInput = document.getElementById('settings-whatsapp').value.trim();
       
@@ -2113,11 +2133,14 @@ async function renderTabSettings(workspace) {
         const newSettings = await db.updateSettings(payload);
         showToast('Global settings updated successfully', 'success');
         applyBranding(newSettings);
-        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+        await renderActiveWorkspaceTab();
       } catch (err) {
         console.error(err);
-        showToast('Failed to save settings configurations: ' + (err.message || err), 'error');
+        const detailedError = err.details ? `${err.message} (${err.details}${err.hint ? ' - ' + err.hint : ''})` : (err.message || err);
+        showToast('Failed to save settings configurations: ' + detailedError, 'error');
       } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
         hideLoader();
       }
     });
@@ -2130,6 +2153,11 @@ async function renderTabSettings(workspace) {
 async function renderTabCustomization(workspace) {
   const fetchedSettings = await db.fetchSettings();
   const settings = mergeSettings(fetchedSettings);
+
+  const isSliderActive = activeCustomizationSubTab === 'slider';
+  const isBannersActive = activeCustomizationSubTab === 'banners';
+  const isHomepageActive = activeCustomizationSubTab === 'homepage';
+  const isFooterActive = activeCustomizationSubTab === 'footer';
 
   // Local store of slider settings to modify in memory before saving
   let localSliderSettings = JSON.parse(JSON.stringify(settings.slider_settings || DEFAULT_SLIDER_SETTINGS));
@@ -2144,16 +2172,16 @@ async function renderTabCustomization(workspace) {
     
     <!-- Sub tabs navigation -->
     <div class="admin-sub-tabs" style="display:flex; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:24px;">
-      <button class="btn btn-ghost customization-sub-tab-btn active" data-subtab="slider" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-sliders-h"></i> Hero Slider</button>
-      <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="banners" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-bullhorn"></i> Announcements & Banners</button>
-      <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="homepage" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-home"></i> Section Feeds & Videos</button>
-      <button class="btn btn-ghost customization-sub-tab-btn" data-subtab="footer" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-shoe-prints"></i> Footer Socials & Copyright</button>
+      <button class="btn btn-ghost customization-sub-tab-btn ${isSliderActive ? 'active' : ''}" data-subtab="slider" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-sliders-h"></i> Hero Slider</button>
+      <button class="btn btn-ghost customization-sub-tab-btn ${isBannersActive ? 'active' : ''}" data-subtab="banners" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-bullhorn"></i> Announcements & Banners</button>
+      <button class="btn btn-ghost customization-sub-tab-btn ${isHomepageActive ? 'active' : ''}" data-subtab="homepage" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-home"></i> Section Feeds & Videos</button>
+      <button class="btn btn-ghost customization-sub-tab-btn ${isFooterActive ? 'active' : ''}" data-subtab="footer" style="border-radius:20px; padding: 8px 16px; font-weight:600;"><i class="fas fa-shoe-prints"></i> Footer Socials & Copyright</button>
     </div>
     
     <div class="customization-content-area" style="background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:24px; box-shadow:var(--shadow-sm);">
       
       <!-- Subtab 1: Hero Slider Settings (Active by default) -->
-      <div id="customization-subtab-slider" class="customization-subtab-panel" style="display:block;">
+      <div id="customization-subtab-slider" class="customization-subtab-panel" style="display:${isSliderActive ? 'block' : 'none'};">
         <h3 class="settings-section-title" style="margin-top:0;">Hero Slider Settings</h3>
         
         <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 24px;">
@@ -2242,7 +2270,7 @@ async function renderTabCustomization(workspace) {
       </div>
       
       <!-- Subtab 2: Announcements & Banners -->
-      <div id="customization-subtab-banners" class="customization-subtab-panel" style="display:none;">
+      <div id="customization-subtab-banners" class="customization-subtab-panel" style="display:${isBannersActive ? 'block' : 'none'};">
         
         <!-- Announcement Bar Panel -->
         <h3 class="settings-section-title" style="margin-top:0;">Global Announcement Ticker Bar</h3>
@@ -2363,8 +2391,8 @@ async function renderTabCustomization(workspace) {
         </div>
       </div>
       
-      <!-- Subtab 3: Homepage Sections & Videos -->
-      <div id="customization-subtab-homepage" class="customization-subtab-panel" style="display:none;">
+      <!-- Subtab 3: Section Feeds & Videos -->
+      <div id="customization-subtab-homepage" class="customization-subtab-panel" style="display:${isHomepageActive ? 'block' : 'none'};">
         <h3 class="settings-section-title" style="margin-top:0;">Homepage Section Visibility</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:24px;">
           <label class="switch-label" for="settings-show-top-products" style="margin:0;">
@@ -2471,8 +2499,8 @@ async function renderTabCustomization(workspace) {
         </div>
       </div>
       
-      <!-- Subtab 4: Footer & Socials -->
-      <div id="customization-subtab-footer" class="customization-subtab-panel" style="display:none;">
+      <!-- Subtab 4: Footer Socials & Copyright -->
+      <div id="customization-subtab-footer" class="customization-subtab-panel" style="display:${isFooterActive ? 'block' : 'none'};">
         <h3 class="settings-section-title" style="margin-top:0;">Footer Specifications</h3>
         
         <div class="form-group" style="margin-bottom:16px;">
@@ -2831,6 +2859,7 @@ async function renderTabCustomization(workspace) {
   subTabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.dataset.subtab;
+      activeCustomizationSubTab = tabId; // Keep track of the active sub-tab
       subTabBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       subTabPanels.forEach(panel => {
@@ -3021,6 +3050,12 @@ async function renderTabCustomization(workspace) {
   const saveBtn = document.getElementById('customization-save-btn');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
+      if (saveBtn.disabled) return;
+
+      saveBtn.disabled = true;
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
       const video1Select = document.getElementById('settings-video1-type');
       const video2Select = document.getElementById('settings-video2-type');
 
@@ -3096,11 +3131,14 @@ async function renderTabCustomization(workspace) {
         localStorage.removeItem('fallback_slider_settings');
         showToast('Website customizations saved successfully', 'success');
         applyBranding(newSettings);
-        setTimeout(() => renderActiveWorkspaceTab(), 1000);
+        await renderActiveWorkspaceTab();
       } catch (err) {
         console.error(err);
-        showToast('Failed to save website customizations: ' + (err.message || err), 'error');
+        const detailedError = err.details ? `${err.message} (${err.details}${err.hint ? ' - ' + err.hint : ''})` : (err.message || err);
+        showToast('Failed to save website customizations: ' + detailedError, 'error');
       } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
         hideLoader();
       }
     });

@@ -9,6 +9,7 @@ class Router {
 
     // Intercept clicks on links for SPA routing
     document.addEventListener('click', (e) => {
+      if (e.defaultPrevented) return;
       const target = e.target.closest('a');
       if (!target) return;
 

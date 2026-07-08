@@ -2871,6 +2871,13 @@ textarea.form-input { resize: vertical; }
     --pad-desktop: var(--pad-mobile);
   }
 
+  .pd-mobile-buy-bar {
+    display: flex !important;
+  }
+  body {
+    padding-bottom: 76px !important;
+  }
+
   .logo-link {
     width: 140px;
     max-width: 180px;

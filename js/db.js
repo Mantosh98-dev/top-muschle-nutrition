@@ -24,13 +24,40 @@ export async function fetchSettings() {
 
 export async function updateSettings(settingsData) {
   checkConfig();
+
+  // Clean up settingsData to ensure we don't send undefined fields
+  const cleanData = {};
+  for (const key in settingsData) {
+    if (settingsData[key] !== undefined) {
+      cleanData[key] = settingsData[key];
+    }
+  }
+
+  // Attempt to update the existing row with ID 1
   const { data, error } = await supabaseClient
     .from('settings')
-    .upsert({ id: 1, ...settingsData })
+    .update(cleanData)
+    .eq('id', 1)
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("Supabase update error:", error);
+    // If it's a PGRST116 (No rows found) or similar, fallback to upsert
+    if (error.code === 'PGRST116' || error.message.includes('0 rows') || error.code === 'PGRST110') {
+      const { data: upsertData, error: upsertError } = await supabaseClient
+        .from('settings')
+        .upsert({ id: 1, ...cleanData })
+        .select()
+        .single();
+      if (upsertError) {
+        console.error("Supabase upsert fallback error:", upsertError);
+        throw upsertError;
+      }
+      return upsertData;
+    }
+    throw error;
+  }
   return data;
 }
 

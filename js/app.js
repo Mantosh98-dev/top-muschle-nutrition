@@ -297,6 +297,7 @@ async function init() {
 
         a.addEventListener('click', (e) => {
           e.preventDefault();
+          e.stopPropagation();
           activeCategoryFilter = cat.id;
           activeBrandFilter = null;
           router.navigate(`/products`);
@@ -309,7 +310,7 @@ async function init() {
           const toggleIcon = document.querySelector('.dropdown-toggle-btn i');
           if (submenu) submenu.classList.remove('active');
           if (toggleIcon) {
-            toggleIcon.className = 'fas fa-plus';
+            toggleIcon.className = 'fas fa-chevron-down';
             document.querySelector('.dropdown-toggle-btn').setAttribute('aria-expanded', 'false');
           }
         });
@@ -323,6 +324,7 @@ async function init() {
       if (allProdSublink) {
         allProdSublink.addEventListener('click', (e) => {
           e.preventDefault();
+          e.stopPropagation();
           activeCategoryFilter = null;
           activeBrandFilter = null;
           router.navigate('/products');
@@ -335,7 +337,7 @@ async function init() {
           const toggleIcon = document.querySelector('.dropdown-toggle-btn i');
           if (submenu) submenu.classList.remove('active');
           if (toggleIcon) {
-            toggleIcon.className = 'fas fa-plus';
+            toggleIcon.className = 'fas fa-chevron-down';
             document.querySelector('.dropdown-toggle-btn').setAttribute('aria-expanded', 'false');
           }
         });
@@ -463,7 +465,7 @@ function setupGlobalListeners() {
       dropdownToggle.setAttribute('aria-expanded', isActive);
       const icon = dropdownToggle.querySelector('i');
       if (icon) {
-        icon.className = isActive ? 'fas fa-minus' : 'fas fa-plus';
+        icon.className = isActive ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
       }
     });
   }
@@ -2002,6 +2004,134 @@ function parseNutritionInfo(nutritionStr) {
   `;
 }
 
+// Helper functions for Product Share Feature
+function openShareModal(product) {
+  const url = window.location.href;
+  const text = `Check out ${product.title} - Premium quality supplement from Top Muscle Nutrition!`;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: product.title,
+      text: text,
+      url: url
+    }).catch(err => {
+      if (err.name !== 'AbortError') {
+        showShareFallbackModal(product, url, text);
+      }
+    });
+  } else {
+    showShareFallbackModal(product, url, text);
+  }
+}
+
+function showShareFallbackModal(product, url, text) {
+  let modal = document.getElementById('share-fallback-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'share-fallback-modal';
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+  }
+
+  const encodedUrl = encodeURIComponent(url);
+  const encodedText = encodeURIComponent(text);
+
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 480px; padding: 28px;">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        <h3 style="margin:0; font-family:var(--font-heading); font-size:1.25rem;"><i class="fas fa-share-nodes" style="color:var(--primary); margin-right:8px;"></i>Share Product</h3>
+        <button class="modal-close" id="close-share-modal" style="background:none; border:none; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+      </div>
+      
+      <p style="font-size:0.9rem; color:var(--text-sub); margin-bottom: 20px;">Share <strong>${escapeHTML(product.title)}</strong> with your friends:</p>
+      
+      <div class="share-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+        
+        <button class="share-option-btn" id="share-copy-link" style="display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--gray-50); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 8px; cursor:pointer; transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(0,0,0,0.06); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--text);"><i class="fas fa-link"></i></div>
+          <span style="font-size:0.75rem; font-weight:600;">Copy Link</span>
+        </button>
+
+        <a href="https://api.whatsapp.com/send?text=${encodedText}%20${encodedUrl}" target="_blank" rel="noopener" class="share-option-btn" style="display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--gray-50); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 8px; text-decoration:none; color:var(--text); transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(37,211,102,0.15); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#25D366;"><i class="fab fa-whatsapp"></i></div>
+          <span style="font-size:0.75rem; font-weight:600;">WhatsApp</span>
+        </a>
+
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" rel="noopener" class="share-option-btn" style="display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--gray-50); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 8px; text-decoration:none; color:var(--text); transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(24,119,242,0.15); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#1877F2;"><i class="fab fa-facebook-f"></i></div>
+          <span style="font-size:0.75rem; font-weight:600;">Facebook</span>
+        </a>
+
+        <a href="https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}" target="_blank" rel="noopener" class="share-option-btn" style="display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--gray-50); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 8px; text-decoration:none; color:var(--text); transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(0,0,0,0.06); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#000000;"><i class="fab fa-x-twitter"></i></div>
+          <span style="font-size:0.75rem; font-weight:600;">X (Twitter)</span>
+        </a>
+
+        <a href="https://t.me/share/url?url=${encodedUrl}&text=${encodedText}" target="_blank" rel="noopener" class="share-option-btn" style="display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--gray-50); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 8px; text-decoration:none; color:var(--text); transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(0,136,204,0.15); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#0088cc;"><i class="fab fa-telegram-plane"></i></div>
+          <span style="font-size:0.75rem; font-weight:600;">Telegram</span>
+        </a>
+
+        <a href="mailto:?subject=${encodeURIComponent('Check out ' + product.title)}&body=${encodedText}%0A%0A${encodedUrl}" class="share-option-btn" style="display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--gray-50); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 8px; text-decoration:none; color:var(--text); transition:all 0.2s ease;">
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(220,38,38,0.1); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#DC2626;"><i class="fas fa-envelope"></i></div>
+          <span style="font-size:0.75rem; font-weight:600;">Email</span>
+        </a>
+        
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; background:var(--gray-100); border-radius:var(--r-md); padding:10px 12px; border:1px solid var(--border);">
+        <input type="text" value="${escapeHTML(url)}" readonly style="flex:1; background:none; border:none; outline:none; font-size:0.8rem; color:var(--text-sub); pointer-events:all;" id="share-link-input">
+        <button id="share-copy-inline-btn" style="background:var(--primary); color:#fff; border:none; padding:6px 12px; border-radius:var(--r-sm); font-size:0.75rem; font-weight:600; cursor:pointer; transition:background 0.2s ease;">Copy</button>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add('active');
+
+  const closeModal = () => {
+    modal.classList.remove('active');
+  };
+  
+  modal.querySelector('#close-share-modal').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  const copyAction = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Product link copied to clipboard!', 'success');
+      const copyBtn = modal.querySelector('#share-copy-inline-btn');
+      if (copyBtn) {
+        copyBtn.textContent = 'Copied!';
+        copyBtn.style.background = 'var(--success)';
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+          copyBtn.style.background = 'var(--primary)';
+        }, 2000);
+      }
+    } catch (err) {
+      showToast('Failed to copy link', 'error');
+    }
+  };
+
+  modal.querySelector('#share-copy-link').addEventListener('click', copyAction);
+  modal.querySelector('#share-copy-inline-btn').addEventListener('click', copyAction);
+
+  modal.querySelectorAll('.share-option-btn').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      btn.style.transform = 'translateY(-2px)';
+      btn.style.borderColor = 'var(--primary)';
+      btn.style.background = 'var(--white)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'none';
+      btn.style.borderColor = 'var(--border)';
+      btn.style.background = 'var(--gray-50)';
+    });
+  });
+}
+
 // 3. PRODUCT DETAILS VIEW
 async function renderProductDetails(params) {
   showLoader();
@@ -2308,12 +2438,17 @@ async function renderProductDetails(params) {
                 <!-- Divider -->
                 <div class="pd-divider"></div>
 
-                <!-- WhatsApp Order Button -->
+                <!-- WhatsApp Order Button & Share Button -->
                 ${product.whatsapp_enabled ? `
-                  <a href="#" target="_blank" rel="noopener" class="pd-wa-btn" id="pd-whatsapp-order-btn">
-                    <i class="fab fa-whatsapp"></i>
-                    Order via WhatsApp
-                  </a>
+                  <div class="pd-action-buttons-group" style="display: flex; gap: 12px; margin-top: 16px; margin-bottom: 8px;">
+                    <a href="#" target="_blank" rel="noopener" class="pd-wa-btn" id="pd-whatsapp-order-btn" style="flex: 1; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                      <i class="fab fa-whatsapp"></i>
+                      Order via WhatsApp
+                    </a>
+                    <button class="btn btn-secondary pd-share-btn" id="pd-share-btn" style="padding: 14px 20px; font-size: 1rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border-color); background: var(--white); cursor: pointer; transition: all 0.2s ease; border-radius: var(--r-md);" type="button">
+                      <i class="fas fa-share-nodes"></i> Share
+                    </button>
+                  </div>
                   <p class="pd-wa-note">Chat with us to confirm price & availability</p>
                 ` : `
                   <div class="pd-disabled-order">
@@ -2441,11 +2576,14 @@ async function renderProductDetails(params) {
 
       <!-- Mobile Floating Buy Bar -->
       ${product.whatsapp_enabled ? `
-        <div class="pd-mobile-buy-bar">
-          <a href="#" target="_blank" rel="noopener" class="pd-wa-btn">
+        <div class="pd-mobile-buy-bar" style="display: flex; gap: 10px; padding: 12px 16px; align-items: center;">
+          <a href="#" target="_blank" rel="noopener" class="pd-wa-btn" style="flex: 1; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
             <i class="fab fa-whatsapp"></i>
             Order via WhatsApp
           </a>
+          <button class="pd-mobile-share-btn" id="pd-mobile-share-btn" style="width: 48px; height: 48px; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--white); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; cursor: pointer; transition: all 0.2s ease;" type="button" aria-label="Share product">
+            <i class="fas fa-share-nodes"></i>
+          </button>
         </div>
       ` : ''}
     `;
@@ -2528,6 +2666,20 @@ async function renderProductDetails(params) {
     document.getElementById('pd-back-btn').addEventListener('click', () => {
       window.history.back();
     });
+
+    // Bind Share buttons
+    const desktopShareBtn = document.getElementById('pd-share-btn');
+    if (desktopShareBtn) {
+      desktopShareBtn.addEventListener('click', () => {
+        openShareModal(product);
+      });
+    }
+    const mobileShareBtn = document.getElementById('pd-mobile-share-btn');
+    if (mobileShareBtn) {
+      mobileShareBtn.addEventListener('click', () => {
+        openShareModal(product);
+      });
+    }
 
     // Image Gallery Thumbnail Click handler
     const mainImgEl = document.getElementById('pd-main-img');
