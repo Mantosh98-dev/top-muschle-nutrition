@@ -1897,14 +1897,14 @@ async function renderTabSettings(workspace) {
         <div class="form-group" style="margin-bottom:16px;">
           <label class="form-label" for="settings-og-image">Open Graph Share Image URL (SEO)</label>
           <div style="display:flex; gap:12px;">
-            <input type="text" id="settings-og-image" class="form-input" placeholder="https://image-link.com/og-image.jpg" value="${escapeHTML(settings.og_image_url || '')}" ${'og_image_url' in settings ? '' : 'disabled'}>
-            <button class="btn btn-dark" id="settings-og-image-upload-btn" style="padding:12px;" type="button" aria-label="Upload OG image file" ${'og_image_url' in settings ? '' : 'disabled'}><i class="fas fa-upload"></i></button>
+            <input type="text" id="settings-og-image" class="form-input" placeholder="https://image-link.com/og-image.jpg" value="${escapeHTML(settings.og_image_url || '')}" ${fetchedSettings && 'og_image_url' in fetchedSettings ? '' : 'disabled'}>
+            <button class="btn btn-dark" id="settings-og-image-upload-btn" style="padding:12px;" type="button" aria-label="Upload OG image file" ${fetchedSettings && 'og_image_url' in fetchedSettings ? '' : 'disabled'}><i class="fas fa-upload"></i></button>
             <input type="file" id="settings-og-image-file-input" style="display:none;" accept="image/*">
           </div>
           <div id="settings-og-image-preview-wrap">
             ${settings.og_image_url ? `<img src="${escapeHTML(settings.og_image_url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
           </div>
-          ${'og_image_url' in settings ? `
+          ${fetchedSettings && 'og_image_url' in fetchedSettings ? `
             <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; display: block;">
               Recommended size: 1200x630px. Keep file size under 300KB for WhatsApp previews. Falls back to default <code>/og-image.jpg</code>.
             </span>
@@ -2104,7 +2104,7 @@ async function renderTabSettings(workspace) {
         seo_description: document.getElementById('settings-seo-desc').value.trim()
       };
 
-      if ('og_image_url' in settings) {
+      if (fetchedSettings && 'og_image_url' in fetchedSettings) {
         payload.og_image_url = document.getElementById('settings-og-image').value.trim() || null;
       }
 
