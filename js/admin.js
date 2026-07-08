@@ -2116,7 +2116,7 @@ async function renderTabSettings(workspace) {
         setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         console.error(err);
-        showToast('Failed to save settings configurations', 'error');
+        showToast('Failed to save settings configurations: ' + (err.message || err), 'error');
       } finally {
         hideLoader();
       }
@@ -3032,7 +3032,7 @@ async function renderTabCustomization(workspace) {
         setTimeout(() => renderActiveWorkspaceTab(), 1000);
       } catch (err) {
         console.error(err);
-        showToast('Failed to save website customizations', 'error');
+        showToast('Failed to save website customizations: ' + (err.message || err), 'error');
       } finally {
         hideLoader();
       }
