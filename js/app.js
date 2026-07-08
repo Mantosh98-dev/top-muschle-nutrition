@@ -1158,30 +1158,30 @@ async function renderHome() {
         <div class="container">
           <div class="features-grid">
             <div class="feature-item">
-              <span class="feature-icon"><i class="fas fa-shipping-fast"></i></span>
+              <span class="feature-icon"><i class="fas fa-truck-fast"></i></span>
               <div class="feature-info">
-                <h4>🚚 Fast Delivery</h4>
+                <h4>Fast Delivery</h4>
                 <p>Quick dispatch nationwide</p>
               </div>
             </div>
             <div class="feature-item">
-              <span class="feature-icon"><i class="fas fa-check-double"></i></span>
+              <span class="feature-icon"><i class="fas fa-shield-halved"></i></span>
               <div class="feature-info">
-                <h4>✅ Authentic Products</h4>
+                <h4>Authentic Products</h4>
                 <p>100% genuine supplements</p>
               </div>
             </div>
             <div class="feature-item">
-              <span class="feature-icon"><i class="fas fa-lock"></i></span>
+              <span class="feature-icon"><i class="fas fa-credit-card"></i></span>
               <div class="feature-info">
-                <h4>🔒 Secure Payment</h4>
+                <h4>Secure Payment</h4>
                 <p>Safe checkout & COD</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="feature-icon"><i class="fas fa-headset"></i></span>
               <div class="feature-info">
-                <h4>📞 Customer Support</h4>
+                <h4>Customer Support</h4>
                 <p>Dedicated assistance</p>
               </div>
             </div>
