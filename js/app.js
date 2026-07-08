@@ -2445,8 +2445,8 @@ async function renderProductDetails(params) {
                       <i class="fab fa-whatsapp"></i>
                       Order via WhatsApp
                     </a>
-                    <button class="btn btn-secondary pd-share-btn" id="pd-share-btn" style="padding: 14px 20px; font-size: 1rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border-color); background: var(--white); cursor: pointer; transition: all 0.2s ease; border-radius: var(--r-md);" type="button">
-                      <i class="fas fa-share-nodes"></i> Share
+                    <button class="pd-share-icon-btn" id="pd-share-btn" type="button" aria-label="Share product">
+                      <i class="fas fa-share-nodes"></i>
                     </button>
                   </div>
                   <p class="pd-wa-note">Chat with us to confirm price & availability</p>
@@ -2581,7 +2581,7 @@ async function renderProductDetails(params) {
             <i class="fab fa-whatsapp"></i>
             Order via WhatsApp
           </a>
-          <button class="pd-mobile-share-btn" id="pd-mobile-share-btn" style="width: 48px; height: 48px; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--white); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; cursor: pointer; transition: all 0.2s ease;" type="button" aria-label="Share product">
+          <button class="pd-share-icon-btn" id="pd-mobile-share-btn" type="button" aria-label="Share product">
             <i class="fas fa-share-nodes"></i>
           </button>
         </div>
