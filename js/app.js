@@ -349,6 +349,11 @@ async function init() {
     router.addRoute('/products', renderProducts);
     router.addRoute('/product/:slug', renderProductDetails);
     router.addRoute('/verify', renderProductVerification);
+    router.addRoute('/categories', renderCategories);
+    router.addRoute('/about', renderAbout);
+    router.addRoute('/cart', renderCart);
+    router.addRoute('/account', renderAccount);
+    router.addRoute('/404', render404);
     
     // Section scroll router helper for Contact
     router.addRoute('/contact', () => {
@@ -2931,6 +2936,239 @@ function renderProductVerification() {
       verifyBtn.click();
     }
   });
+}
+
+// 5. CUSTOM 404 VIEW
+async function render404() {
+  appContent.innerHTML = `
+    <section class="section" style="padding: 100px 0; text-align: center;">
+      <div class="container verify-wrapper" style="max-width: 500px; margin: 0 auto;">
+        <div class="verify-card" style="background: var(--white); border: 1px solid var(--border-color); border-radius: var(--r-lg); padding: 48px 32px; box-shadow: var(--shadow-sm);">
+          <div class="category-icon-box" style="margin: 0 auto 24px auto; width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h2 style="font-family: var(--font-heading); font-weight: 800; font-size: 2rem; color: var(--text); margin-bottom: 12px;">404 - Page Not Found</h2>
+          <p style="color: var(--text-sub); font-size: 0.95rem; line-height: 1.6; margin-bottom: 32px;">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+          <div style="display: flex; gap: 16px; justify-content: center;">
+            <a href="/" class="btn btn-primary" style="margin: 0;"><i class="fas fa-home"></i> Back to Home</a>
+            <a href="/products" class="btn btn-outline" style="margin: 0;"><i class="fas fa-boxes"></i> Browse Products</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+// 6. CATEGORIES VIEW
+async function renderCategories() {
+  showLoader();
+  try {
+    const categories = await db.fetchCategories();
+    let categoriesHTML = '';
+    
+    if (categories && categories.length > 0) {
+      categoriesHTML = categories.map((cat, i) => `
+        <div class="category-card animate-on-scroll delay-${(i % 4) + 1}" data-category-id="${cat.id}" style="cursor: pointer; background: var(--white); border: 1px solid var(--border-color); border-radius: var(--r-md); padding: 32px 24px; text-align: center; transition: all var(--t) var(--ease); box-shadow: var(--shadow-xs);">
+          <div class="category-icon-box" style="margin: 0 auto 16px auto; width: 64px; height: 64px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all var(--t) var(--ease);">
+            <i class="fas fa-dumbbell"></i>
+          </div>
+          <h3 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">${escapeHTML(cat.name)}</h3>
+          <p style="font-size: 0.82rem; color: var(--text-sub); margin-bottom: 0;">Explore premium quality ${escapeHTML(cat.name).toLowerCase()} supplements</p>
+        </div>
+      `).join('');
+    } else {
+      categoriesHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-sub);">No categories found.</div>';
+    }
+
+    appContent.innerHTML = `
+      <section class="section">
+        <div class="container">
+          <div class="section-header animate-on-scroll">
+            <span class="section-badge">Categories</span>
+            <h2 class="section-title">Shop by Category</h2>
+            <p class="section-subtitle">Find the right supplements tailored to your workouts and recovery goals.</p>
+          </div>
+          
+          <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; margin-top: 32px;">
+            ${categoriesHTML}
+          </div>
+        </div>
+      </section>
+    `;
+
+    // Bind category click handlers
+    document.querySelectorAll('.category-card').forEach(card => {
+      card.addEventListener('click', () => {
+        activeCategoryFilter = card.dataset.categoryId;
+        activeBrandFilter = null;
+        router.navigate('/products');
+      });
+    });
+
+    initScrollAnimations();
+  } catch (error) {
+    console.error('Failed to render categories:', error);
+    showToast('Failed to load categories', 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+// 7. ABOUT VIEW
+async function renderAbout() {
+  appContent.innerHTML = `
+    <section class="section">
+      <div class="container">
+        <div class="section-header animate-on-scroll">
+          <span class="section-badge">About Us</span>
+          <h2 class="section-title">Top Muscle Nutrition</h2>
+          <p class="section-subtitle">Empowering your fitness journey with authentic, high-quality supplements.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 48px; align-items: center;" class="animate-on-scroll">
+          <div>
+            <h3 style="font-family: var(--font-heading); font-size: 1.75rem; font-weight: 800; margin-bottom: 16px; color: var(--text);">Our Quality Promise</h3>
+            <p style="color: var(--text-sub); line-height: 1.6; margin-bottom: 16px;">
+              At Top Muscle Nutrition, we believe that fitness is a lifetime commitment. That's why we source our products only from FSSAI-certified, trusted global brands to guarantee 100% authenticity.
+            </p>
+            <p style="color: var(--text-sub); line-height: 1.6; margin-bottom: 24px;">
+              Each product sold via our platform comes with a unique, tamper-proof security authentication code that you can verify instantly online.
+            </p>
+            <div style="display: flex; gap: 16px;">
+              <a href="/verify" class="btn btn-primary"><i class="fas fa-qrcode"></i> Authenticate a Product</a>
+              <a href="/products" class="btn btn-outline">Browse Catalogue</a>
+            </div>
+          </div>
+          <div style="border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-md);">
+            <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=800&auto=format&fit=crop" alt="Gym training" style="width:100%; display:block; object-fit:cover;">
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+  initScrollAnimations();
+}
+
+// 8. CART VIEW
+async function renderCart() {
+  showLoader();
+  try {
+    const allProducts = await db.fetchProducts();
+    const wishlistIds = getWishlist();
+    const wishlistedProducts = allProducts.filter(p => wishlistIds.includes(p.id));
+
+    let wishlistHTML = '';
+    if (wishlistedProducts.length > 0) {
+      wishlistHTML = `
+        <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 24px;">
+          ${wishlistedProducts.map((prod, i) => renderProductCard(prod, i)).join('')}
+        </div>
+      `;
+    } else {
+      wishlistHTML = `
+        <div style="text-align: center; padding: 48px 24px; background: var(--gray-50); border-radius: var(--r-md); border: 1px dashed var(--border-color); margin-top: 24px;">
+          <i class="far fa-heart" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 16px;"></i>
+          <h4>Your wishlist is currently empty</h4>
+          <p style="color: var(--text-sub); margin-bottom: 24px;">Add items to your wishlist to keep track of products you want to buy.</p>
+          <a href="/products" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> Browse Products</a>
+        </div>
+      `;
+    }
+
+    appContent.innerHTML = `
+      <section class="section">
+        <div class="container">
+          <div class="section-header animate-on-scroll">
+            <span class="section-badge">My Cart</span>
+            <h2 class="section-title">WhatsApp Shopping Cart</h2>
+            <p class="section-subtitle">How it works: Add products to your wishlist, and click "Order via WhatsApp" on the product detail page to buy.</p>
+          </div>
+          
+          <div style="margin-top: 32px;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700;">My Wishlisted Items</h3>
+            ${wishlistHTML}
+          </div>
+        </div>
+      </section>
+    `;
+
+    initScrollAnimations();
+  } catch (error) {
+    console.error('Failed to render cart:', error);
+    showToast('Failed to load cart items', 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+// 9. ACCOUNT VIEW
+async function renderAccount() {
+  showLoader();
+  try {
+    const allProducts = await db.fetchProducts();
+    const wishlistIds = getWishlist();
+    const wishlistedProducts = allProducts.filter(p => wishlistIds.includes(p.id));
+
+    let wishlistHTML = '';
+    if (wishlistedProducts.length > 0) {
+      wishlistHTML = `
+        <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 24px;">
+          ${wishlistedProducts.map((prod, i) => renderProductCard(prod, i)).join('')}
+        </div>
+      `;
+    } else {
+      wishlistHTML = `
+        <div style="text-align: center; padding: 32px 24px; background: var(--gray-50); border-radius: var(--r-md); border: 1px dashed var(--border-color); margin-top: 24px;">
+          <i class="far fa-heart" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 12px;"></i>
+          <h5 style="margin-bottom:8px;">No wishlisted products yet</h5>
+          <a href="/products" class="btn btn-primary btn-sm"><i class="fas fa-shopping-bag"></i> Browse Products</a>
+        </div>
+      `;
+    }
+
+    appContent.innerHTML = `
+      <section class="section">
+        <div class="container" style="max-width: 960px;">
+          <div class="section-header animate-on-scroll">
+            <span class="section-badge">My Account</span>
+            <h2 class="section-title">Customer Dashboard</h2>
+            <p class="section-subtitle">Manage your profile, wishlist, and product authentications.</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 32px; margin-top: 48px;" class="animate-on-scroll">
+            <!-- Left Profile Card -->
+            <div style="background: var(--white); border: 1px solid var(--border-color); border-radius: var(--r-md); padding: 32px 24px; text-align: center; height: fit-content;">
+              <div style="width: 96px; height: 96px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 16px auto;">
+                <i class="fas fa-user"></i>
+              </div>
+              <h3 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">Fitness Enthusiast</h3>
+              <p style="color: var(--text-sub); font-size: 0.85rem; margin-bottom: 24px;">Welcome back to Top Muscle Nutrition</p>
+              
+              <div style="text-align: left; border-top: 1px solid var(--border-color); padding-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+                <a href="/cart" class="nav-link" style="display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-size: 0.9rem; font-weight: 600;"><i class="fas fa-shopping-cart" style="color: var(--primary); width: 20px;"></i> My Cart & Wishlist</a>
+                <a href="/verify" class="nav-link" style="display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-size: 0.9rem; font-weight: 600;"><i class="fas fa-qrcode" style="color: var(--primary); width: 20px;"></i> Verify Product Code</a>
+                <a href="/admin" class="nav-link" style="display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-size: 0.9rem; font-weight: 600;"><i class="fas fa-lock" style="color: var(--primary); width: 20px;"></i> Admin Dashboard</a>
+              </div>
+            </div>
+
+            <!-- Right Content -->
+            <div>
+              <h3 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 800; margin-bottom: 8px;">My Wishlist</h3>
+              <p style="color: var(--text-sub); font-size: 0.9rem; margin-bottom: 24px;">Quickly browse and order items you've saved.</p>
+              ${wishlistHTML}
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+
+    initScrollAnimations();
+  } catch (error) {
+    console.error('Failed to render account:', error);
+    showToast('Failed to load profile details', 'error');
+  } finally {
+    hideLoader();
+  }
 }
 
 // Start app

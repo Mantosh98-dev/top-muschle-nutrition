@@ -328,9 +328,9 @@ async function renderActiveWorkspaceTab() {
   } finally {
     hideLoader();
     if (currentScroll > 0) {
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         window.scrollTo({ top: currentScroll, behavior: 'instant' });
-      });
+      }, 50);
     }
   }
 }
@@ -1161,6 +1161,10 @@ async function openProductModal(productId = null) {
       payload.id = productId;
     }
 
+    saveBtn.disabled = true;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
     showLoader();
     try {
       await db.saveProduct(payload, tempProductImages);
@@ -1171,6 +1175,8 @@ async function openProductModal(productId = null) {
       console.error(err);
       showToast(err.message || 'Failed to save product details', 'error');
     } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalText;
       hideLoader();
     }
   });
@@ -1539,6 +1545,10 @@ function openCategoryModal(id = null, name = '', slug = '', imageUrl = '') {
     const payload = { name: valName, slug: valSlug, image_url: valImage || null };
     if (id) payload.id = id;
 
+    saveBtn.disabled = true;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
     showLoader();
     try {
       await db.saveCategory(payload);
@@ -1548,6 +1558,8 @@ function openCategoryModal(id = null, name = '', slug = '', imageUrl = '') {
     } catch (err) {
       showToast(err.message || 'Failed to save category', 'error');
     } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalText;
       hideLoader();
     }
   });
@@ -1762,6 +1774,10 @@ async function openCodeModal(codeId = null) {
 
     if (codeId) payload.id = codeId;
 
+    saveBtn.disabled = true;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
     showLoader();
     try {
       await db.saveAuthCode(payload);
@@ -1772,6 +1788,8 @@ async function openCodeModal(codeId = null) {
       console.error(err);
       showToast(err.message || 'Error saving code', 'error');
     } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalText;
       hideLoader();
     }
   });

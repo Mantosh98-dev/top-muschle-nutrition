@@ -33,6 +33,29 @@ export async function updateSettings(settingsData) {
     }
   }
 
+  // Fetch the current columns of settings table dynamically by querying row 1
+  let existingRow = null;
+  try {
+    const { data } = await supabaseClient
+      .from('settings')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    existingRow = data;
+  } catch (e) {
+    console.warn("Failed to fetch current settings schema:", e);
+  }
+
+  // Filter payload keys to only include columns that actually exist in the table
+  if (existingRow) {
+    for (const key in cleanData) {
+      if (!(key in existingRow)) {
+        console.warn(`Column "${key}" does not exist in settings table, filtering out of payload.`);
+        delete cleanData[key];
+      }
+    }
+  }
+
   // Attempt to update the existing row with ID 1
   const { data, error } = await supabaseClient
     .from('settings')

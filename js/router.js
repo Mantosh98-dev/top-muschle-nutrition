@@ -5,7 +5,6 @@ class Router {
     this.routes = {};
     window.router = this; // Expose router globally for inline click event handlers
     window.addEventListener('popstate', () => this.handleRoute());
-    window.addEventListener('load', () => this.handleRoute());
 
     // Intercept clicks on links for SPA routing
     document.addEventListener('click', (e) => {
@@ -83,7 +82,7 @@ class Router {
       }
     }
 
-    // Run active view handler or redirect to Home
+    // Run active view handler or display 404
     if (matchedHandler) {
       if (path !== '/contact') {
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -91,8 +90,14 @@ class Router {
       matchedHandler(params);
       this.updateNavbarActive(path);
     } else {
-      console.warn(`Route "${path}" not recognized, redirecting to /.`);
-      this.navigate('/');
+      console.warn(`Route "${path}" not recognized.`);
+      if (this.routes['/404']) {
+        if (path !== '/contact') {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+        this.routes['/404']({});
+        this.updateNavbarActive('/404');
+      }
     }
   }
 

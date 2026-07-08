@@ -1,180 +1,120 @@
-1. Announcement Bar
+# Website Fixes & Improvements
 
-Improve the announcement bar.
+## Priority: High
 
-Requirements
-Add a close (×) button on the right side.
-If the user closes it, save the state in localStorage so it stays hidden.
-On small screens, do not increase the height.
-Instead of wrapping into multiple lines, make the text auto-scroll horizontally (marquee/ticker effect).
-Pause the scrolling when the user touches or hovers over it.
-Resume after interaction.
-2. Navbar
+Please fix the following issues across the website.
 
-Keep the current navbar exactly the same.
+---
 
-No redesign.
+## 1. Admin Panel Scroll Position
 
-No spacing changes.
+### Problem
+Whenever I make any changes in the admin panel and save/update, the page refreshes and automatically scrolls back to the top.
 
-No color changes.
+### Expected Behavior
+- Preserve the current scroll position after saving.
+- Do not jump to the top.
+- Keep the admin at the same section where they were editing.
 
-Only maintain responsiveness.
+---
 
-3. Homepage Order
+## 2. Navigation & CTA Buttons
 
-Homepage sections should appear in this exact order:
+### Problem
+Navigation links and CTA buttons are not responding properly.
 
-Announcement Bar
-Navbar
-Hero Slider
-Features Section
-Shop by Category
-Featured Products
-Best Sellers
-Shop by Brand (hidden for now via Admin toggle)
-Why Choose Us Banner
-Customer Reviews (disabled from Admin for now)
-Footer
-4. Features Section
+Sometimes users need to click 3–4 times before the page opens.
 
-Add a premium feature strip below the Hero.
+### Expected Behavior
+- Every navigation link should open on the first click.
+- Every CTA button should respond instantly.
+- Remove duplicate click handlers.
+- Fix pointer events if blocked.
+- Check z-index/overlay issues.
+- Prevent multiple event listeners.
+- Improve route navigation performance.
 
-Include:
+---
 
-🚚 Fast Delivery
-✅ Authentic Products
-🔒 Secure Payment
-📞 Customer Support
+## 3. Product Share Feature
 
-Also include 2 CTA Buttons
+Add a Share button on every product page.
 
-Shop Products
-Verify Product
+### Requirements
 
-Keep the same design language.
+- Share button near Buy Now/Add to Cart.
+- Use native Web Share API on supported devices.
+- Fallback for desktop:
+  - Copy Product Link
+  - WhatsApp
+  - Facebook
+  - X (Twitter)
+  - Telegram
+  - Email
 
-5. Shop by Brand
+The shared URL should include the current product URL.
 
-Create the complete section.
+---
 
-But make it disabled by default.
+## 4. Overall Performance
 
-Admin can enable/disable it later.
+Please optimize:
 
-No UI redesign.
+- Navigation responsiveness
+- Button click latency
+- Route transitions
+- Loading performance
+- Prevent unnecessary re-renders
+- Improve page responsiveness
 
-6. Customer Reviews
+---
 
-Build the complete component.
+## 5. Admin UX Improvements
 
-Keep it hidden by default.
+- Preserve scroll position after save/update.
+- Prevent unnecessary full page refresh.
+- Show success toast without resetting UI.
+- Disable Save button while request is processing.
+- Prevent duplicate submissions.
 
-Admin can enable it later.
+---
 
-7. Why Choose Us
+## 6. General Bug Fixes
 
-Instead of cards,
+Check the entire website for:
 
-Create a premium full-width banner section.
+- Broken buttons
+- Broken links
+- Forms not submitting
+- Double click issues
+- UI glitches
+- Console errors
+- Network/API errors
+- Mobile responsiveness issues
 
-Include:
+Fix all detected issues.
 
-Authentic Products
-Trusted Brands
-Fast Delivery
-Customer Support
+---
 
-Maintain current design style.
+## Expected Result
 
-8. Product Card Fix (Very Important)
+- Smooth admin experience
+- One-click navigation
+- Instant CTA response
+- Product sharing functionality
+- Better performance
+- No unnecessary page refreshes
+- Professional user experience
 
-Currently the Buy Now button gets cut off on some devices.
+## 7. Fix Settings Save Issue
 
-Fix every product card so:
+Problem:
+Sometimes "Failed to save settings configuration" appears while updating settings.
 
-Buy Now button is always fully visible.
-Equal card heights.
-Proper spacing.
-Buttons never overflow.
-No text clipping.
-Images maintain aspect ratio.
-Responsive on every screen width.
-
-Do not redesign the cards.
-
-Only fix responsiveness and layout issues.
-
-9. Responsiveness
-
-Fix all remaining responsive issues.
-
-Ensure perfect display on:
-
-320px
-360px
-375px
-390px
-412px
-768px
-1024px
-Desktop
-
-No overflow.
-
-No clipped buttons.
-
-No broken layouts.
-
-10. Code Quality
-Keep existing component structure.
-Do not break routing.
-Do not modify existing functionality.
-Maintain current animations.
-Clean responsive CSS.
-No unnecessary libraries.
-Preserve current UI exactly.
-
-
-Fix all UI, UX, responsiveness, and routing issues on my website.
-
-Current Issues:
-
-1. Vercel Routing
-- Home page works.
-- Product pages show 404 NOT_FOUND when refreshed or opened directly.
-- Fix routing permanently without breaking SEO or dynamic routes.
-
-2. Product Cards
-- "VIEW DETAIL" button text is getting cut and only "EW DETAIL" is visible.
-- Ensure buttons always display full text.
-- Make button width responsive.
-- Prevent text clipping, overflow, or wrapping.
-- Keep equal spacing between both buttons.
-
-3. Responsive Layout
-- Check every page on mobile, tablet, and desktop.
-- Fix any overflow, broken alignment, uneven spacing, or inconsistent card heights.
-- Ensure product cards have equal height and clean alignment.
-
-4. Sticky Navbar
-- Navbar should stay fixed.
-- When user scrolls DOWN, hide the navbar with a smooth animation.
-- When user scrolls UP, show the navbar again.
-- On reaching the top, navbar should remain fully visible.
-- Animation should be smooth without layout shift.
-
-5. General UI Improvements
-- Remove any text clipping.
-- Fix button padding.
-- Improve touch targets for mobile.
-- Ensure all elements are perfectly responsive.
-- Prevent horizontal scrolling.
-- Optimize spacing and typography.
-
-6. Verification
-- Test every page.
-- Test every product page.
-- Test refresh on every route.
-- Test on Android Chrome and desktop.
-- Explain every change made and provide the final modified code for each updated file.
+Requirements:
+- Identify backend/API issue.
+- Fix Supabase database updates.
+- Verify all required fields.
+- Validate schema consistency.
+- Show detailed error logs instead of generic error messages.
+- Ensure settings are saved successfully every time.
