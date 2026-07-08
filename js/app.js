@@ -12,6 +12,9 @@ export const DEFAULT_SLIDER_SETTINGS = {
   show_dots: true,
   aspect_ratio_desktop: "16:9",
   aspect_ratio_mobile: "1:1",
+  auth_banner_show: false,
+  auth_banner_image_url: "",
+  auth_banner_link: "",
   cards: [
     {
       id: "card-1",
@@ -1188,7 +1191,7 @@ async function renderHome() {
           </div>
           <div class="features-cta">
             <a href="/products" class="btn btn-primary">Shop Products</a>
-            <a href="/verify" class="btn btn-outline">Verify Product</a>
+            <a href="/verify" class="btn btn-outline">Authenticate Product</a>
           </div>
         </div>
       </section>
@@ -2321,7 +2324,7 @@ async function renderProductDetails(params) {
 
                 <!-- Verify authenticity link -->
                 <a href="/verify" class="pd-verify-link">
-                  <i class="fas fa-qrcode"></i> Verify product
+                  <i class="fas fa-qrcode"></i> Authenticate product
                 </a>
               </div>
             </div>
@@ -2343,7 +2346,7 @@ async function renderProductDetails(params) {
                 </button>
                 <div class="faq-content">
                   <div class="faq-body">
-                    Every Top Muscle Nutrition product comes with a unique security verification code printed on the packaging. Simply navigate to the "Verify Product" tab on our website, enter your code, and click "Verify Product" to check its legitimacy instantly.
+                    Every Top Muscle Nutrition product comes with a unique security verification code printed on the packaging. Simply navigate to the "Authenticate Product" tab on our website, enter your code, and click "Authenticate Product" to check its legitimacy instantly.
                   </div>
                 </div>
               </div>
@@ -2662,20 +2665,33 @@ async function renderProductDetails(params) {
 
 // 4. VERIFICATION VIEW (Verify Authentic Product)
 function renderProductVerification() {
+  const sliderSettings = globalSettings.slider_settings || {};
+  let bannerHTML = '';
+  if (sliderSettings.auth_banner_show && sliderSettings.auth_banner_image_url) {
+    bannerHTML = `
+      <div class="auth-banner-container" style="width: 100%; margin-bottom: 32px;">
+        <a href="${sliderSettings.auth_banner_link || '#'}" style="display:block; overflow:hidden; border-radius:var(--r-md); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <img src="${sliderSettings.auth_banner_image_url}" alt="Authenticate Product Banner" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:var(--r-md);">
+        </a>
+      </div>
+    `;
+  }
+
   appContent.innerHTML = `
     <section class="section">
-      <div class="container verify-wrapper">
-        <div class="verify-card animate-scale">
+      <div class="container verify-wrapper" style="max-width: 720px; margin: 40px auto; padding: 0 var(--pad-mobile);">
+        ${bannerHTML}
+        <div class="verify-card animate-scale" style="max-width: 560px; margin: 0 auto;">
           <div class="category-icon-box" style="margin: 0 auto; color: var(--primary);">
             <i class="fas fa-shield-alt"></i>
           </div>
-          <h2>Verify Product</h2>
+          <h2>Authenticate Product</h2>
           <p>Protect your health. Verify if your product is genuine by entering the unique security code found on the packaging.</p>
           
           <div class="verify-input-group">
             <input type="text" id="verification-code" class="verify-input" maxlength="20" placeholder="ENTER CODE HERE" aria-label="Product verification code">
             <button id="verify-code-btn" class="btn btn-primary">
-              <i class="fas fa-check-circle"></i> Verify Product
+              <i class="fas fa-check-circle"></i> Authenticate Product
             </button>
           </div>
           

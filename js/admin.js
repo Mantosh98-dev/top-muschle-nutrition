@@ -2304,6 +2304,33 @@ async function renderTabCustomization(workspace) {
 
         <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
 
+        <!-- Authentication Page Banner Panel -->
+        <h3 class="settings-section-title">Authenticate Product Page Banner</h3>
+        <div style="margin-bottom:12px;">
+          <label class="switch-label" for="settings-auth-banner-show" style="margin:0;">
+            <input type="checkbox" id="settings-auth-banner-show" class="switch-input" ${settings.slider_settings?.auth_banner_show ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Enable Authenticate Page Banner</span>
+          </label>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="settings-auth-banner-image-url">Banner Image URL</label>
+          <div style="display:flex; gap:12px;">
+            <input type="text" id="settings-auth-banner-image-url" class="form-input" placeholder="https://image-link.com/auth-banner.jpg" value="${escapeHTML(settings.slider_settings?.auth_banner_image_url || '')}">
+            <button class="btn btn-dark" id="settings-auth-banner-upload-btn" style="padding:12px;" type="button" aria-label="Upload auth banner"><i class="fas fa-upload"></i></button>
+            <input type="file" id="settings-auth-banner-file-input" style="display:none;" accept="image/*">
+          </div>
+          <div id="settings-auth-banner-preview-wrap">
+            ${settings.slider_settings?.auth_banner_image_url ? `<img src="${escapeHTML(settings.slider_settings.auth_banner_image_url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:24px;">
+          <label class="form-label" for="settings-auth-banner-link">Banner Click Destination Link</label>
+          <input type="text" id="settings-auth-banner-link" class="form-input" placeholder="e.g. /products or category link" value="${escapeHTML(settings.slider_settings?.auth_banner_link || '')}">
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
+
         <!-- Call-To-Action (CTA) Banner Panel -->
         <h3 class="settings-section-title">Call-To-Action Banner (Pre-footer)</h3>
         <div style="margin-bottom:12px;">
@@ -2877,6 +2904,43 @@ async function renderTabCustomization(workspace) {
     });
   }
 
+  // Authentication Page Banner image uploader
+  const authFileBtn = document.getElementById('settings-auth-banner-upload-btn');
+  const authFileInput = document.getElementById('settings-auth-banner-file-input');
+  if (authFileBtn && authFileInput) {
+    authFileBtn.addEventListener('click', () => authFileInput.click());
+    authFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showLoader();
+      try {
+        const publicUrl = await db.uploadImage(file, 'brand-assets');
+        document.getElementById('settings-auth-banner-image-url').value = publicUrl;
+        const previewWrap = document.getElementById('settings-auth-banner-preview-wrap');
+        if (previewWrap) {
+          previewWrap.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">`;
+        }
+        showToast('Authentication page banner uploaded successfully', 'success');
+      } catch (err) {
+        showToast('Authentication banner upload failed', 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+  }
+
+  // Authentication Page Banner manual input preview syncing
+  const authBannerInput = document.getElementById('settings-auth-banner-image-url');
+  if (authBannerInput) {
+    authBannerInput.addEventListener('input', () => {
+      const url = authBannerInput.value.trim();
+      const previewWrap = document.getElementById('settings-auth-banner-preview-wrap');
+      if (previewWrap) {
+        previewWrap.innerHTML = url ? `<img src="${escapeHTML(url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : '';
+      }
+    });
+  }
+
 
 
   // Video Section 1 source toggle
@@ -3018,7 +3082,10 @@ async function renderTabCustomization(workspace) {
           aspect_ratio_mobile: document.getElementById('settings-slider-aspect-mobile').value,
           cards: localSliderSettings.cards,
           show_shop_by_brand: document.getElementById('settings-show-shop-by-brand').checked,
-          show_customer_reviews: document.getElementById('settings-show-customer-reviews').checked
+          show_customer_reviews: document.getElementById('settings-show-customer-reviews').checked,
+          auth_banner_show: document.getElementById('settings-auth-banner-show').checked,
+          auth_banner_image_url: document.getElementById('settings-auth-banner-image-url').value.trim() || null,
+          auth_banner_link: document.getElementById('settings-auth-banner-link').value.trim() || null
         }
       };
 
