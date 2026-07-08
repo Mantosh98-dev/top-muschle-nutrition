@@ -261,6 +261,12 @@ async function renderActiveWorkspaceTab() {
   const workspace = document.getElementById('admin-workspace');
   if (!workspace) return;
 
+  // Auto-close mobile sidebar menu on tab selection
+  const sidebar = document.querySelector('.admin-sidebar');
+  if (sidebar) {
+    sidebar.classList.remove('menu-open');
+  }
+
   const currentScroll = window.scrollY;
 
   // Renders a banner if Supabase keys are in local storage instead of config.js file

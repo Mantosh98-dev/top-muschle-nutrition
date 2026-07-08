@@ -3023,7 +3023,9 @@ textarea.form-input { resize: vertical; }
   }
 
   .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+}
 
+@media (max-width: 1024px) {
   .admin-dashboard { grid-template-columns: 1fr; }
 
   .admin-sidebar {
@@ -3102,7 +3104,9 @@ textarea.form-input { resize: vertical; }
   .admin-login-card {
     padding: 32px 24px;
   }
+}
 
+@media (max-width: 768px) {
   .verify-card { padding: 40px 28px; }
 
   .pd-reviews-container { padding: 28px 20px; }
@@ -4734,4 +4738,39 @@ section, .section {
     width: 100% !important;
     box-sizing: border-box !important;
   }
+}
+
+/* ============================================================
+   RESPONSIVE LAYOUT HELPERS (About, Account pages)
+   ============================================================ */
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.account-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px;
+  margin-top: 48px;
+}
+
+@media (max-width: 768px) {
+  .responsive-grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .account-layout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+}
+
+/* ============================================================
+   ADMIN MULTI-TAB SCROLL PRESERVATION
+   ============================================================ */
+.admin-sub-tabs {
+  flex-wrap: wrap !important;
 }

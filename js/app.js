@@ -3025,7 +3025,7 @@ async function renderAbout() {
           <p class="section-subtitle">Empowering your fitness journey with authentic, high-quality supplements.</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 48px; align-items: center;" class="animate-on-scroll">
+        <div class="responsive-grid-2 animate-on-scroll" style="margin-top: 48px;">
           <div>
             <h3 style="font-family: var(--font-heading); font-size: 1.75rem; font-weight: 800; margin-bottom: 16px; color: var(--text);">Our Quality Promise</h3>
             <p style="color: var(--text-sub); line-height: 1.6; margin-bottom: 16px;">
@@ -3060,7 +3060,7 @@ async function renderCart() {
     let wishlistHTML = '';
     if (wishlistedProducts.length > 0) {
       wishlistHTML = `
-        <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 24px;">
+        <div class="products-grid" style="margin-top: 24px;">
           ${wishlistedProducts.map((prod, i) => renderProductCard(prod, i)).join('')}
         </div>
       `;
@@ -3112,7 +3112,7 @@ async function renderAccount() {
     let wishlistHTML = '';
     if (wishlistedProducts.length > 0) {
       wishlistHTML = `
-        <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 24px;">
+        <div class="products-grid" style="margin-top: 24px;">
           ${wishlistedProducts.map((prod, i) => renderProductCard(prod, i)).join('')}
         </div>
       `;
@@ -3135,7 +3135,7 @@ async function renderAccount() {
             <p class="section-subtitle">Manage your profile, wishlist, and product authentications.</p>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 32px; margin-top: 48px;" class="animate-on-scroll">
+          <div class="account-layout-grid animate-on-scroll">
             <!-- Left Profile Card -->
             <div style="background: var(--white); border: 1px solid var(--border-color); border-radius: var(--r-md); padding: 32px 24px; text-align: center; height: fit-content;">
               <div style="width: 96px; height: 96px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 16px auto;">
