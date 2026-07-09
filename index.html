@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Premium quality supplements for workouts, recovery and health goals. Order via WhatsApp.">
+  <meta name="description"
+    content="Premium quality supplements for workouts, recovery and health goals. Order via WhatsApp.">
   <title>Top Muscle Nutrition - Premium Supplements</title>
 
   <!-- Open Graph / Facebook -->
@@ -31,20 +33,28 @@
     "image": "https://www.topmusclenutrition.in/og-image.jpg"
   }
   </script>
-  
+
   <!-- Google Fonts — Outfit (headings) + Inter (body) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"></noscript>
-  
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+    media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap">
+  </noscript>
+
   <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="/style.css">
-  
+
   <!-- FontAwesome Icons (deferred for performance) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print"
+    onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </noscript>
+
   <!-- Favicon and PWA Assets -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -53,6 +63,7 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#d60000">
 </head>
+
 <body>
 
   <!-- Skip to main content (accessibility) -->
@@ -64,7 +75,8 @@
       <div class="announcement-track-wrap">
         <span id="announcement-text" class="announcement-track"></span>
       </div>
-      <button id="announcement-close-btn" class="announcement-close-btn" aria-label="Close announcement">&times;</button>
+      <button id="announcement-close-btn" class="announcement-close-btn"
+        aria-label="Close announcement">&times;</button>
     </div>
   </div>
 
@@ -72,24 +84,27 @@
   <header class="navbar" role="banner">
     <div class="container">
       <a href="/" class="logo-link" aria-label="Top Muscle Nutrition - Home">
-        <img id="nav-logo" src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png" alt="Top Muscle Nutrition Logo" class="logo-img" width="100" height="40" fetchpriority="high">
+        <img id="nav-logo"
+          src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png"
+          alt="Top Muscle Nutrition Logo" class="logo-img" width="100" height="40" fetchpriority="high">
         <span id="nav-brand-name" class="brand-name">Top Muscle Nutrition</span>
       </a>
-      
+
       <!-- Mobile Toggler -->
       <button class="menu-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="nav-menu">
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
       </button>
-      
+
       <!-- Nav Menu Links -->
       <ul class="nav-menu" id="nav-menu" role="navigation" aria-label="Main navigation">
         <li><a href="/" class="nav-link active" id="nav-home">Home</a></li>
         <li class="nav-item-dropdown">
           <div class="nav-link-wrap">
-            <a href="/products" class="nav-link" id="nav-products">Products</a>
-            <button class="dropdown-toggle-btn" aria-label="Toggle Products Submenu" aria-expanded="false" aria-controls="nav-products-dropdown">
+            <a href="/products" class="nav-link" id="nav-products">Our Products <i class="fas fa-chevron-down nav-dropdown-icon" aria-hidden="true"></i></a>
+            <button class="dropdown-toggle-btn" aria-label="Toggle Products Submenu" aria-expanded="false"
+              aria-controls="nav-products-dropdown">
               <i class="fas fa-chevron-down" aria-hidden="true"></i>
             </button>
           </div>
@@ -114,15 +129,18 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="/" class="footer-logo" aria-label="Top Muscle Nutrition - Home">
-            <img id="footer-logo-img" src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png" alt="Top Muscle Nutrition Logo" loading="lazy" decoding="async" width="100" height="40">
+            <img id="footer-logo-img"
+              src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png"
+              alt="Top Muscle Nutrition Logo" loading="lazy" decoding="async" width="100" height="40">
             <span id="footer-brand-text">Top Muscle Nutrition</span>
           </a>
-          <p id="footer-desc" class="footer-desc">Premium quality supplements designed to power your workouts and speed up recovery.</p>
+          <p id="footer-desc" class="footer-desc">Premium quality supplements designed to power your workouts and speed
+            up recovery.</p>
           <div class="footer-socials" id="footer-socials" aria-label="Social media links">
             <!-- Dynamically populated socials -->
           </div>
         </div>
-        
+
         <div>
           <h3 class="footer-title">Quick Links</h3>
           <ul class="footer-links" aria-label="Quick links">
@@ -131,7 +149,7 @@
             <li><a href="/verify">Authenticate Product</a></li>
           </ul>
         </div>
-        
+
         <div>
           <h3 class="footer-title">Contact Support</h3>
           <div class="footer-contact" id="footer-contact-list" aria-label="Contact information">
@@ -139,7 +157,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="footer-bottom">
         <p id="footer-copyright">© 2026 Top Muscle Nutrition. All rights reserved.</p>
       </div>
@@ -156,9 +174,10 @@
 
   <!-- Supabase CDN Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  
+
   <!-- Modular JS Application Script -->
   <script type="module" src="/js/app.js"></script>
 
 </body>
+
 </html>

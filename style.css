@@ -241,6 +241,9 @@ button {
   border-radius: var(--r-full);
   letter-spacing: 0.01em;
   transition: all var(--t) var(--ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .nav-link::after {
@@ -268,6 +271,16 @@ button {
 
 .nav-link.active::after {
   transform: translateX(-50%) scaleX(1);
+}
+
+.nav-dropdown-icon {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  transition: transform var(--t) var(--ease);
+}
+
+.nav-item-dropdown:hover .nav-dropdown-icon {
+  transform: rotate(180deg);
 }
 
 /* ── Mobile Toggle ── */
@@ -4034,6 +4047,10 @@ textarea.form-input { resize: vertical; }
 @media (max-width: 991.98px) {
   .nav-item-dropdown {
     width: 100%;
+  }
+
+  .nav-dropdown-icon {
+    display: none;
   }
 
   .nav-link-wrap {
