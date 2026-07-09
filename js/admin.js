@@ -624,7 +624,7 @@ async function openProductModal(productId = null) {
       
       <div class="modal-body">
         <!-- Two Column Form -->
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="admin-grid-2">
           
           <!-- Column Left: General Settings -->
           <div style="display:flex; flex-direction:column; gap:16px;">
@@ -651,6 +651,11 @@ async function openProductModal(productId = null) {
             <div class="form-group">
               <label class="form-label" for="prod-brand">Product Brand Name</label>
               <input type="text" id="prod-brand" class="form-input" placeholder="e.g. Optimum Nutrition (Defaults if empty)" value="${escapeHTML(product.brand || '')}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="prod-flavors">Product Flavors (comma-separated list)</label>
+              <input type="text" id="prod-flavors" class="form-input" placeholder="e.g. Belgian Chocolate, Cafe Latte, Mango" value="${escapeHTML(product.flavors || '')}">
             </div>
             
             <div class="form-group">
@@ -744,7 +749,7 @@ async function openProductModal(productId = null) {
         <div>
           <h4 style="font-family: var(--font-heading); font-weight:700; margin-bottom:12px; font-size:1rem; color:var(--text); border-bottom:1px solid var(--border-color); padding-bottom:6px;">Pricing & Size Options (INR)</h4>
           
-          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div class="admin-grid-3" style="margin-bottom:16px;">
             <div class="form-group">
               <label class="form-label" for="prod-price">Base Original Price (INR ₹) *</label>
               <input type="number" id="prod-price" class="form-input" placeholder="e.g. 2999" value="${product.price || ''}">
@@ -776,7 +781,7 @@ async function openProductModal(productId = null) {
         <!-- Image Gallery Management Section -->
         <div>
           <label class="form-label" style="display:block; margin-bottom:8px;">Product Image Gallery (Max 10 Images)</label>
-          <div style="display:grid; grid-template-columns: 2fr 3fr; gap:20px;">
+          <div class="admin-grid-img-upload">
             <div>
               <div class="image-uploader-area" id="prod-image-uploader" role="button" tabindex="0" aria-label="Upload Image file">
                 <i class="fas fa-cloud-upload-alt"></i>
@@ -888,8 +893,7 @@ async function openProductModal(productId = null) {
 
     tempProductVariants.forEach((variant, index) => {
       const row = document.createElement('div');
-      row.className = 'variant-row';
-      row.style = 'display:grid; grid-template-columns: 2fr 1.5fr 1.5fr 40px; gap:12px; align-items:flex-start; margin-bottom:4px;';
+      row.className = 'admin-variant-row';
       
       const isStandard = activeSizes.includes(variant.weight);
       const selectValue = isStandard ? variant.weight : (variant.weight ? 'custom' : '');
@@ -906,6 +910,9 @@ async function openProductModal(productId = null) {
           <input type="text" class="form-input variant-custom-weight" data-index="${index}" placeholder="e.g. 100 mg" 
                  style="display: ${selectValue === 'custom' ? 'block' : 'none'}; margin-top: 4px; padding:6px 10px; font-size:0.82rem; height:32px;" 
                  value="${!isStandard ? escapeHTML(variant.weight || '') : ''}">
+        </div>
+        <div>
+          <input type="text" class="form-input variant-flavor" data-index="${index}" placeholder="Flavor (Optional)" style="padding:8px 12px; height:40px;" value="${escapeHTML(variant.flavor || '')}">
         </div>
         <div>
           <input type="number" class="form-input variant-price" data-index="${index}" placeholder="Price (INR)" style="padding:8px 12px; height:40px;" value="${variant.price || ''}">
@@ -964,6 +971,14 @@ async function openProductModal(productId = null) {
       });
     });
 
+    container.querySelectorAll('.variant-flavor').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const idx = parseInt(input.dataset.index);
+        const val = e.target.value.trim();
+        tempProductVariants[idx].flavor = val;
+      });
+    });
+
     container.querySelectorAll('.variant-offer-price').forEach(input => {
       input.addEventListener('input', (e) => {
         const idx = parseInt(input.dataset.index);
@@ -994,11 +1009,12 @@ async function openProductModal(productId = null) {
       
       tempProductVariants.push({
         weight: weightVal || 'Standard',
+        flavor: '',
         price: priceVal ? parseFloat(priceVal) : '',
         offer_price: offerPriceVal ? parseFloat(offerPriceVal) : null
       });
     }
-    tempProductVariants.push({ weight: '', price: '', offer_price: null });
+    tempProductVariants.push({ weight: '', flavor: '', price: '', offer_price: null });
     renderModalVariants();
   });
 
@@ -1118,6 +1134,7 @@ async function openProductModal(productId = null) {
     if (tempProductVariants.length > 0) {
       finalVariants = tempProductVariants.map(v => ({
         weight: v.weight,
+        flavor: v.flavor || '',
         price: parseFloat(v.price),
         offer_price: (v.offer_price !== null && v.offer_price !== '') ? parseFloat(v.offer_price) : null
       }));
@@ -1134,6 +1151,7 @@ async function openProductModal(productId = null) {
       // Auto populate single variant JSON
       finalVariants = [{
         weight: finalWeight || 'Standard',
+        flavor: '',
         price: finalPrice,
         offer_price: finalOfferPrice
       }];
@@ -1144,6 +1162,7 @@ async function openProductModal(productId = null) {
       slug,
       product_type: modal.querySelector('input[name="prod-type"]:checked')?.value || 'gym',
       brand: document.getElementById('prod-brand').value.trim() || 'Top Muscle Nutrition',
+      flavors: document.getElementById('prod-flavors').value.trim() || null,
       category_id: document.getElementById('prod-category').value || null,
       short_description: document.getElementById('prod-short-desc').value.trim() || null,
       long_description: document.getElementById('prod-long-desc').value.trim() || null,

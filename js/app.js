@@ -2137,6 +2137,67 @@ function showShareFallbackModal(product, url, text) {
   });
 }
 
+// Helper parser for flavors
+function getFlavorsForProduct(product) {
+  if (product.flavors) {
+    return product.flavors.split(',').map(f => f.trim()).filter(Boolean);
+  }
+  
+  // If flavor is specified inside variants
+  if (Array.isArray(product.variants)) {
+    const variantFlavors = product.variants.map(v => v.flavor).filter(Boolean).map(f => f.trim());
+    if (variantFlavors.length > 0) {
+      return [...new Set(variantFlavors)];
+    }
+  }
+
+  const title = product.title.toLowerCase();
+  const flavors = [];
+  
+  // Check if title has a flavour keyword
+  const flavorMatch = product.title.match(/([a-zA-Z0-9\s]+)(?:Flavour|Flavor)/i);
+  if (flavorMatch) {
+    const extractedFlavor = flavorMatch[1].trim();
+    let cleaned = extractedFlavor
+      .replace(/gold whey protein/i, '')
+      .replace(/why protein/i, '')
+      .replace(/micronized creatine/i, '')
+      .replace(/premium/i, '')
+      .trim();
+    if (cleaned) {
+      flavors.push(cleaned.charAt(0).toUpperCase() + cleaned.slice(1));
+    }
+  }
+  
+  if (title.includes('protein')) {
+    if (flavors.length === 0) {
+      flavors.push('Belgian Chocolate');
+    }
+    const standardProteinFlavors = ['Cafe Latte', 'Pista Kulfi', 'Mango', 'Vanilla Cream', 'Strawberry'];
+    standardProteinFlavors.forEach(f => {
+      if (!flavors.some(existing => existing.toLowerCase() === f.toLowerCase()) && flavors.length < 3) {
+        flavors.push(f);
+      }
+    });
+  } else if (title.includes('creatine')) {
+    if (flavors.length === 0) {
+      flavors.push('Unflavored');
+    }
+    const standardCreatineFlavors = ['Fruit Punch', 'Blue Raspberry', 'Orange'];
+    standardCreatineFlavors.forEach(f => {
+      if (!flavors.some(existing => existing.toLowerCase() === f.toLowerCase()) && flavors.length < 3) {
+        flavors.push(f);
+      }
+    });
+  } else {
+    if (flavors.length === 0) {
+      flavors.push('Standard');
+    }
+  }
+  
+  return flavors;
+}
+
 // 3. PRODUCT DETAILS VIEW
 async function renderProductDetails(params) {
   showLoader();
@@ -2199,6 +2260,22 @@ async function renderProductDetails(params) {
 
     // Check if variants exist
     const hasVariants = Array.isArray(product.variants) && product.variants.length > 1;
+    const flavorsList = getFlavorsForProduct(product);
+
+    let sizeOptionsHTML = '';
+    if (hasVariants) {
+      sizeOptionsHTML = product.variants.map((v, i) => `
+        <option value="${i}">${escapeHTML(v.weight)}</option>
+      `).join('');
+    } else {
+      sizeOptionsHTML = `
+        <option value="0">${escapeHTML(product.weight || 'Standard')}</option>
+      `;
+    }
+
+    const flavorOptionsHTML = flavorsList.map(f => `
+      <option value="${escapeHTML(f)}">${escapeHTML(f)}</option>
+    `).join('');
 
     // PRE-COMPUTE HTML SEGMENTS to avoid complex nested backticks which cause syntax errors
     // 1. Gallery Thumbnails
@@ -2591,9 +2668,66 @@ async function renderProductDetails(params) {
           </button>
         </div>
       ` : ''}
+
+      <!-- Sticky Overlay Bar -->
+      ${product.whatsapp_enabled ? `
+        <div class="pd-sticky-bar" id="pd-sticky-bar">
+          <div class="container pd-sticky-bar-container">
+            <div class="pd-sticky-bar-left">
+              <img src="${mainImage}" alt="${escapeHTML(product.title)}" class="pd-sticky-bar-img">
+              <div class="pd-sticky-bar-info">
+                <h4 class="pd-sticky-bar-title">${escapeHTML(product.title)}</h4>
+                <span class="pd-sticky-bar-brand">${escapeHTML(product.brand || (globalSettings ? globalSettings.brand_name : 'Top Muscle Nutrition'))}</span>
+              </div>
+            </div>
+            <div class="pd-sticky-bar-mid">
+              <div class="pd-sticky-selectors">
+                <div class="pd-sticky-select-wrap">
+                  <select id="pd-sticky-size-select" class="pd-sticky-select" aria-label="Select size">
+                    ${sizeOptionsHTML}
+                  </select>
+                  <i class="fas fa-chevron-down select-arrow" aria-hidden="true"></i>
+                </div>
+                <div class="pd-sticky-select-wrap">
+                  <select id="pd-sticky-flavor-select" class="pd-sticky-select" aria-label="Select flavor">
+                    ${flavorOptionsHTML}
+                  </select>
+                  <i class="fas fa-chevron-down select-arrow" aria-hidden="true"></i>
+                </div>
+              </div>
+              <div class="pd-sticky-price" id="pd-sticky-price-display">
+                <!-- Dynamically updated -->
+              </div>
+            </div>
+            <div class="pd-sticky-bar-right">
+              <a href="#" target="_blank" rel="noopener" class="btn btn-primary pd-sticky-buy-btn" id="pd-sticky-buy-btn">
+                <i class="fab fa-whatsapp" aria-hidden="true"></i> BUY NOW
+              </a>
+              <button class="pd-sticky-close-btn" id="pd-sticky-close-btn">CLOSE</button>
+            </div>
+          </div>
+        </div>
+      ` : ''}
     `;
 
     appContent.innerHTML = html;
+
+    // Update WhatsApp link text globally based on selected variant and flavor
+    function updateWhatsAppLinks(variant, flavor) {
+      const sizeStr = variant && variant.weight ? ` (Size: ${variant.weight})` : '';
+      const flavorStr = flavor ? ` (Flavor: ${flavor})` : '';
+      const priceVal = variant ? (variant.offer_price || variant.price) : null;
+      const priceStr = priceVal ? ` for *₹${priceVal.toLocaleString('en-IN')}*` : '';
+      const waMessage = `Hello! I'm interested in ordering:\n\n*${product.title}*${sizeStr}${flavorStr}${priceStr}\n\nPlease confirm availability. Thank you!`;
+      const cleanedNumber = (globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '');
+      const waUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(waMessage)}`;
+      
+      const waButtons = document.querySelectorAll('.pd-wa-btn');
+      waButtons.forEach(btn => btn.href = waUrl);
+
+      const stickyBuyBtn = document.getElementById('pd-sticky-buy-btn');
+      if (stickyBuyBtn) stickyBuyBtn.href = waUrl;
+    }
 
     // Pricing and size variants dynamic update
     function updateProductPricing(variant) {
@@ -2631,16 +2765,42 @@ async function renderProductDetails(params) {
         displayEl.style.transition = 'opacity 0.2s ease';
       }, 50);
 
-      // Update WhatsApp link text
-      const waButtons = document.querySelectorAll('.pd-wa-btn');
-      if (waButtons.length > 0) {
-        const sizeStr = variant && variant.weight ? ` (Size: ${variant.weight})` : '';
-        const priceStr = variant && variant.price ? ` for *₹${(variant.offer_price || variant.price).toLocaleString('en-IN')}*` : '';
-        const waMessage = `Hello, I would like to order: ${product.title} (Code: ${product.slug})${sizeStr}${priceStr}`;
-        const cleanedNumber = (globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '');
-        const waUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(waMessage)}`;
-        waButtons.forEach(btn => btn.href = waUrl);
+      // Update sticky bar pricing
+      const stickyPriceEl = document.getElementById('pd-sticky-price-display');
+      if (stickyPriceEl) {
+        let stickyPriceHTML = '';
+        if (variant && variant.price) {
+          const price = variant.price;
+          const offerPrice = variant.offer_price;
+          if (offerPrice && offerPrice < price) {
+            const discount = Math.round(((price - offerPrice) / price) * 100);
+            stickyPriceHTML = `
+              <span class="price-offer">₹${offerPrice.toLocaleString('en-IN')}</span>
+              <span class="price-original">₹${price.toLocaleString('en-IN')}</span>
+              <span class="price-discount">${discount}% OFF</span>
+            `;
+          } else {
+            stickyPriceHTML = `
+              <span class="price-offer">₹${price.toLocaleString('en-IN')}</span>
+            `;
+          }
+        } else {
+          stickyPriceHTML = `<span>Price on Request</span>`;
+        }
+        stickyPriceEl.innerHTML = stickyPriceHTML;
       }
+
+      // Sync flavor dropdown if the variant specifies a flavor
+      const flavorSelect = document.getElementById('pd-sticky-flavor-select');
+      if (variant && variant.flavor && flavorSelect) {
+        const option = Array.from(flavorSelect.options).find(opt => opt.value.toLowerCase() === variant.flavor.toLowerCase());
+        if (option) {
+          flavorSelect.value = option.value;
+        }
+      }
+
+      const selectedFlavor = flavorSelect ? flavorSelect.value : null;
+      updateWhatsAppLinks(variant, selectedFlavor);
     }
 
     // Initialize display values
@@ -2662,8 +2822,54 @@ async function renderProductDetails(params) {
           const variant = product.variants[index];
           if (variant) {
             updateProductPricing(variant);
+            const stickySizeSelect = document.getElementById('pd-sticky-size-select');
+            if (stickySizeSelect) {
+              stickySizeSelect.value = index;
+            }
           }
         });
+      });
+    }
+
+    // Bind sticky bar size selector dropdown
+    const stickySizeSelect = document.getElementById('pd-sticky-size-select');
+    if (stickySizeSelect) {
+      stickySizeSelect.addEventListener('change', (e) => {
+        const index = parseInt(e.target.value);
+        const chips = document.querySelectorAll('.pd-size-chip');
+        if (chips[index]) {
+          chips[index].click();
+        } else {
+          const variant = {
+            weight: product.weight || 'Standard',
+            price: product.price,
+            offer_price: product.offer_price
+          };
+          updateProductPricing(variant);
+        }
+      });
+    }
+
+    // Bind sticky bar flavor selector dropdown
+    const stickyFlavorSelect = document.getElementById('pd-sticky-flavor-select');
+    if (stickyFlavorSelect) {
+      stickyFlavorSelect.addEventListener('change', (e) => {
+        let activeVariant = null;
+        if (hasVariants) {
+          const activeChip = document.querySelector('.pd-size-chip.active');
+          if (activeChip) {
+            const index = parseInt(activeChip.dataset.index);
+            activeVariant = product.variants[index];
+          }
+        }
+        if (!activeVariant) {
+          activeVariant = {
+            weight: product.weight || 'Standard',
+            price: product.price,
+            offer_price: product.offer_price
+          };
+        }
+        updateWhatsAppLinks(activeVariant, e.target.value);
       });
     }
 
@@ -2686,7 +2892,7 @@ async function renderProductDetails(params) {
       });
     }
 
-    // Image Gallery Thumbnail Click handler
+    // Image Gallery Thumbnail Click handler & Lightbox Modal Setup
     const mainImgEl = document.getElementById('pd-main-img');
     document.querySelectorAll('.pd-thumb').forEach(thumb => {
       thumb.addEventListener('click', () => {
@@ -2699,6 +2905,104 @@ async function renderProductDetails(params) {
         }, 150);
       });
     });
+
+    // Lightbox modal HTML definition
+    const lightboxHTML = `
+      <div class="pd-lightbox" id="pd-lightbox-modal">
+        <button class="pd-lightbox-close" aria-label="Close Lightbox">&times;</button>
+        ${images.length > 1 ? `
+          <button class="pd-lightbox-arrow prev" aria-label="Previous Image"><i class="fas fa-chevron-left"></i></button>
+          <button class="pd-lightbox-arrow next" aria-label="Next Image"><i class="fas fa-chevron-right"></i></button>
+        ` : ''}
+        <div class="pd-lightbox-content">
+          <img class="pd-lightbox-img" id="pd-lightbox-img" src="" alt="Expanded product view">
+        </div>
+      </div>
+    `;
+    
+    let lightboxEl = document.getElementById('pd-lightbox-modal');
+    if (lightboxEl) lightboxEl.remove();
+    document.body.insertAdjacentHTML('beforeend', lightboxHTML);
+    lightboxEl = document.getElementById('pd-lightbox-modal');
+    
+    let currentImgIndex = 0;
+
+    const openLightbox = (index) => {
+      currentImgIndex = index;
+      const lightboxImg = document.getElementById('pd-lightbox-img');
+      if (lightboxImg && images[currentImgIndex]) {
+        lightboxImg.src = images[currentImgIndex].image_url;
+      }
+      lightboxEl.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeLightbox = () => {
+      lightboxEl.classList.remove('active');
+      document.body.style.overflow = '';
+    };
+
+    const navigateLightbox = (direction) => {
+      if (images.length <= 1) return;
+      currentImgIndex = (currentImgIndex + direction + images.length) % images.length;
+      const lightboxImg = document.getElementById('pd-lightbox-img');
+      if (lightboxImg) {
+        lightboxImg.style.opacity = '0';
+        setTimeout(() => {
+          lightboxImg.src = images[currentImgIndex].image_url;
+          lightboxImg.style.opacity = '1';
+        }, 100);
+      }
+      syncGalleryThumbnail(currentImgIndex);
+    };
+
+    const syncGalleryThumbnail = (index) => {
+      const thumbs = document.querySelectorAll('.pd-thumb');
+      if (thumbs[index]) {
+        thumbs.forEach(t => t.classList.remove('active'));
+        thumbs[index].classList.add('active');
+        if (mainImgEl) mainImgEl.src = thumbs[index].dataset.url;
+      }
+    };
+
+    if (mainImgEl) {
+      mainImgEl.style.cursor = 'zoom-in';
+      mainImgEl.addEventListener('click', () => {
+        const activeThumb = document.querySelector('.pd-thumb.active');
+        let index = 0;
+        if (activeThumb) {
+          const thumbs = Array.from(document.querySelectorAll('.pd-thumb'));
+          index = thumbs.indexOf(activeThumb);
+          if (index === -1) index = 0;
+        }
+        openLightbox(index);
+      });
+    }
+
+    lightboxEl.querySelector('.pd-lightbox-close').addEventListener('click', closeLightbox);
+    lightboxEl.addEventListener('click', (e) => {
+      if (e.target === lightboxEl || e.target.classList.contains('pd-lightbox-content')) {
+        closeLightbox();
+      }
+    });
+
+    const prevBtn = lightboxEl.querySelector('.pd-lightbox-arrow.prev');
+    const nextBtn = lightboxEl.querySelector('.pd-lightbox-arrow.next');
+    if (prevBtn) prevBtn.addEventListener('click', () => navigateLightbox(-1));
+    if (nextBtn) nextBtn.addEventListener('click', () => navigateLightbox(1));
+
+    const handleLightboxKeys = (e) => {
+      if (!lightboxEl.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') navigateLightbox(-1);
+      else if (e.key === 'ArrowRight') navigateLightbox(1);
+    };
+    
+    if (window.currentLightboxKeyHandler) {
+      window.removeEventListener('keydown', window.currentLightboxKeyHandler);
+    }
+    window.currentLightboxKeyHandler = handleLightboxKeys;
+    window.addEventListener('keydown', handleLightboxKeys);
 
     // FAQ Accordion interaction
     document.querySelectorAll('.faq-trigger').forEach(trigger => {
@@ -2806,6 +3110,41 @@ async function renderProductDetails(params) {
         }, { threshold: 0.1 });
         blockObserver.observe(block);
       });
+    }
+
+    // Scroll-triggered Sticky Bar Observer
+    const stickyBarEl = document.getElementById('pd-sticky-bar');
+    const mainInfoPanel = document.querySelector('.pd-info-sticky');
+    if (stickyBarEl && mainInfoPanel) {
+      let isClosedByUser = false;
+      const closeBtn = document.getElementById('pd-sticky-close-btn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          isClosedByUser = true;
+          stickyBarEl.classList.remove('visible');
+        });
+      }
+      
+      const stickyObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting && !isClosedByUser) {
+            stickyBarEl.classList.add('visible');
+            const mobBuyBar = document.querySelector('.pd-mobile-buy-bar');
+            if (mobBuyBar) mobBuyBar.style.transform = 'translateY(100%)';
+          } else {
+            stickyBarEl.classList.remove('visible');
+            const mobBuyBar = document.querySelector('.pd-mobile-buy-bar');
+            if (mobBuyBar) mobBuyBar.style.transform = 'translateY(0)';
+          }
+        });
+      }, { threshold: 0.05 });
+      
+      stickyObserver.observe(mainInfoPanel);
+      
+      if (window.currentStickyBarObserver) {
+        window.currentStickyBarObserver.disconnect();
+      }
+      window.currentStickyBarObserver = stickyObserver;
     }
 
     // Initialize scroll animations for other animated elements

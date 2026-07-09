@@ -278,6 +278,7 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS product_type TEXT DEFAULT 'gym';
 
 -- Add brand column to products table
 ALTER TABLE products ADD COLUMN IF NOT EXISTS brand TEXT DEFAULT 'Top Muscle Nutrition';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS flavors TEXT;
 
 -- Add Announcement Bar to settings table
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS announcement_show BOOLEAN DEFAULT false;
