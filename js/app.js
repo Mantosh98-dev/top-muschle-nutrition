@@ -2657,45 +2657,6 @@ async function renderProductDetails(params) {
       </div>
 
 
-      <!-- Sticky Overlay Bar -->
-      ${product.whatsapp_enabled ? `
-        <div class="pd-sticky-bar" id="pd-sticky-bar">
-          <div class="container pd-sticky-bar-container">
-            <div class="pd-sticky-bar-left">
-              <img src="${mainImage}" alt="${escapeHTML(product.title)}" class="pd-sticky-bar-img">
-              <div class="pd-sticky-bar-info">
-                <h4 class="pd-sticky-bar-title">${escapeHTML(product.title)}</h4>
-                <span class="pd-sticky-bar-brand">${escapeHTML(product.brand || (globalSettings ? globalSettings.brand_name : 'Top Muscle Nutrition'))}</span>
-              </div>
-            </div>
-            <div class="pd-sticky-bar-mid">
-              <div class="pd-sticky-selectors">
-                <div class="pd-sticky-select-wrap">
-                  <select id="pd-sticky-size-select" class="pd-sticky-select" aria-label="Select size">
-                    ${sizeOptionsHTML}
-                  </select>
-                  <i class="fas fa-chevron-down select-arrow" aria-hidden="true"></i>
-                </div>
-                <div class="pd-sticky-select-wrap">
-                  <select id="pd-sticky-flavor-select" class="pd-sticky-select" aria-label="Select flavor">
-                    ${flavorOptionsHTML}
-                  </select>
-                  <i class="fas fa-chevron-down select-arrow" aria-hidden="true"></i>
-                </div>
-              </div>
-              <div class="pd-sticky-price" id="pd-sticky-price-display">
-                <!-- Dynamically updated -->
-              </div>
-            </div>
-            <div class="pd-sticky-bar-right">
-              <a href="#" target="_blank" rel="noopener" class="btn btn-primary pd-sticky-buy-btn" id="pd-sticky-buy-btn">
-                <i class="fab fa-whatsapp" aria-hidden="true"></i> BUY NOW
-              </a>
-              <button class="pd-sticky-close-btn" id="pd-sticky-close-btn">CLOSE</button>
-            </div>
-          </div>
-        </div>
-      ` : ''}
     `;
 
     appContent.innerHTML = html;
@@ -2712,9 +2673,6 @@ async function renderProductDetails(params) {
       
       const waButtons = document.querySelectorAll('.pd-wa-btn');
       waButtons.forEach(btn => btn.href = waUrl);
-
-      const stickyBuyBtn = document.getElementById('pd-sticky-buy-btn');
-      if (stickyBuyBtn) stickyBuyBtn.href = waUrl;
     }
 
     // Pricing and size variants dynamic update
@@ -2753,42 +2711,7 @@ async function renderProductDetails(params) {
         displayEl.style.transition = 'opacity 0.2s ease';
       }, 50);
 
-      // Update sticky bar pricing
-      const stickyPriceEl = document.getElementById('pd-sticky-price-display');
-      if (stickyPriceEl) {
-        let stickyPriceHTML = '';
-        if (variant && variant.price) {
-          const price = variant.price;
-          const offerPrice = variant.offer_price;
-          if (offerPrice && offerPrice < price) {
-            const discount = Math.round(((price - offerPrice) / price) * 100);
-            stickyPriceHTML = `
-              <span class="price-offer">₹${offerPrice.toLocaleString('en-IN')}</span>
-              <span class="price-original">₹${price.toLocaleString('en-IN')}</span>
-              <span class="price-discount">${discount}% OFF</span>
-            `;
-          } else {
-            stickyPriceHTML = `
-              <span class="price-offer">₹${price.toLocaleString('en-IN')}</span>
-            `;
-          }
-        } else {
-          stickyPriceHTML = `<span>Price on Request</span>`;
-        }
-        stickyPriceEl.innerHTML = stickyPriceHTML;
-      }
-
-      // Sync flavor dropdown if the variant specifies a flavor
-      const flavorSelect = document.getElementById('pd-sticky-flavor-select');
-      if (variant && variant.flavor && flavorSelect) {
-        const option = Array.from(flavorSelect.options).find(opt => opt.value.toLowerCase() === variant.flavor.toLowerCase());
-        if (option) {
-          flavorSelect.value = option.value;
-        }
-      }
-
-      const selectedFlavor = flavorSelect ? flavorSelect.value : null;
-      updateWhatsAppLinks(variant, selectedFlavor);
+      updateWhatsAppLinks(variant, null);
     }
 
     // Initialize display values
@@ -2810,56 +2733,11 @@ async function renderProductDetails(params) {
           const variant = product.variants[index];
           if (variant) {
             updateProductPricing(variant);
-            const stickySizeSelect = document.getElementById('pd-sticky-size-select');
-            if (stickySizeSelect) {
-              stickySizeSelect.value = index;
-            }
           }
         });
       });
     }
 
-    // Bind sticky bar size selector dropdown
-    const stickySizeSelect = document.getElementById('pd-sticky-size-select');
-    if (stickySizeSelect) {
-      stickySizeSelect.addEventListener('change', (e) => {
-        const index = parseInt(e.target.value);
-        const chips = document.querySelectorAll('.pd-size-chip');
-        if (chips[index]) {
-          chips[index].click();
-        } else {
-          const variant = {
-            weight: product.weight || 'Standard',
-            price: product.price,
-            offer_price: product.offer_price
-          };
-          updateProductPricing(variant);
-        }
-      });
-    }
-
-    // Bind sticky bar flavor selector dropdown
-    const stickyFlavorSelect = document.getElementById('pd-sticky-flavor-select');
-    if (stickyFlavorSelect) {
-      stickyFlavorSelect.addEventListener('change', (e) => {
-        let activeVariant = null;
-        if (hasVariants) {
-          const activeChip = document.querySelector('.pd-size-chip.active');
-          if (activeChip) {
-            const index = parseInt(activeChip.dataset.index);
-            activeVariant = product.variants[index];
-          }
-        }
-        if (!activeVariant) {
-          activeVariant = {
-            weight: product.weight || 'Standard',
-            price: product.price,
-            offer_price: product.offer_price
-          };
-        }
-        updateWhatsAppLinks(activeVariant, e.target.value);
-      });
-    }
 
     // Bind Back Navigation click
     document.getElementById('pd-back-btn').addEventListener('click', () => {
@@ -3094,65 +2972,6 @@ async function renderProductDetails(params) {
       });
     }
 
-    // Scroll-triggered Floating Bar Handler
-    const stickyBarEl = document.getElementById('pd-sticky-bar');
-    const mainInfoPanel = document.querySelector('.pd-info-sticky');
-    if (stickyBarEl && mainInfoPanel) {
-      let isClosedByUser = false;
-      const closeBtn = document.getElementById('pd-sticky-close-btn');
-      if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-          isClosedByUser = true;
-          stickyBarEl.classList.remove('visible');
-        });
-      }
-
-      let lastScrollY = window.scrollY;
-
-      const handleScroll = () => {
-        if (isClosedByUser) return;
-
-        // If the floating bar is no longer in the DOM (page changed), clean up listener
-        if (!document.getElementById('pd-sticky-bar')) {
-          window.removeEventListener('scroll', handleScroll);
-          return;
-        }
-
-        const currentScrollY = window.scrollY;
-        
-        // Find static WhatsApp button bottom edge for exact threshold
-        const staticWaBtn = document.getElementById('pd-whatsapp-order-btn');
-        let isPastProductInfo = false;
-        if (staticWaBtn) {
-          isPastProductInfo = staticWaBtn.getBoundingClientRect().bottom < 0;
-        } else {
-          isPastProductInfo = mainInfoPanel.getBoundingClientRect().bottom < 0;
-        }
-
-        const scrollingDown = currentScrollY > lastScrollY;
-
-        if (isPastProductInfo && scrollingDown) {
-          stickyBarEl.classList.add('visible');
-        } else {
-          stickyBarEl.classList.remove('visible');
-        }
-
-        lastScrollY = currentScrollY;
-      };
-
-      // Clean up previous scroll handler if it exists
-      if (window.currentStickyBarScrollHandler) {
-        window.removeEventListener('scroll', window.currentStickyBarScrollHandler);
-      }
-      window.currentStickyBarScrollHandler = handleScroll;
-      window.addEventListener('scroll', handleScroll);
-
-      // Clean up previous observer if it exists
-      if (window.currentStickyBarObserver) {
-        window.currentStickyBarObserver.disconnect();
-        window.currentStickyBarObserver = null;
-      }
-    }
 
     // Initialize scroll animations for other animated elements
     initScrollAnimations();
