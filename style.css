@@ -2968,8 +2968,8 @@ textarea.form-input { resize: vertical; }
 
   /* Mobile Navigation */
   .nav-menu {
-    position: fixed;
-    top: var(--nav-h);
+    position: absolute;
+    top: 100%;
     left: -100%;
     width: 100%;
     height: calc(100vh - var(--nav-h));

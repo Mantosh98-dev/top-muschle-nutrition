@@ -86,6 +86,7 @@ class Router {
     if (matchedHandler) {
       if (path !== '/contact') {
         window.scrollTo({ top: 0, behavior: 'instant' });
+        window.lastScrollY = 0;
       }
       matchedHandler(params);
       this.updateNavbarActive(path);
@@ -94,6 +95,7 @@ class Router {
       if (this.routes['/404']) {
         if (path !== '/contact') {
           window.scrollTo({ top: 0, behavior: 'instant' });
+          window.lastScrollY = 0;
         }
         this.routes['/404']({});
         this.updateNavbarActive('/404');

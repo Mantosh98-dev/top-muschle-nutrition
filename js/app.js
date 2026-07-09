@@ -424,25 +424,46 @@ function setupGlobalListeners() {
     const isActive = mobileMenuBtn.classList.toggle('active');
     navMenu.classList.toggle('active');
     mobileMenuBtn.setAttribute('aria-expanded', isActive);
+    if (isActive) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   });
 
   // Close mobile menu when links are clicked
-  document.querySelectorAll('.nav-link').forEach(link => {
+  const closeMobileMenu = () => {
+    mobileMenuBtn.classList.remove('active');
+    navMenu.classList.remove('active');
+    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  };
+
+  document.querySelectorAll('.logo-link, .nav-link, .dropdown-sublink').forEach(link => {
     link.addEventListener('click', () => {
-      setTimeout(() => {
-        mobileMenuBtn.classList.remove('active');
-        navMenu.classList.remove('active');
-        mobileMenuBtn.setAttribute('aria-expanded', 'false');
-      }, 0);
+      setTimeout(closeMobileMenu, 0);
     });
   });
 
   // Shrink and toggle sticky header on scroll direction
-  let lastScrollY = window.scrollY;
+  window.lastScrollY = window.scrollY;
   window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
     if (!navbar) return;
+
+    // Do not hide the navbar if the mobile menu is active/open
+    if (navMenu && navMenu.classList.contains('active')) {
+      navbar.classList.remove('navbar-hidden');
+      return;
+    }
+
     const currentScrollY = window.scrollY;
+    
+    // Reset our track if scroll position is 0 (e.g., after loading new routes)
+    if (currentScrollY === 0) {
+      window.lastScrollY = 0;
+    }
+
     if (currentScrollY > 50) {
       navbar.classList.add('scrolled');
     } else {
@@ -451,13 +472,14 @@ function setupGlobalListeners() {
 
     if (currentScrollY <= 100) {
       navbar.classList.remove('navbar-hidden');
-    } else if (currentScrollY > lastScrollY) {
+    } else if (currentScrollY > window.lastScrollY) {
       navbar.classList.add('navbar-hidden');
     } else {
       navbar.classList.remove('navbar-hidden');
     }
-    lastScrollY = currentScrollY;
+    window.lastScrollY = currentScrollY;
   });
+
 
   // Mobile Navigation Submenu Toggle
   const dropdownToggle = document.querySelector('.dropdown-toggle-btn');
