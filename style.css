@@ -177,19 +177,25 @@ button {
 
 .navbar {
   height: var(--nav-h);
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: saturate(180%) blur(24px);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   position: sticky;
   top: 0;
   z-index: 1000;
-  transition: all var(--t) var(--ease);
+  transform: translateY(0);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.navbar.navbar-hidden {
+  transform: translateY(-100%);
 }
 
 .navbar.scrolled {
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .navbar .container {
@@ -4940,3 +4946,41 @@ section, .section {
     margin-top: 4px;
   }
 }
+
+/* ── Scroll to Top Button ── */
+.scroll-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease), visibility 0.3s var(--ease), background-color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.scroll-to-top:hover {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: var(--shadow-red);
+}
+
+.scroll-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+

@@ -60,7 +60,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
+  <link rel="manifest" id="pwa-manifest" href="/site.webmanifest">
+  <script>
+    if (window.location.pathname.startsWith('/admin')) {
+      document.getElementById('pwa-manifest').setAttribute('href', '/admin.webmanifest');
+    }
+  </script>
   <meta name="theme-color" content="#d60000">
 </head>
 
@@ -171,6 +176,11 @@
   <div id="loader-overlay" class="loader-overlay">
     <div class="spinner"></div>
   </div>
+
+  <!-- Scroll to Top Floating Button -->
+  <button id="scroll-to-top" class="scroll-to-top" aria-label="Scroll to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
 
   <!-- Supabase CDN Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>

@@ -84,21 +84,82 @@ class Router {
 
     // Run active view handler or display 404
     if (matchedHandler) {
-      if (path !== '/contact') {
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        window.lastScrollY = 0;
+      // Dynamic manifest switcher depending on path
+      const manifestEl = document.getElementById('pwa-manifest') || document.querySelector('link[rel="manifest"]');
+      if (manifestEl) {
+        if (path.startsWith('/admin')) {
+          manifestEl.setAttribute('href', '/admin.webmanifest');
+        } else {
+          manifestEl.setAttribute('href', '/site.webmanifest');
+        }
       }
-      matchedHandler(params);
+
+      const result = matchedHandler(params);
       this.updateNavbarActive(path);
+
+      const restoreScroll = () => {
+        const state = history.state;
+        if (state && typeof state.scrollY === 'number') {
+          window.scrollTo({ top: state.scrollY, behavior: 'instant' });
+          if (window.onScrollUpdateTrackers) {
+            window.onScrollUpdateTrackers(state.scrollY);
+          }
+        } else {
+          if (path !== '/contact') {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            if (window.onScrollUpdateTrackers) {
+              window.onScrollUpdateTrackers(0);
+            }
+          }
+        }
+      };
+
+      if (result instanceof Promise) {
+        result.then(() => {
+          setTimeout(restoreScroll, 50);
+        }).catch(err => {
+          console.error("Error in route handler:", err);
+          restoreScroll();
+        });
+      } else {
+        setTimeout(restoreScroll, 50);
+      }
     } else {
       console.warn(`Route "${path}" not recognized.`);
       if (this.routes['/404']) {
-        if (path !== '/contact') {
-          window.scrollTo({ top: 0, behavior: 'instant' });
-          window.lastScrollY = 0;
+        const manifestEl = document.getElementById('pwa-manifest') || document.querySelector('link[rel="manifest"]');
+        if (manifestEl) {
+          manifestEl.setAttribute('href', '/site.webmanifest');
         }
-        this.routes['/404']({});
+
+        const result = this.routes['/404']({});
         this.updateNavbarActive('/404');
+
+        const restoreScroll = () => {
+          const state = history.state;
+          if (state && typeof state.scrollY === 'number') {
+            window.scrollTo({ top: state.scrollY, behavior: 'instant' });
+            if (window.onScrollUpdateTrackers) {
+              window.onScrollUpdateTrackers(state.scrollY);
+            }
+          } else {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            if (window.onScrollUpdateTrackers) {
+              window.onScrollUpdateTrackers(0);
+            }
+          }
+        };
+
+        if (result instanceof Promise) {
+          result.then(() => {
+            setTimeout(restoreScroll, 50);
+          }).catch(err => {
+            console.error("Error in 404 handler:", err);
+            restoreScroll();
+          });
+        } else {
+          setTimeout(restoreScroll, 50);
+        }
       }
     }
   }
@@ -131,7 +192,12 @@ class Router {
     if (path.length > 1 && path.endsWith('/')) {
       path = path.slice(0, -1);
     }
-    history.pushState(null, '', path);
+
+    // Save scroll position for the current history entry before navigating away
+    const currentState = history.state || {};
+    history.replaceState({ ...currentState, scrollY: window.scrollY }, '');
+
+    history.pushState({ scrollY: 0 }, '', path);
     this.handleRoute();
   }
 }

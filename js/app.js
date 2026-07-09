@@ -445,41 +445,103 @@ function setupGlobalListeners() {
     });
   });
 
-  // Shrink and toggle sticky header on scroll direction
+  // Shrink and toggle sticky header on scroll direction with requestAnimationFrame
   window.lastScrollY = window.scrollY;
-  window.addEventListener('scroll', () => {
+  let accumulatedScrollDown = 0;
+  const HIDE_THRESHOLD = 60; // 50-80px threshold to hide
+  let isTicking = false;
+
+  const scrollTopBtn = document.getElementById('scroll-to-top');
+  if (scrollTopBtn) {
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  const handleScroll = () => {
     const navbar = document.querySelector('.navbar');
-    if (!navbar) return;
+    if (!navbar) {
+      isTicking = false;
+      return;
+    }
 
     // Do not hide the navbar if the mobile menu is active/open
     if (navMenu && navMenu.classList.contains('active')) {
       navbar.classList.remove('navbar-hidden');
+      isTicking = false;
       return;
     }
 
     const currentScrollY = window.scrollY;
-    
-    // Reset our track if scroll position is 0 (e.g., after loading new routes)
-    if (currentScrollY === 0) {
+
+    // Reset trackers when at the very top
+    if (currentScrollY <= 0) {
       window.lastScrollY = 0;
-    }
-
-    if (currentScrollY > 50) {
-      navbar.classList.add('scrolled');
-    } else {
+      accumulatedScrollDown = 0;
+      navbar.classList.remove('navbar-hidden');
       navbar.classList.remove('scrolled');
-    }
-
-    if (currentScrollY <= 100) {
-      navbar.classList.remove('navbar-hidden');
-    } else if (currentScrollY > window.lastScrollY) {
-      navbar.classList.add('navbar-hidden');
     } else {
+      if (currentScrollY > 10) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+
+      const delta = currentScrollY - window.lastScrollY;
+
+      if (delta > 0) {
+        // Scrolling down
+        accumulatedScrollDown += delta;
+        if (accumulatedScrollDown >= HIDE_THRESHOLD && currentScrollY > 100) {
+          navbar.classList.add('navbar-hidden');
+        }
+      } else if (delta < 0) {
+        // Scrolling up - immediately show
+        accumulatedScrollDown = 0;
+        navbar.classList.remove('navbar-hidden');
+      }
+    }
+
+    // Scroll to Top visibility
+    if (scrollTopBtn) {
+      if (currentScrollY > 500) {
+        scrollTopBtn.classList.add('visible');
+      } else {
+        scrollTopBtn.classList.remove('visible');
+      }
+    }
+
+    window.lastScrollY = currentScrollY;
+    isTicking = false;
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!isTicking) {
+      window.requestAnimationFrame(handleScroll);
+      isTicking = true;
+    }
+  }, { passive: true });
+
+  window.onScrollUpdateTrackers = (scrollY) => {
+    window.lastScrollY = scrollY;
+    accumulatedScrollDown = 0;
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+      if (scrollY > 10) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
       navbar.classList.remove('navbar-hidden');
     }
-    window.lastScrollY = currentScrollY;
-  });
-
+    if (scrollTopBtn) {
+      if (scrollY > 500) {
+        scrollTopBtn.classList.add('visible');
+      } else {
+        scrollTopBtn.classList.remove('visible');
+      }
+    }
+  };
 
   // Mobile Navigation Submenu Toggle
   const dropdownToggle = document.querySelector('.dropdown-toggle-btn');
@@ -1232,7 +1294,7 @@ async function renderHome() {
         <section class="section promo-banner-section" style="padding: 30px 0; background: var(--gray-50); border-bottom: 1px solid var(--border-color);">
           <div class="container">
             <a href="${globalSettings.promo_banner_link || '/products'}" style="display:block; overflow:hidden; border-radius:var(--r-lg); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-              <img src="${globalSettings.promo_banner_image_url}" alt="Promotional Banner" style="width:100%; height:auto; object-fit:cover; display:block;">
+              <img src="${globalSettings.promo_banner_image_url}" alt="Promotional Banner" style="width:100%; height:auto; object-fit:cover; display:block;" loading="lazy" decoding="async">
             </a>
           </div>
         </section>
@@ -1267,7 +1329,7 @@ async function renderHome() {
                 <div class="category-card animate-on-scroll delay-${i + 1}" data-category-id="${cat.id}">
                   <div class="category-icon-box">
                     ${cat.image_url ? `
-                      <img src="${cat.image_url}" alt="${cat.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-lg);">
+                      <img src="${cat.image_url}" alt="${cat.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-lg);" loading="lazy" decoding="async">
                     ` : `
                       <i class="fas fa-${categoryIcons[i % categoryIcons.length]}"></i>
                     `}
@@ -3015,7 +3077,7 @@ function renderProductVerification() {
     bannerHTML = `
       <div class="auth-banner-container" style="width: 100%; margin-bottom: 32px;">
         <a href="${sliderSettings.auth_banner_link || '#'}" style="display:block; overflow:hidden; border-radius:var(--r-md); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-          <img src="${sliderSettings.auth_banner_image_url}" alt="Authenticate Product Banner" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:var(--r-md);">
+          <img src="${sliderSettings.auth_banner_image_url}" alt="Authenticate Product Banner" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:var(--r-md);" loading="lazy" decoding="async">
         </a>
       </div>
     `;

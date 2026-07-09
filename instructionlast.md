@@ -1,120 +1,46 @@
-# Website Fixes & Improvements
+Create a premium, modern, mobile-first smart navigation bar.
 
-## Priority: High
+Navbar Behavior:
+- The navbar must be fixed at the top and fully visible when the page loads.
+- Keep the navbar visible while the user is at the top of the page.
+- When the user scrolls down, smoothly hide the navbar by sliding it upward.
+- Do not hide it instantly; wait until the user has scrolled around 50–80px to avoid accidental hiding.
+- As soon as the user scrolls upward, immediately reveal the navbar with a smooth slide-down animation, regardless of how far down the page the user is.
+- If scrolling stops, keep the navbar in its current state.
+- The animation should be fluid (200–300ms) with no flickering or layout shifts.
 
-Please fix the following issues across the website.
+Design:
+- Use a clean glassmorphism effect with a subtle backdrop blur.
+- Add a soft shadow while scrolling.
+- Maintain a high-end premium appearance.
+- Ensure the navbar remains responsive on all screen sizes.
 
----
+Performance:
+- Use CSS transforms (translateY) instead of changing top or display for smooth 60fps animations.
+- Optimize scroll listeners using requestAnimationFrame or passive event listeners.
+- Avoid unnecessary re-renders, lag, or memory leaks.
 
-## 1. Admin Panel Scroll Position
+Extra UX Improvements:
+- Add a smooth "Scroll to Top" floating button that appears after scrolling about 500px.
+- Preserve the last scroll position when navigating back to a page.
+- Lazy-load images where appropriate for faster page loading.
+- Ensure everything works perfectly in a Vite + Vanilla HTML, CSS, and JavaScript SPA.
 
-### Problem
-Whenever I make any changes in the admin panel and save/update, the page refreshes and automatically scrolls back to the top.
 
-### Expected Behavior
-- Preserve the current scroll position after saving.
-- Do not jump to the top.
-- Keep the admin at the same section where they were editing.
+Fix the Admin shortcut issue professionally.
 
----
-
-## 2. Navigation & CTA Buttons
-
-### Problem
-Navigation links and CTA buttons are not responding properly.
-
-Sometimes users need to click 3–4 times before the page opens.
-
-### Expected Behavior
-- Every navigation link should open on the first click.
-- Every CTA button should respond instantly.
-- Remove duplicate click handlers.
-- Fix pointer events if blocked.
-- Check z-index/overlay issues.
-- Prevent multiple event listeners.
-- Improve route navigation performance.
-
----
-
-## 3. Product Share Feature
-
-Add a Share button on every product page.
-
-### Requirements
-
-- Share button near Buy Now/Add to Cart.
-- Use native Web Share API on supported devices.
-- Fallback for desktop:
-  - Copy Product Link
-  - WhatsApp
-  - Facebook
-  - X (Twitter)
-  - Telegram
-  - Email
-
-The shared URL should include the current product URL.
-
----
-
-## 4. Overall Performance
-
-Please optimize:
-
-- Navigation responsiveness
-- Button click latency
-- Route transitions
-- Loading performance
-- Prevent unnecessary re-renders
-- Improve page responsiveness
-
----
-
-## 5. Admin UX Improvements
-
-- Preserve scroll position after save/update.
-- Prevent unnecessary full page refresh.
-- Show success toast without resetting UI.
-- Disable Save button while request is processing.
-- Prevent duplicate submissions.
-
----
-
-## 6. General Bug Fixes
-
-Check the entire website for:
-
-- Broken buttons
-- Broken links
-- Forms not submitting
-- Double click issues
-- UI glitches
-- Console errors
-- Network/API errors
-- Mobile responsiveness issues
-
-Fix all detected issues.
-
----
-
-## Expected Result
-
-- Smooth admin experience
-- One-click navigation
-- Instant CTA response
-- Product sharing functionality
-- Better performance
-- No unnecessary page refreshes
-- Professional user experience
-
-## 7. Fix Settings Save Issue
-
-Problem:
-Sometimes "Failed to save settings configuration" appears while updating settings.
+Current Problem:
+- The Admin page is hidden from the UI.
+- When I create a Chrome Home Screen shortcut for the Admin page, tapping the shortcut always opens the Home page instead of the Admin page.
 
 Requirements:
-- Identify backend/API issue.
-- Fix Supabase database updates.
-- Verify all required fields.
-- Validate schema consistency.
-- Show detailed error logs instead of generic error messages.
-- Ensure settings are saved successfully every time.
+- Fix deep linking so that a shortcut created for the Admin route always opens the Admin page directly.
+- Preserve the requested URL during app launch.
+- Ensure it works after installation as a PWA and also in a normal browser.
+- Support page refresh and direct URL access without redirecting to the Home page.
+- Do not break existing SPA routing.
+- If the issue is caused by Vite, SPA fallback, service worker, manifest.json, or routing configuration, fix it using best practices.
+- Use a production-ready solution.
+- Keep the Admin page hidden from the website navigation.
+- Do not rely on hacks or temporary workarounds.
+- Explain the root cause and implement the proper fix.
