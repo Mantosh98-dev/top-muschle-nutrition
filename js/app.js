@@ -2656,18 +2656,6 @@ async function renderProductDetails(params) {
         </div>
       </div>
 
-      <!-- Mobile Floating Buy Bar -->
-      ${product.whatsapp_enabled ? `
-        <div class="pd-mobile-buy-bar" style="display: flex; gap: 10px; padding: 12px 16px; align-items: center;">
-          <a href="#" target="_blank" rel="noopener" class="pd-wa-btn" style="flex: 1; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-            <i class="fab fa-whatsapp"></i>
-            Order via WhatsApp
-          </a>
-          <button class="pd-share-icon-btn" id="pd-mobile-share-btn" type="button" aria-label="Share product">
-            <i class="fas fa-share-nodes"></i>
-          </button>
-        </div>
-      ` : ''}
 
       <!-- Sticky Overlay Bar -->
       ${product.whatsapp_enabled ? `
@@ -2882,12 +2870,6 @@ async function renderProductDetails(params) {
     const desktopShareBtn = document.getElementById('pd-share-btn');
     if (desktopShareBtn) {
       desktopShareBtn.addEventListener('click', () => {
-        openShareModal(product);
-      });
-    }
-    const mobileShareBtn = document.getElementById('pd-mobile-share-btn');
-    if (mobileShareBtn) {
-      mobileShareBtn.addEventListener('click', () => {
         openShareModal(product);
       });
     }
@@ -3112,7 +3094,7 @@ async function renderProductDetails(params) {
       });
     }
 
-    // Scroll-triggered Sticky Bar Observer
+    // Scroll-triggered Floating Bar Handler
     const stickyBarEl = document.getElementById('pd-sticky-bar');
     const mainInfoPanel = document.querySelector('.pd-info-sticky');
     if (stickyBarEl && mainInfoPanel) {
@@ -3124,27 +3106,52 @@ async function renderProductDetails(params) {
           stickyBarEl.classList.remove('visible');
         });
       }
-      
-      const stickyObserver = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting && !isClosedByUser) {
-            stickyBarEl.classList.add('visible');
-            const mobBuyBar = document.querySelector('.pd-mobile-buy-bar');
-            if (mobBuyBar) mobBuyBar.style.transform = 'translateY(100%)';
-          } else {
-            stickyBarEl.classList.remove('visible');
-            const mobBuyBar = document.querySelector('.pd-mobile-buy-bar');
-            if (mobBuyBar) mobBuyBar.style.transform = 'translateY(0)';
-          }
-        });
-      }, { threshold: 0.05 });
-      
-      stickyObserver.observe(mainInfoPanel);
-      
+
+      let lastScrollY = window.scrollY;
+
+      const handleScroll = () => {
+        if (isClosedByUser) return;
+
+        // If the floating bar is no longer in the DOM (page changed), clean up listener
+        if (!document.getElementById('pd-sticky-bar')) {
+          window.removeEventListener('scroll', handleScroll);
+          return;
+        }
+
+        const currentScrollY = window.scrollY;
+        
+        // Find static WhatsApp button bottom edge for exact threshold
+        const staticWaBtn = document.getElementById('pd-whatsapp-order-btn');
+        let isPastProductInfo = false;
+        if (staticWaBtn) {
+          isPastProductInfo = staticWaBtn.getBoundingClientRect().bottom < 0;
+        } else {
+          isPastProductInfo = mainInfoPanel.getBoundingClientRect().bottom < 0;
+        }
+
+        const scrollingDown = currentScrollY > lastScrollY;
+
+        if (isPastProductInfo && scrollingDown) {
+          stickyBarEl.classList.add('visible');
+        } else {
+          stickyBarEl.classList.remove('visible');
+        }
+
+        lastScrollY = currentScrollY;
+      };
+
+      // Clean up previous scroll handler if it exists
+      if (window.currentStickyBarScrollHandler) {
+        window.removeEventListener('scroll', window.currentStickyBarScrollHandler);
+      }
+      window.currentStickyBarScrollHandler = handleScroll;
+      window.addEventListener('scroll', handleScroll);
+
+      // Clean up previous observer if it exists
       if (window.currentStickyBarObserver) {
         window.currentStickyBarObserver.disconnect();
+        window.currentStickyBarObserver = null;
       }
-      window.currentStickyBarObserver = stickyObserver;
     }
 
     // Initialize scroll animations for other animated elements
