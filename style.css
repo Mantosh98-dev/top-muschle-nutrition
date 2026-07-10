@@ -1322,7 +1322,9 @@ button {
 
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr 1.6fr;
+  grid-template-columns: 1fr;
+  max-width: 800px;
+  margin: 0 auto;
   gap: 40px;
   align-items: start;
 }

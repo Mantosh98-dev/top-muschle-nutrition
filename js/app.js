@@ -1674,16 +1674,6 @@ async function renderHome() {
                 <i class="fab fa-whatsapp"></i> Chat on WhatsApp
               </a>
             </div>
-            
-            <div class="contact-map animate-slide-right">
-              ${globalSettings.google_map_iframe ? globalSettings.google_map_iframe : `
-                <div style="width:100%; height:100%; background:var(--gray-50); display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding: 24px;">
-                  <i class="fas fa-map-marked-alt" style="font-size:3rem; color:var(--text-muted); margin-bottom:12px;"></i>
-                  <h4>Map Location</h4>
-                  <p style="color:var(--text-sub);">Configure Google Maps iframe in the Admin Panel to show location map.</p>
-                </div>
-              `}
-            </div>
           </div>
         </div>
       </section>
