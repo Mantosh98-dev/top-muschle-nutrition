@@ -98,6 +98,7 @@ class Router {
       this.updateNavbarActive(path);
 
       const restoreScroll = () => {
+        if (path === '/contact') return; // Do not interrupt smooth scroll for contact section
         const state = history.state;
         if (state && typeof state.scrollY === 'number') {
           window.scrollTo({ top: state.scrollY, behavior: 'instant' });
@@ -105,11 +106,9 @@ class Router {
             window.onScrollUpdateTrackers(state.scrollY);
           }
         } else {
-          if (path !== '/contact') {
-            window.scrollTo({ top: 0, behavior: 'instant' });
-            if (window.onScrollUpdateTrackers) {
-              window.onScrollUpdateTrackers(0);
-            }
+          window.scrollTo({ top: 0, behavior: 'instant' });
+          if (window.onScrollUpdateTrackers) {
+            window.onScrollUpdateTrackers(0);
           }
         }
       };
