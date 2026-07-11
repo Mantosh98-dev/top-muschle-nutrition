@@ -3437,6 +3437,10 @@ async function renderCategories() {
     appContent.innerHTML = `
       <section class="section">
         <div class="container">
+          <div style="margin-bottom: 24px;" class="animate-on-scroll">
+            <button class="pd-back-btn" onclick="window.history.back();"><i class="fas fa-arrow-left"></i> Back</button>
+          </div>
+          
           <div class="section-header animate-on-scroll">
             <span class="section-badge">Categories</span>
             <h2 class="section-title">Shop by Category</h2>
