@@ -3221,16 +3221,6 @@ textarea.form-input { resize: vertical; }
 
   .menu-toggle { display: block; }
 
-  .menu-toggle.active span:nth-child(1) {
-    transform: translateY(6px) rotate(45deg) !important;
-  }
-
-  .menu-toggle.active span:nth-child(2) { opacity: 0 !important; }
-
-  .menu-toggle.active span:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg) !important;
-  }
-
   .footer-grid { grid-template-columns: 1fr; gap: 32px; }
 }
 

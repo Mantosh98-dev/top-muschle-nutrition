@@ -574,6 +574,13 @@ function setupGlobalListeners() {
     const isActive = mobileMenuBtn.classList.toggle('active');
     navMenu.classList.toggle('active');
     mobileMenuBtn.setAttribute('aria-expanded', isActive);
+    
+    // Toggle FontAwesome icon
+    const icon = mobileMenuBtn.querySelector('i');
+    if (icon) {
+      icon.className = isActive ? 'fas fa-times' : 'fas fa-bars';
+    }
+    
     if (isActive) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -586,6 +593,10 @@ function setupGlobalListeners() {
     mobileMenuBtn.classList.remove('active');
     navMenu.classList.remove('active');
     mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    const icon = mobileMenuBtn.querySelector('i');
+    if (icon) {
+      icon.className = 'fas fa-bars';
+    }
     document.body.style.overflow = '';
   };
 
