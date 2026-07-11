@@ -351,6 +351,8 @@ async function init() {
     router.addRoute('/verify', renderProductVerification);
     router.addRoute('/categories', renderCategories);
     router.addRoute('/about', renderAbout);
+    router.addRoute('/privacy-policy', renderPrivacyPolicy);
+    router.addRoute('/terms-and-conditions', renderTerms);
     router.addRoute('/cart', renderCart);
     router.addRoute('/account', renderAccount);
     router.addRoute('/404', render404);
@@ -419,6 +421,154 @@ async function init() {
 
 // Set up UI event listeners
 function setupGlobalListeners() {
+  // Header Search Form submission
+  const headerSearchForm = document.getElementById('header-search-form');
+  const headerSearchInput = document.getElementById('header-search-input');
+  const headerSearchSuggestions = document.getElementById('header-search-suggestions');
+  let allSearchProducts = [];
+
+  const loadSearchProducts = async () => {
+    if (allSearchProducts.length === 0) {
+      try {
+        allSearchProducts = await db.fetchProducts();
+      } catch (err) {
+        console.error('Failed to pre-fetch search products:', err);
+      }
+    }
+  };
+
+  const renderSuggestions = () => {
+    const query = headerSearchInput.value.trim().toLowerCase();
+    if (!query) {
+      headerSearchSuggestions.innerHTML = '';
+      headerSearchSuggestions.style.display = 'none';
+      return;
+    }
+
+    const filtered = allSearchProducts.filter(prod => {
+      return (prod.title || '').toLowerCase().includes(query) ||
+             (prod.brand || '').toLowerCase().includes(query) ||
+             (prod.categories && prod.categories.name || '').toLowerCase().includes(query);
+    }).slice(0, 5);
+
+    if (filtered.length === 0) {
+      headerSearchSuggestions.innerHTML = `
+        <div style="padding:16px; text-align:center; color:var(--text-sub); font-size:0.85rem;">
+          <i class="fas fa-search-minus" style="font-size:1.2rem; margin-bottom:8px; display:block; color:var(--gray-400);"></i>
+          No products matched your search
+        </div>
+      `;
+      headerSearchSuggestions.style.display = 'block';
+      return;
+    }
+
+    const listHTML = filtered.map(prod => {
+      const mainImage = prod.product_images && prod.product_images.length > 0
+        ? prod.product_images[0].image_url
+        : 'https://via.placeholder.com/80?text=No+Image';
+
+      const hasVariants = Array.isArray(prod.variants) && prod.variants.length > 1;
+      let priceHTML = '';
+      let offerPrice = prod.offer_price;
+      let price = prod.price;
+
+      if (hasVariants) {
+        const minPrice = prod.variants.reduce((min, v) => {
+          const currentVal = v.offer_price || v.price || Infinity;
+          return currentVal < min ? currentVal : min;
+        }, Infinity);
+        if (minPrice !== Infinity) {
+          priceHTML = `<span class="suggestion-price-offer">₹${minPrice.toLocaleString('en-IN')}</span>`;
+        }
+      } else if (price) {
+        if (offerPrice && offerPrice < price) {
+          const discount = Math.round(((price - offerPrice) / price) * 100);
+          priceHTML = `
+            <span class="suggestion-price-offer">₹${offerPrice.toLocaleString('en-IN')}</span>
+            <span class="suggestion-price-original">₹${price.toLocaleString('en-IN')}</span>
+            <span class="suggestion-price-discount">${discount}% off</span>
+          `;
+        } else {
+          priceHTML = `<span class="suggestion-price-offer">₹${price.toLocaleString('en-IN')}</span>`;
+        }
+      }
+
+      return `
+        <div class="suggestion-item" data-slug="${prod.slug}" style="display:flex; gap:12px; padding:10px 14px; cursor:pointer; align-items:center; transition:background var(--t) var(--ease); border-bottom:1px solid var(--border-color);">
+          <div class="suggestion-img-wrap" style="width:48px; height:48px; border-radius:var(--r-xs); overflow:hidden; border:1px solid var(--border-color); background:var(--gray-50); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <img src="${mainImage}" alt="${escapeHTML(prod.title)}" style="max-width:100%; max-height:100%; object-fit:contain;">
+          </div>
+          <div class="suggestion-info" style="flex:1; min-width:0;">
+            <h4 class="suggestion-title" style="font-family:var(--font-heading); font-size:0.88rem; font-weight:700; color:var(--text); margin:0 0 2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHTML(prod.title)}</h4>
+            <span class="suggestion-brand" style="font-size:0.72rem; color:var(--text-sub); display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">${escapeHTML(prod.brand || 'Top Muscle Nutrition')}</span>
+            <div class="suggestion-price-row" style="display:flex; align-items:center; gap:6px; margin-top:2px;">${priceHTML}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    headerSearchSuggestions.innerHTML = `
+      <div class="suggestions-header" style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid var(--border-color); background:var(--gray-25);">
+        <span class="suggestions-title-text" style="font-family:var(--font-heading); font-size:0.8rem; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:0.04em;">Suggested Products</span>
+        <a href="/products" class="suggestions-view-all-link" style="font-size:0.75rem; font-weight:700; color:var(--primary); text-decoration:none; display:flex; align-items:center; gap:4px;">View all <i class="fas fa-chevron-right" style="font-size:0.6rem;"></i></a>
+      </div>
+      <div class="suggestions-list" style="max-height:360px; overflow-y:auto;">${listHTML}</div>
+    `;
+
+    headerSearchSuggestions.style.display = 'block';
+
+    // Bind item clicks
+    headerSearchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const slug = item.dataset.slug;
+        headerSearchSuggestions.style.display = 'none';
+        headerSearchInput.value = '';
+        router.navigate(`/product/${slug}`);
+      });
+    });
+
+    // Bind view all click
+    const viewAllLink = headerSearchSuggestions.querySelector('.suggestions-view-all-link');
+    if (viewAllLink) {
+      viewAllLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        headerSearchSuggestions.style.display = 'none';
+        productSearchQuery = headerSearchInput.value.trim();
+        activeCategoryFilter = null;
+        activeBrandFilter = null;
+        router.navigate('/products');
+      });
+    }
+  };
+
+  if (headerSearchForm && headerSearchInput && headerSearchSuggestions) {
+    headerSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = headerSearchInput.value.trim();
+      productSearchQuery = query;
+      activeCategoryFilter = null;
+      activeBrandFilter = null;
+      headerSearchSuggestions.style.display = 'none';
+      router.navigate('/products');
+    });
+
+    headerSearchInput.addEventListener('focus', async () => {
+      await loadSearchProducts();
+      renderSuggestions();
+    });
+
+    headerSearchInput.addEventListener('input', async () => {
+      await loadSearchProducts();
+      renderSuggestions();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.header-search-container')) {
+        headerSearchSuggestions.style.display = 'none';
+      }
+    });
+  }
+
   // Mobile Burger Menu Toggle
   mobileMenuBtn.addEventListener('click', () => {
     const isActive = mobileMenuBtn.classList.toggle('active');
@@ -441,6 +591,16 @@ function setupGlobalListeners() {
 
   document.querySelectorAll('.logo-link, .nav-link, .dropdown-sublink').forEach(link => {
     link.addEventListener('click', () => {
+      const href = link.getAttribute('href');
+      if (href && (href === '/' || href.startsWith('/products') || href === '/verify' || href === '/contact')) {
+        // If navigating to products but it's not a search submit, reset search query
+        // Note: category dropdown items are handled separately in renderProducts
+        if (!link.classList.contains('dropdown-sublink') || href === '/products') {
+          productSearchQuery = '';
+          const headerSearchInput = document.getElementById('header-search-input');
+          if (headerSearchInput) headerSearchInput.value = '';
+        }
+      }
       setTimeout(closeMobileMenu, 0);
     });
   });
@@ -1314,29 +1474,42 @@ async function renderHome() {
 
     // 3. Shop by Category (Goal)
     if (categories.length > 0) {
-      const categoryIcons = ['capsules', 'dumbbell', 'bolt', 'glass-water', 'apple-alt', 'flask', 'fire', 'heartbeat'];
+      const getCategoryIcon = (name) => {
+        const n = (name || '').toLowerCase();
+        if (n.includes('whey') || n.includes('protein')) return 'flask';
+        if (n.includes('gainer') || n.includes('mass')) return 'dumbbell';
+        if (n.includes('creatine')) return 'bolt';
+        if (n.includes('pre') || n.includes('workout')) return 'fire';
+        if (n.includes('bcaa') || n.includes('amino')) return 'glass-water';
+        if (n.includes('vitamin') || n.includes('mineral') || n.includes('multivitamin') || n.includes('capsule')) return 'capsules';
+        if (n.includes('fat') || n.includes('burner') || n.includes('loss')) return 'fire';
+        if (n.includes('bar')) return 'cookie-bite';
+        if (n.includes('accessory') || n.includes('accessories') || n.includes('shaker')) return 'award';
+        return 'dumbbell';
+      };
+
+      const categoriesTitle = (globalSettings.slider_settings && globalSettings.slider_settings.categories_title) || 'CATEGORIES';
+
       html += `
-        <section class="section">
+        <section class="section section-categories">
           <div class="container">
-            <div class="section-header animate-on-scroll">
-              <span class="section-badge">Categories</span>
-              <h2 class="section-title">Explore by Goal</h2>
-              <p class="section-subtitle">Find premium supplements tailored to your health and workout milestones.</p>
+            <div class="section-header-row animate-on-scroll">
+              <h2 class="section-title-row">${escapeHTML(categoriesTitle)}</h2>
+              <a href="/categories" class="section-view-all-link">View all <i class="fas fa-chevron-right"></i></a>
             </div>
             
             <div class="category-preview-grid">
-              ${categories.map((cat, i) => `
-                <div class="category-card animate-on-scroll delay-${i + 1}" data-category-id="${cat.id}">
-                  <div class="category-icon-box">
-                    ${cat.image_url ? `
-                      <img src="${cat.image_url}" alt="${cat.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-lg);" loading="lazy" decoding="async">
-                    ` : `
-                      <i class="fas fa-${categoryIcons[i % categoryIcons.length]}"></i>
-                    `}
+              ${categories.map((cat, i) => {
+                const iconName = getCategoryIcon(cat.name);
+                return `
+                  <div class="category-card animate-on-scroll delay-${(i % 8) + 1}" data-category-id="${cat.id}">
+                    <div class="category-icon-box">
+                      <i class="fas fa-${iconName}"></i>
+                    </div>
+                    <h3 class="category-name">${escapeHTML(cat.name)}</h3>
                   </div>
-                  <h3 class="category-name">${cat.name}</h3>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           </div>
         </section>
@@ -1344,13 +1517,14 @@ async function renderHome() {
     }
 
     // 4. Featured Products
+    const featuredTitle = (globalSettings.slider_settings && globalSettings.slider_settings.featured_products_title) || 'FEATURED PRODUCTS';
+
     html += `
-      <section class="section section-bg">
+      <section class="section section-featured section-bg">
         <div class="container">
-          <div class="section-header animate-on-scroll">
-            <span class="section-badge">Premium Pick</span>
-            <h2 class="section-title">Featured Products</h2>
-            <p class="section-subtitle">Discover our highly-rated, gold-standard nutrition products.</p>
+          <div class="section-header-row animate-on-scroll">
+            <h2 class="section-title-row">${escapeHTML(featuredTitle)}</h2>
+            <a href="/products" class="section-view-all-link">View all <i class="fas fa-chevron-right"></i></a>
           </div>
           
           ${featuredProducts.length > 0 ? `
@@ -1369,11 +1543,32 @@ async function renderHome() {
               <a href="/products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
             </div>
           `}
-          ${featuredProducts.length > 0 ? `
-            <div style="text-align: center; margin-top: 48px;" class="animate-on-scroll">
-              <a href="/products" class="btn btn-outline">View All Products <i class="fas fa-arrow-right" style="font-size: 0.8rem; margin-left: 4px;"></i></a>
+        </div>
+      </section>
+    `;
+
+    // Bottom Trust Bar Section
+    html += `
+      <section class="bottom-trust-bar-section animate-on-scroll">
+        <div class="container">
+          <div class="bottom-trust-bar">
+            <div class="trust-bar-item">
+              <span class="trust-bar-icon"><i class="fas fa-shield-alt"></i></span>
+              <span class="trust-bar-text">100% Genuine Products</span>
             </div>
-          ` : ''}
+            <div class="trust-bar-item">
+              <span class="trust-bar-icon"><i class="fas fa-tags"></i></span>
+              <span class="trust-bar-text">Best Prices Guaranteed</span>
+            </div>
+            <div class="trust-bar-item">
+              <span class="trust-bar-icon"><i class="fas fa-shipping-fast"></i></span>
+              <span class="trust-bar-text">On Time Delivery</span>
+            </div>
+            <div class="trust-bar-item">
+              <span class="trust-bar-icon"><i class="fas fa-rotate-left"></i></span>
+              <span class="trust-bar-text">Easy Returns Policy</span>
+            </div>
+          </div>
         </div>
       </section>
     `;
@@ -1394,10 +1589,9 @@ async function renderHome() {
       html += `
         <section class="section">
           <div class="container">
-            <div class="section-header animate-on-scroll">
-              <span class="section-badge">Top Quality</span>
-              <h2 class="section-title">Our Top Products</h2>
-              <p class="section-subtitle">Handpicked highest quality recovery supplements.</p>
+            <div class="section-header-row animate-on-scroll">
+              <h2 class="section-title-row">Top Products</h2>
+              <a href="/products" class="section-view-all-link">View all <i class="fas fa-chevron-right"></i></a>
             </div>
             
             ${topProducts.length > 0 ? `
@@ -1426,10 +1620,9 @@ async function renderHome() {
       html += `
         <section class="section section-bg">
           <div class="container">
-            <div class="section-header animate-on-scroll">
-              <span class="section-badge">Best Demand</span>
-              <h2 class="section-title">Best Sellers</h2>
-              <p class="section-subtitle">Our most popular and highly recommended recovery products.</p>
+            <div class="section-header-row animate-on-scroll">
+              <h2 class="section-title-row">Best Sellers</h2>
+              <a href="/products" class="section-view-all-link">View all <i class="fas fa-chevron-right"></i></a>
             </div>
             
             ${bestSellers.length > 0 ? `
@@ -1458,10 +1651,9 @@ async function renderHome() {
       html += `
         <section class="section">
           <div class="container">
-            <div class="section-header animate-on-scroll">
-              <span class="section-badge">On Fire</span>
-              <h2 class="section-title">Trending Products</h2>
-              <p class="section-subtitle">What athletes are currently talking about and buying.</p>
+            <div class="section-header-row animate-on-scroll">
+              <h2 class="section-title-row">Trending Products</h2>
+              <a href="/products" class="section-view-all-link">View all <i class="fas fa-chevron-right"></i></a>
             </div>
             
             ${trendingProducts.length > 0 ? `
@@ -1987,7 +2179,7 @@ function renderProductCard(prod, index = 0) {
   const activeClass = wishlisted ? 'active' : '';
 
   return `
-    <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.btn-card-buy, .wishlist-btn, .btn-card-details')) router.navigate('/product/${prod.slug}');">
+    <div class="product-card animate-on-scroll ${delayClass}" onclick="if(!event.target.closest('.wishlist-btn, .btn-card-view')) router.navigate('/product/${prod.slug}');">
       <button class="wishlist-btn ${activeClass}" aria-label="Add to Wishlist" onclick="event.stopPropagation(); window.handleWishlistToggleClick(this, '${prod.id}');">
         <i class="${heartClass} fa-heart"></i>
       </button>
@@ -1997,15 +2189,11 @@ function renderProductCard(prod, index = 0) {
         <div class="veg-badge"><span class="veg-dot"></span></div>
       </div>
       <div class="product-info">
-        <span class="product-category">${prod.categories ? prod.categories.name : 'Uncategorized'}</span>
         <h3 class="product-title">${prod.title}</h3>
-        <span class="product-brand" style="font-size:0.75rem; color:var(--text-sub); display:block; font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Brand: ${escapeHTML(prod.brand || (globalSettings ? globalSettings.brand_name : 'Top Muscle Nutrition'))}</span>
         ${ratingHTML}
-        <p class="product-desc-weight">${prod.weight ? escapeHTML(prod.weight) : (hasVariants && prod.variants[0].weight ? escapeHTML(prod.variants[0].weight) : 'Standard Size')}</p>
         ${priceHTML}
-        <div class="product-actions-row">
-          <a href="/product/${prod.slug}" class="btn btn-card-details">VIEW DETAILS</a>
-          <a href="${cardWaUrl}" target="_blank" rel="noopener" class="btn btn-card-buy" onclick="event.stopPropagation();">BUY NOW</a>
+        <div class="product-actions-row-single">
+          <a href="/product/${prod.slug}" class="btn btn-card-view">View Product</a>
         </div>
       </div>
     </div>
@@ -3287,6 +3475,57 @@ async function renderAbout() {
   `;
   initScrollAnimations();
 }
+
+// 7b. PRIVACY POLICY VIEW
+async function renderPrivacyPolicy() {
+  appContent.innerHTML = `
+    <section class="section">
+      <div class="container" style="max-width: 800px;">
+        <div class="section-header animate-on-scroll" style="text-align:center;">
+          <span class="section-badge">Privacy</span>
+          <h2 class="section-title">Privacy Policy</h2>
+          <p class="section-subtitle">Your privacy is important to us. Learn how we handle your data.</p>
+        </div>
+        <div class="animate-on-scroll" style="color: var(--text-sub); line-height: 1.6; display: flex; flex-direction: column; gap: 20px; margin-top: 32px;">
+          <p>This Privacy Policy outlines how Top Muscle Nutrition collects, uses, and protects your information when you browse our catalog or place orders via WhatsApp.</p>
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text); margin-top: 10px;">1. Information We Collect</h3>
+          <p>We do not run direct checkouts on our site. When you contact us or place an order via WhatsApp, we receive your phone number and any delivery address or payment details you provide to fulfill the purchase.</p>
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text); margin-top: 10px;">2. How We Use Your Information</h3>
+          <p>Your details are solely used to coordinate shipments, process payments, and verify product authenticity. We never sell your personal information or share it with third parties, except logistics partners for delivery.</p>
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text); margin-top: 10px;">3. Data Security</h3>
+          <p>We use industry-standard measures to safeguard your communications and transaction records. If you have any concerns about your personal data, feel free to contact us anytime.</p>
+        </div>
+      </div>
+    </section>
+  `;
+  initScrollAnimations();
+}
+
+// 7c. TERMS & CONDITIONS VIEW
+async function renderTerms() {
+  appContent.innerHTML = `
+    <section class="section">
+      <div class="container" style="max-width: 800px;">
+        <div class="section-header animate-on-scroll" style="text-align:center;">
+          <span class="section-badge">Terms</span>
+          <h2 class="section-title">Terms & Conditions</h2>
+          <p class="section-subtitle">Read the rules and guidelines governing our store and catalog.</p>
+        </div>
+        <div class="animate-on-scroll" style="color: var(--text-sub); line-height: 1.6; display: flex; flex-direction: column; gap: 20px; margin-top: 32px;">
+          <p>Welcome to Top Muscle Nutrition. By accessing our catalog or utilizing our authentication system, you agree to these Terms & Conditions.</p>
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text); margin-top: 10px;">1. Catalog & Availability</h3>
+          <p>All products listed in our catalog are subject to availability. Prices and details are indicative and can be confirmed prior to shipment via WhatsApp communication.</p>
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text); margin-top: 10px;">2. Authenticity Codes</h3>
+          <p>Our unique authentication verification system is designed to check the genuineness of our products. Tampers, modifications, or reuse of unique codes are strictly prohibited and will invalidate product verification checks.</p>
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--text); margin-top: 10px;">3. Order Finalization</h3>
+          <p>Orders are verified, calculated, and finalized directly with our agents over WhatsApp. Payments are handled via secure payment channels or Cash on Delivery (COD) as confirmed during chat.</p>
+        </div>
+      </div>
+    </section>
+  `;
+  initScrollAnimations();
+}
+
 
 // 8. CART VIEW
 async function renderCart() {

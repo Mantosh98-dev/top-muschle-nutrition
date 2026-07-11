@@ -1,4 +1,4 @@
-import { supabaseClient, clearSupabaseConfig } from './supabase-client.js';
+import { supabaseClient, clearSupabaseConfig, isSupabaseConfigured, clientReady } from './supabase-client.js';
 import * as db from './db.js';
 import { showToast, showLoader, hideLoader, applyBranding, globalSettings, mergeSettings, escapeHTML, DEFAULT_SLIDER_SETTINGS } from './app.js';
 import { router } from './router.js';
@@ -14,7 +14,7 @@ let tempProductImages = [];
 
 // Entry point for admin rendering
 export async function renderAdminPage(params) {
-  if (!supabaseClient) {
+  if (!isSupabaseConfigured()) {
     showToast('Supabase is not configured yet.', 'error');
     router.navigate('/');
     return;
@@ -22,6 +22,15 @@ export async function renderAdminPage(params) {
 
   showLoader();
   try {
+    // Ensure the Supabase client has finished asynchronous initialization
+    await clientReady;
+    
+    if (!supabaseClient) {
+      showToast('Failed to initialize Supabase client.', 'error');
+      router.navigate('/');
+      return;
+    }
+
     // 1. Get current auth session
     try {
       const { data } = await supabaseClient.auth.getSession();
@@ -2467,6 +2476,25 @@ async function renderTabCustomization(workspace) {
 
         <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
 
+        <!-- Custom Titles Section -->
+        <div class="settings-card" style="padding:16px; border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:24px; background:rgba(0,0,0,0.01);">
+          <h4 style="margin-top:0; margin-bottom:12px; font-weight:700;"><i class="fas fa-heading"></i> Custom Section Headings</h4>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div class="form-group">
+              <label class="form-label" for="settings-categories-title">Categories Section Title</label>
+              <input type="text" id="settings-categories-title" class="form-input" placeholder="e.g. CATEGORIES" value="${escapeHTML((settings.slider_settings && settings.slider_settings.categories_title) || 'CATEGORIES')}">
+              <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">Custom title for Categories row on the homepage.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="settings-featured-title">Featured Products Section Title</label>
+              <input type="text" id="settings-featured-title" class="form-input" placeholder="e.g. FEATURED PRODUCTS" value="${escapeHTML((settings.slider_settings && settings.slider_settings.featured_products_title) || 'FEATURED PRODUCTS')}">
+              <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">Custom title for Featured Products grid on the homepage.</span>
+            </div>
+          </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
+
         <!-- Video Section 1 -->
         <h3 class="settings-section-title">Homepage Video Section 1 (After Hero)</h3>
         <div style="margin-bottom:12px;">
@@ -3163,7 +3191,9 @@ async function renderTabCustomization(workspace) {
           show_customer_reviews: document.getElementById('settings-show-customer-reviews').checked,
           auth_banner_show: document.getElementById('settings-auth-banner-show').checked,
           auth_banner_image_url: document.getElementById('settings-auth-banner-image-url').value.trim() || null,
-          auth_banner_link: document.getElementById('settings-auth-banner-link').value.trim() || null
+          auth_banner_link: document.getElementById('settings-auth-banner-link').value.trim() || null,
+          categories_title: document.getElementById('settings-categories-title') ? document.getElementById('settings-categories-title').value.trim() : 'CATEGORIES',
+          featured_products_title: document.getElementById('settings-featured-title') ? document.getElementById('settings-featured-title').value.trim() : 'FEATURED PRODUCTS'
         }
       };
 
