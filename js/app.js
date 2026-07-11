@@ -1501,10 +1501,15 @@ async function renderHome() {
             <div class="category-preview-grid">
               ${categories.map((cat, i) => {
                 const iconName = getCategoryIcon(cat.name);
+                const hasImage = !!cat.image_url;
                 return `
                   <div class="category-card animate-on-scroll delay-${(i % 8) + 1}" data-category-id="${cat.id}">
                     <div class="category-icon-box">
-                      <i class="fas fa-${iconName}"></i>
+                      ${hasImage ? `
+                        <img src="${escapeHTML(cat.image_url)}" alt="${escapeHTML(cat.name)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                      ` : `
+                        <i class="fas fa-${iconName}"></i>
+                      `}
                     </div>
                     <h3 class="category-name">${escapeHTML(cat.name)}</h3>
                   </div>
@@ -3393,16 +3398,38 @@ async function renderCategories() {
     const categories = await db.fetchCategories();
     let categoriesHTML = '';
     
+    const getCategoryIcon = (name) => {
+      const n = (name || '').toLowerCase();
+      if (n.includes('whey') || n.includes('protein')) return 'flask';
+      if (n.includes('gainer') || n.includes('mass')) return 'dumbbell';
+      if (n.includes('creatine')) return 'bolt';
+      if (n.includes('pre') || n.includes('workout')) return 'fire';
+      if (n.includes('bcaa') || n.includes('amino')) return 'glass-water';
+      if (n.includes('vitamin') || n.includes('mineral') || n.includes('multivitamin') || n.includes('capsule')) return 'capsules';
+      if (n.includes('fat') || n.includes('burner') || n.includes('loss')) return 'fire';
+      if (n.includes('bar')) return 'cookie-bite';
+      if (n.includes('accessory') || n.includes('accessories') || n.includes('shaker')) return 'award';
+      return 'dumbbell';
+    };
+
     if (categories && categories.length > 0) {
-      categoriesHTML = categories.map((cat, i) => `
-        <div class="category-card animate-on-scroll delay-${(i % 4) + 1}" data-category-id="${cat.id}" style="cursor: pointer; background: var(--white); border: 1px solid var(--border-color); border-radius: var(--r-md); padding: 32px 24px; text-align: center; transition: all var(--t) var(--ease); box-shadow: var(--shadow-xs);">
-          <div class="category-icon-box" style="margin: 0 auto 16px auto; width: 64px; height: 64px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all var(--t) var(--ease);">
-            <i class="fas fa-dumbbell"></i>
+      categoriesHTML = categories.map((cat, i) => {
+        const iconName = getCategoryIcon(cat.name);
+        const hasImage = !!cat.image_url;
+        return `
+          <div class="category-card animate-on-scroll delay-${(i % 4) + 1}" data-category-id="${cat.id}" style="cursor: pointer; background: var(--white); border: 1px solid var(--border-color); border-radius: var(--r-md); padding: 32px 24px; text-align: center; transition: all var(--t) var(--ease); box-shadow: var(--shadow-xs);">
+            <div class="category-icon-box" style="margin: 0 auto 16px auto; width: 64px; height: 64px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all var(--t) var(--ease); overflow: hidden;">
+              ${hasImage ? `
+                <img src="${escapeHTML(cat.image_url)}" alt="${escapeHTML(cat.name)}" style="width: 100%; height: 100%; object-fit: cover;">
+              ` : `
+                <i class="fas fa-${iconName}"></i>
+              `}
+            </div>
+            <h3 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">${escapeHTML(cat.name)}</h3>
+            <p style="font-size: 0.82rem; color: var(--text-sub); margin-bottom: 0;">Explore premium quality ${escapeHTML(cat.name).toLowerCase()} supplements</p>
           </div>
-          <h3 style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">${escapeHTML(cat.name)}</h3>
-          <p style="font-size: 0.82rem; color: var(--text-sub); margin-bottom: 0;">Explore premium quality ${escapeHTML(cat.name).toLowerCase()} supplements</p>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     } else {
       categoriesHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-sub);">No categories found.</div>';
     }
