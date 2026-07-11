@@ -3095,6 +3095,10 @@ textarea.form-input { resize: vertical; }
 
   .menu-toggle {
     order: 2;
+    height: 40px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
   }
 
   .logo-link {
@@ -3104,13 +3108,16 @@ textarea.form-input { resize: vertical; }
     overflow: hidden;
     flex-shrink: 0;
     justify-content: flex-start;
+    height: 40px !important;
+    display: flex;
+    align-items: center;
   }
 
   .logo-img {
-    height: 75%;
-    width: auto;
+    height: 100% !important;
+    width: auto !important;
     max-width: none;
-    transform: scale(1.7);
+    transform: scale(1.6);
     transform-origin: left center;
   }
 
