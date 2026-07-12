@@ -84,16 +84,44 @@ export async function updateSettings(settingsData) {
   return data;
 }
 
-/* --- Categories Database Actions --- */
 export async function fetchCategories() {
   checkConfig();
   const { data, error } = await supabaseClient
     .from('categories')
-    .select('*')
-    .order('name', { ascending: true });
+    .select('*');
 
   if (error) throw error;
-  return data;
+
+  // Custom sort order based on category names (case-insensitive)
+  const customOrder = [
+    'protein',
+    'whey protein',
+    'mass gainer',
+    'gainer',
+    'creatine',
+    'pre workout',
+    'amino acid supplements',
+    'glucose',
+    'health and wellness',
+    'vitamins',
+    'accessories'
+  ];
+
+  return data.sort((a, b) => {
+    const nameA = (a.name || '').toLowerCase().trim();
+    const nameB = (b.name || '').toLowerCase().trim();
+    
+    const indexA = customOrder.indexOf(nameA);
+    const indexB = customOrder.indexOf(nameB);
+    
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    
+    return nameA.localeCompare(nameB);
+  });
 }
 
 export async function saveCategory(categoryData) {

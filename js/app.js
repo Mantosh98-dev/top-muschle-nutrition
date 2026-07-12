@@ -2908,6 +2908,16 @@ async function renderProductDetails(params) {
       `;
     }
 
+    const displayRating = totalReviews > 0 ? avgRating : '5.0';
+    const displayCount = totalReviews > 0 ? totalReviews : '1';
+    const ratingBadgeHTML = `
+      <div class="pd-rating-badge" style="display: inline-flex; align-items: center; gap: 5px; background: #f3f4f6; color: #1f2937; padding: 4px 8px; border-radius: 4px; font-size: 0.82rem; font-weight: 700; width: fit-content; margin-top: 4px; margin-bottom: 12px; border: 1px solid #e5e7eb;">
+        <span>${displayRating}</span>
+        <i class="fas fa-star" style="color: #1f2937; font-size: 0.75rem;"></i>
+        <span style="color: #6b7280; font-weight: 500; margin-left: 2px;">${displayCount}</span>
+      </div>
+    `;
+
     // 3. Weight/Size Variants selector
     let variantsHTML = '';
     if (hasVariants) {
@@ -3094,6 +3104,9 @@ async function renderProductDetails(params) {
                 <div class="pd-price-wrap" id="pd-price-display">
                   <!-- Injected dynamically -->
                 </div>
+
+                <!-- Rating Badge -->
+                ${ratingBadgeHTML}
 
                 <!-- Size / Weight Selection Chips -->
                 ${variantsHTML}
