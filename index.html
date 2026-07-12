@@ -183,6 +183,123 @@
     </div>
   </footer>
 
+  <!-- Mobile Drawer Overlay -->
+  <div id="mobile-drawer-overlay" class="mobile-drawer-overlay" aria-hidden="true"></div>
+
+  <!-- Premium Mobile Hamburger Drawer -->
+  <div id="mobile-drawer" class="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="drawer-header">
+      <a href="/" class="drawer-logo-link" aria-label="Top Muscle Nutrition - Home">
+        <img id="drawer-logo" src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png" alt="Top Muscle Nutrition Logo" class="drawer-logo-img" width="100" height="40">
+      </a>
+      <button id="drawer-close-btn" class="drawer-close-btn" aria-label="Close Menu">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Navigation Links -->
+      <nav class="drawer-nav" role="navigation" aria-label="Mobile navigation">
+        <ul class="drawer-nav-list">
+          <li>
+            <a href="/" class="drawer-nav-link active" id="drawer-nav-home">
+              <i class="fas fa-home"></i> Home
+            </a>
+          </li>
+          <li class="drawer-dropdown-item">
+            <div class="drawer-dropdown-toggle" id="drawer-products-toggle" role="button" aria-haspopup="true" aria-expanded="false">
+              <span><i class="fas fa-shopping-bag"></i> Our Products</span>
+              <i class="fas fa-chevron-down drawer-dropdown-icon"></i>
+            </div>
+            <ul class="drawer-submenu" id="drawer-products-dropdown">
+              <li><a href="/products" class="drawer-sublink">All Products</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="/verify" class="drawer-nav-link" id="drawer-nav-verify">
+              <i class="fas fa-shield-alt"></i> Authenticate Product
+            </a>
+          </li>
+          <li>
+            <a href="/contact" class="drawer-nav-link" id="drawer-nav-contact">
+              <i class="fas fa-phone-alt"></i> Contact
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Search Box inside Drawer -->
+      <div class="drawer-search-container">
+        <form id="drawer-search-form" class="drawer-search-form">
+          <input type="text" id="drawer-search-input" class="drawer-search-input" placeholder="Search for products..." aria-label="Search products" autocomplete="off">
+          <button type="submit" class="drawer-search-btn" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
+        <div id="drawer-search-suggestions" class="drawer-search-suggestions" style="display: none;"></div>
+      </div>
+
+      <!-- Promotional Banner Section -->
+      <div id="drawer-promo-banner-container" class="drawer-promo-banner-container" style="display: none;">
+        <!-- Loaded dynamically -->
+      </div>
+
+      <!-- Trust Section -->
+      <div class="drawer-trust-section">
+        <h4 class="drawer-section-subtitle">WHY CHOOSE US?</h4>
+        <div class="drawer-trust-grid">
+          <div class="drawer-trust-card">
+            <div class="drawer-trust-icon"><i class="fas fa-truck"></i></div>
+            <div class="drawer-trust-info">
+              <h5>Fast Delivery</h5>
+              <p>Quick dispatch nationwide</p>
+            </div>
+          </div>
+          <div class="drawer-trust-card">
+            <div class="drawer-trust-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="drawer-trust-info">
+              <h5>100% Authentic Products</h5>
+              <p>Original & trusted supplements</p>
+            </div>
+          </div>
+          <div class="drawer-trust-card">
+            <div class="drawer-trust-icon"><i class="fas fa-credit-card"></i></div>
+            <div class="drawer-trust-info">
+              <h5>Secure Payments</h5>
+              <p>Safe checkout & COD</p>
+            </div>
+          </div>
+          <div class="drawer-trust-card">
+            <div class="drawer-trust-icon"><i class="fas fa-headset"></i></div>
+            <div class="drawer-trust-info">
+              <h5>Customer Support</h5>
+              <p>We are always here to help you</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="drawer-trust-badge">
+          <i class="fas fa-heart"></i>
+          <span>Trusted by Thousands of Fitness Customers</span>
+        </div>
+      </div>
+
+      <!-- Footer Section inside Drawer -->
+      <div class="drawer-footer">
+        <h4 class="drawer-footer-brand">TOP MUSCLE NUTRITION</h4>
+        <p class="drawer-footer-tagline">Fuel Your Strength 💪</p>
+        <div class="drawer-socials">
+          <a href="#" class="drawer-social-link" id="drawer-social-instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="drawer-social-link" id="drawer-social-facebook" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+          <a href="#" class="drawer-social-link" id="drawer-social-youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+        <div class="drawer-footer-copyright">
+          © 2026 Top Muscle Nutrition<br>All Rights Reserved.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 

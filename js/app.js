@@ -302,9 +302,7 @@ async function init() {
           activeBrandFilter = null;
           router.navigate(`/products`);
 
-          mobileMenuBtn.classList.remove('active');
-          navMenu.classList.remove('active');
-          mobileMenuBtn.setAttribute('aria-expanded', 'false');
+          closeMobileDrawer();
 
           const submenu = document.getElementById('nav-products-dropdown');
           const toggleIcon = document.querySelector('.dropdown-toggle-btn i');
@@ -329,9 +327,7 @@ async function init() {
           activeBrandFilter = null;
           router.navigate('/products');
 
-          mobileMenuBtn.classList.remove('active');
-          navMenu.classList.remove('active');
-          mobileMenuBtn.setAttribute('aria-expanded', 'false');
+          closeMobileDrawer();
 
           const submenu = document.getElementById('nav-products-dropdown');
           const toggleIcon = document.querySelector('.dropdown-toggle-btn i');
@@ -340,6 +336,50 @@ async function init() {
             toggleIcon.className = 'fas fa-chevron-down';
             document.querySelector('.dropdown-toggle-btn').setAttribute('aria-expanded', 'false');
           }
+        });
+      }
+    }
+
+    // Populate category list inside the mobile drawer dropdown
+    const drawerDropdown = document.getElementById('drawer-products-dropdown');
+    if (drawerDropdown && categoriesList && categoriesList.length > 0) {
+      // Clear dynamic elements except the first one ("All Products")
+      const firstItem = drawerDropdown.firstElementChild;
+      drawerDropdown.innerHTML = '';
+      if (firstItem) {
+        drawerDropdown.appendChild(firstItem);
+      }
+
+      categoriesList.forEach(cat => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `/products?category=${cat.id}`;
+        a.className = 'drawer-sublink';
+        a.textContent = cat.name;
+
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          activeCategoryFilter = cat.id;
+          activeBrandFilter = null;
+          closeMobileDrawer();
+          router.navigate(`/products`);
+        });
+
+        li.appendChild(a);
+        drawerDropdown.appendChild(li);
+      });
+
+      // Bind All Products sublink
+      const allProdSublink = drawerDropdown.querySelector('.drawer-sublink');
+      if (allProdSublink) {
+        allProdSublink.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          activeCategoryFilter = null;
+          activeBrandFilter = null;
+          closeMobileDrawer();
+          router.navigate('/products');
         });
       }
     }
@@ -569,52 +609,258 @@ function setupGlobalListeners() {
     });
   }
 
-  // Mobile Burger Menu Toggle
-  mobileMenuBtn.addEventListener('click', () => {
-    const isActive = mobileMenuBtn.classList.toggle('active');
-    navMenu.classList.toggle('active');
-    mobileMenuBtn.setAttribute('aria-expanded', isActive);
-    
-    // Toggle FontAwesome icon
-    const icon = mobileMenuBtn.querySelector('i');
-    if (icon) {
-      icon.className = isActive ? 'fas fa-times' : 'fas fa-bars';
-    }
-    
-    if (isActive) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-  });
+  // Mobile sliding drawer interactions
+  const drawerOverlay = document.getElementById('mobile-drawer-overlay');
+  const drawer = document.getElementById('mobile-drawer');
+  const drawerCloseBtn = document.getElementById('drawer-close-btn');
 
-  // Close mobile menu when links are clicked
-  const closeMobileMenu = () => {
-    mobileMenuBtn.classList.remove('active');
-    navMenu.classList.remove('active');
-    mobileMenuBtn.setAttribute('aria-expanded', 'false');
-    const icon = mobileMenuBtn.querySelector('i');
-    if (icon) {
-      icon.className = 'fas fa-bars';
+  const openMobileDrawer = () => {
+    if (drawer && drawerOverlay) {
+      drawer.classList.add('active');
+      drawerOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      // Set active state on hamburger button
+      if (mobileMenuBtn) {
+        mobileMenuBtn.classList.add('active');
+        mobileMenuBtn.setAttribute('aria-expanded', 'true');
+        const icon = mobileMenuBtn.querySelector('i');
+        if (icon) icon.className = 'fas fa-times';
+      }
     }
-    document.body.style.overflow = '';
   };
 
-  document.querySelectorAll('.logo-link, .nav-link, .dropdown-sublink').forEach(link => {
-    link.addEventListener('click', () => {
+  const closeMobileDrawer = () => {
+    if (drawer && drawerOverlay) {
+      drawer.classList.remove('active');
+      drawerOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+      // Reset hamburger button state
+      if (mobileMenuBtn) {
+        mobileMenuBtn.classList.remove('active');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+        const icon = mobileMenuBtn.querySelector('i');
+        if (icon) icon.className = 'fas fa-bars';
+      }
+    }
+  };
+
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isActive = drawer && drawer.classList.contains('active');
+      if (isActive) {
+        closeMobileDrawer();
+      } else {
+        openMobileDrawer();
+      }
+    });
+  }
+
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', closeMobileDrawer);
+  }
+
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener('click', closeMobileDrawer);
+  }
+
+  // Close drawer on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeMobileDrawer();
+    }
+  });
+
+  // Swipe left closes drawer
+  let touchStartX = 0;
+  let touchEndX = 0;
+  if (drawer) {
+    drawer.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    drawer.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 50) { // Swiped left by 50px or more
+        closeMobileDrawer();
+      }
+    }, { passive: true });
+  }
+
+  // Drawer Products Submenu Accordion Toggler
+  const productsToggle = document.getElementById('drawer-products-toggle');
+  if (productsToggle) {
+    productsToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const dropdownItem = productsToggle.closest('.drawer-dropdown-item');
+      if (dropdownItem) {
+        const isActive = dropdownItem.classList.toggle('active');
+        productsToggle.setAttribute('aria-expanded', isActive);
+      }
+    });
+  }
+
+  // Close mobile drawer when links are clicked
+  document.querySelectorAll('.drawer-nav-link, .drawer-sublink, .drawer-logo-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      // Don't close if it is the Our Products accordion parent link click
+      if (link.closest('.drawer-dropdown-toggle')) {
+        return;
+      }
+      
       const href = link.getAttribute('href');
       if (href && (href === '/' || href.startsWith('/products') || href === '/verify' || href === '/contact')) {
-        // If navigating to products but it's not a search submit, reset search query
-        // Note: category dropdown items are handled separately in renderProducts
-        if (!link.classList.contains('dropdown-sublink') || href === '/products') {
+        if (!link.classList.contains('drawer-sublink') || href === '/products') {
           productSearchQuery = '';
           const headerSearchInput = document.getElementById('header-search-input');
+          const drawerSearchInput = document.getElementById('drawer-search-input');
           if (headerSearchInput) headerSearchInput.value = '';
+          if (drawerSearchInput) drawerSearchInput.value = '';
         }
       }
-      setTimeout(closeMobileMenu, 0);
+      setTimeout(closeMobileDrawer, 0);
     });
   });
+
+  // Drawer Search Form
+  const drawerSearchForm = document.getElementById('drawer-search-form');
+  const drawerSearchInput = document.getElementById('drawer-search-input');
+  const drawerSearchSuggestions = document.getElementById('drawer-search-suggestions');
+
+  const renderDrawerSuggestions = () => {
+    const query = drawerSearchInput.value.trim().toLowerCase();
+    if (!query) {
+      drawerSearchSuggestions.innerHTML = '';
+      drawerSearchSuggestions.style.display = 'none';
+      return;
+    }
+
+    const filtered = allSearchProducts.filter(prod => {
+      return (prod.title || '').toLowerCase().includes(query) ||
+             (prod.brand || '').toLowerCase().includes(query) ||
+             (prod.categories && prod.categories.name || '').toLowerCase().includes(query);
+    }).slice(0, 5);
+
+    if (filtered.length === 0) {
+      drawerSearchSuggestions.innerHTML = `
+        <div style="padding:16px; text-align:center; color:var(--text-sub); font-size:0.85rem;">
+          <i class="fas fa-search-minus" style="font-size:1.2rem; margin-bottom:8px; display:block; color:var(--gray-400);"></i>
+          No products matched your search
+        </div>
+      `;
+      drawerSearchSuggestions.style.display = 'block';
+      return;
+    }
+
+    const listHTML = filtered.map(prod => {
+      const mainImage = prod.product_images && prod.product_images.length > 0
+        ? prod.product_images[0].image_url
+        : 'https://via.placeholder.com/80?text=No+Image';
+
+      const hasVariants = Array.isArray(prod.variants) && prod.variants.length > 1;
+      let priceHTML = '';
+      let offerPrice = prod.offer_price;
+      let price = prod.price;
+
+      if (hasVariants) {
+        const minPrice = prod.variants.reduce((min, v) => {
+          const currentVal = v.offer_price || v.price || Infinity;
+          return currentVal < min ? currentVal : min;
+        }, Infinity);
+        if (minPrice !== Infinity) {
+          priceHTML = `<span class="suggestion-price-offer">₹${minPrice.toLocaleString('en-IN')}</span>`;
+        }
+      } else if (price) {
+        if (offerPrice && offerPrice < price) {
+          const discount = Math.round(((price - offerPrice) / price) * 100);
+          priceHTML = `
+            <span class="suggestion-price-offer">₹${offerPrice.toLocaleString('en-IN')}</span>
+            <span class="suggestion-price-original">₹${price.toLocaleString('en-IN')}</span>
+            <span class="suggestion-price-discount">${discount}% off</span>
+          `;
+        } else {
+          priceHTML = `<span class="suggestion-price-offer">₹${price.toLocaleString('en-IN')}</span>`;
+        }
+      }
+
+      return `
+        <div class="suggestion-item" data-slug="${prod.slug}" style="display:flex; gap:12px; padding:10px 14px; cursor:pointer; align-items:center; transition:background var(--t) var(--ease); border-bottom:1px solid var(--border-color);">
+          <div class="suggestion-img-wrap" style="width:48px; height:48px; border-radius:var(--r-xs); overflow:hidden; border:1px solid var(--border-color); background:var(--gray-50); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <img src="${mainImage}" alt="${escapeHTML(prod.title)}" style="max-width:100%; max-height:100%; object-fit:contain;">
+          </div>
+          <div class="suggestion-info" style="flex:1; min-width:0;">
+            <h4 class="suggestion-title" style="font-family:var(--font-heading); font-size:0.88rem; font-weight:700; color:var(--text); margin:0 0 2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHTML(prod.title)}</h4>
+            <span class="suggestion-brand" style="font-size:0.72rem; color:var(--text-sub); display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">${escapeHTML(prod.brand || 'Top Muscle Nutrition')}</span>
+            <div class="suggestion-price-row" style="display:flex; align-items:center; gap:6px; margin-top:2px;">${priceHTML}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    drawerSearchSuggestions.innerHTML = `
+      <div class="suggestions-header" style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid var(--border-color); background:var(--gray-25);">
+        <span class="suggestions-title-text" style="font-family:var(--font-heading); font-size:0.8rem; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:0.04em;">Suggested Products</span>
+        <a href="/products" class="suggestions-view-all-link" style="font-size:0.75rem; font-weight:700; color:var(--primary); text-decoration:none; display:flex; align-items:center; gap:4px;">View all <i class="fas fa-chevron-right" style="font-size:0.6rem;"></i></a>
+      </div>
+      <div class="suggestions-list" style="max-height:240px; overflow-y:auto;">${listHTML}</div>
+    `;
+
+    drawerSearchSuggestions.style.display = 'block';
+
+    // Bind item clicks
+    drawerSearchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const slug = item.dataset.slug;
+        drawerSearchSuggestions.style.display = 'none';
+        drawerSearchInput.value = '';
+        closeMobileDrawer();
+        router.navigate(`/product/${slug}`);
+      });
+    });
+
+    // Bind view all click
+    const viewAllLink = drawerSearchSuggestions.querySelector('.suggestions-view-all-link');
+    if (viewAllLink) {
+      viewAllLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        drawerSearchSuggestions.style.display = 'none';
+        productSearchQuery = drawerSearchInput.value.trim();
+        activeCategoryFilter = null;
+        activeBrandFilter = null;
+        closeMobileDrawer();
+        router.navigate('/products');
+      });
+    }
+  };
+
+  if (drawerSearchForm && drawerSearchInput && drawerSearchSuggestions) {
+    drawerSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = drawerSearchInput.value.trim();
+      productSearchQuery = query;
+      activeCategoryFilter = null;
+      activeBrandFilter = null;
+      drawerSearchSuggestions.style.display = 'none';
+      closeMobileDrawer();
+      router.navigate('/products');
+    });
+
+    drawerSearchInput.addEventListener('focus', async () => {
+      await loadSearchProducts();
+      renderDrawerSuggestions();
+    });
+
+    drawerSearchInput.addEventListener('input', async () => {
+      await loadSearchProducts();
+      renderDrawerSuggestions();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.drawer-search-container')) {
+        drawerSearchSuggestions.style.display = 'none';
+      }
+    });
+  }
 
   // Shrink and toggle sticky header on scroll direction with requestAnimationFrame
   window.lastScrollY = window.scrollY;
@@ -994,6 +1240,93 @@ export function applyBranding(settings) {
       <span>${settings.contact_email}</span>
     </div>
   `;
+
+  // Update Mobile Drawer Branding and Logo
+  const drawerLogo = document.getElementById('drawer-logo');
+  const drawerHeader = document.querySelector('.drawer-header');
+  if (drawerLogo) {
+    if (settings.brand_logo_url) {
+      drawerLogo.src = settings.brand_logo_url;
+      drawerLogo.style.display = 'block';
+      const textLogo = drawerHeader.querySelector('.drawer-brand-name-text');
+      if (textLogo) textLogo.remove();
+    } else {
+      drawerLogo.style.display = 'none';
+      let textLogo = drawerHeader.querySelector('.drawer-brand-name-text');
+      if (!textLogo) {
+        textLogo = document.createElement('span');
+        textLogo.className = 'drawer-brand-name-text';
+        textLogo.style.fontWeight = '800';
+        textLogo.style.fontSize = '1.2rem';
+        textLogo.style.color = 'var(--text)';
+        const logoLink = drawerHeader.querySelector('.drawer-logo-link');
+        if (logoLink) logoLink.appendChild(textLogo);
+      }
+      textLogo.textContent = settings.brand_name;
+    }
+  }
+
+  // Update Drawer footer brand & copyright
+  const drawerFooterBrand = document.querySelector('.drawer-footer-brand');
+  if (drawerFooterBrand) {
+    drawerFooterBrand.textContent = settings.brand_name.toUpperCase();
+  }
+  const drawerCopyright = document.querySelector('.drawer-footer-copyright');
+  if (drawerCopyright) {
+    drawerCopyright.innerHTML = `© 2026 ${settings.brand_name}<br>All Rights Reserved.`;
+  }
+
+  // Update Drawer socials
+  const drawerInstagram = document.getElementById('drawer-social-instagram');
+  const drawerFacebook = document.getElementById('drawer-social-facebook');
+  const drawerYoutube = document.getElementById('drawer-social-youtube');
+  
+  if (drawerInstagram) {
+    if (settings.social_instagram) {
+      drawerInstagram.href = settings.social_instagram;
+      drawerInstagram.style.display = 'flex';
+    } else {
+      drawerInstagram.style.display = 'none';
+    }
+  }
+  if (drawerFacebook) {
+    if (settings.social_facebook) {
+      drawerFacebook.href = settings.social_facebook;
+      drawerFacebook.style.display = 'flex';
+    } else {
+      drawerFacebook.style.display = 'none';
+    }
+  }
+  if (drawerYoutube) {
+    if (settings.social_youtube || settings.social_twitter) {
+      drawerYoutube.href = settings.social_youtube || settings.social_twitter;
+      drawerYoutube.style.display = 'flex';
+      const icon = drawerYoutube.querySelector('i');
+      if (icon) {
+        icon.className = settings.social_youtube ? 'fab fa-youtube' : 'fab fa-twitter';
+      }
+    } else {
+      drawerYoutube.style.display = 'none';
+    }
+  }
+
+  // Update Drawer Promo Banner dynamically
+  const drawerPromoContainer = document.getElementById('drawer-promo-banner-container');
+  if (drawerPromoContainer) {
+    if (settings.promo_banner_show && settings.promo_banner_image_url) {
+      // Find out target from settings, default '_self'
+      const bannerTarget = settings.slider_settings?.promo_banner_target || '_self';
+      drawerPromoContainer.innerHTML = `
+        <a href="${settings.promo_banner_link || '/products'}" target="${bannerTarget}" class="drawer-promo-banner">
+          <img src="${settings.promo_banner_image_url}" alt="Promotional Banner" class="drawer-promo-img" loading="lazy" decoding="async">
+        </a>
+      `;
+      drawerPromoContainer.style.display = 'block';
+    } else {
+      drawerPromoContainer.style.display = 'none';
+      drawerPromoContainer.innerHTML = '';
+    }
+  }
 }
 
 // Lighten/Darken Hex colors programmatically

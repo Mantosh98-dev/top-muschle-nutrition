@@ -166,12 +166,13 @@ class Router {
   // Visual helper to update active nav items
   updateNavbarActive(path) {
     // Clear active links
-    document.querySelectorAll('.nav-link').forEach(link => {
+    document.querySelectorAll('.nav-link, .drawer-nav-link').forEach(link => {
       link.classList.remove('active');
     });
 
     // Match exact path or parent path (e.g., matching /product/xxx to Products menu)
     let targetLink = document.querySelector(`.nav-link[href="${path}"]`);
+    let drawerTargetLink = document.querySelector(`.drawer-nav-link[href="${path}"]`);
     
     if (!targetLink) {
       if (path.startsWith('/product/')) {
@@ -181,8 +182,17 @@ class Router {
       }
     }
 
+    if (!drawerTargetLink) {
+      if (path.startsWith('/product/') || path.startsWith('/products')) {
+        drawerTargetLink = document.querySelector('.drawer-dropdown-toggle .drawer-nav-link');
+      }
+    }
+
     if (targetLink) {
       targetLink.classList.add('active');
+    }
+    if (drawerTargetLink) {
+      drawerTargetLink.classList.add('active');
     }
   }
 
