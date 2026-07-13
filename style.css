@@ -5408,7 +5408,6 @@ section, .section {
   visibility: visible;
 }
 
-/* sliding drawer from left */
 .mobile-drawer {
   position: fixed;
   top: 0;
@@ -5420,10 +5419,13 @@ section, .section {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   border-top-right-radius: 24px;
   border-bottom-right-radius: 24px;
-  z-index: 2600;
+  z-index: 99999 !important;
   display: flex;
   flex-direction: column;
   transition: left 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+  will-change: left;
 }
 
 .mobile-drawer.active {
@@ -5448,9 +5450,11 @@ section, .section {
 }
 
 .drawer-logo-img {
-  height: 100%;
-  width: auto;
-  object-fit: contain;
+  height: 32px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  transform: none !important;
+  display: block;
 }
 
 .drawer-close-btn {
@@ -5535,7 +5539,30 @@ section, .section {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
   cursor: pointer;
+}
+
+.drawer-dropdown-toggle:hover {
+  background: var(--gray-50);
+}
+
+.drawer-dropdown-toggle span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-dropdown-toggle span i {
+  font-size: 1.1rem;
+  color: var(--text-sub);
+  transition: color 0.2s ease;
 }
 
 .drawer-dropdown-toggle .drawer-nav-link {
@@ -5545,7 +5572,6 @@ section, .section {
 .drawer-dropdown-icon {
   font-size: 0.85rem;
   color: var(--text-sub);
-  margin-right: 16px;
   transition: transform 0.3s ease;
 }
 
@@ -5570,13 +5596,14 @@ section, .section {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-sub);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
   text-decoration: none;
-  padding: 10px 16px 10px 48px;
-  border-radius: 10px;
+  padding: 12px 16px 12px 48px;
+  border-radius: 12px;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .drawer-sublink:hover {
@@ -5584,10 +5611,21 @@ section, .section {
   color: var(--primary);
 }
 
-.drawer-sublink::before {
-  content: "↳";
-  color: var(--text-muted);
+.drawer-sublink.active {
+  border-left: 4px solid var(--primary) !important;
+  padding-left: 44px !important;
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+  border-radius: 0 12px 12px 0 !important;
+  font-weight: 600 !important;
 }
+
+.dropdown-sublink.active {
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+  background: var(--gray-50) !important;
+}
+
 
 /* Search container inside Drawer */
 .drawer-search-container {

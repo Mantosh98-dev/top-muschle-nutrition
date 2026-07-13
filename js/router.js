@@ -184,7 +184,7 @@ class Router {
 
     if (!drawerTargetLink) {
       if (path.startsWith('/product/') || path.startsWith('/products')) {
-        drawerTargetLink = document.querySelector('.drawer-dropdown-toggle .drawer-nav-link');
+        drawerTargetLink = document.querySelector('.drawer-dropdown-toggle .drawer-nav-link') || document.querySelector('.drawer-dropdown-toggle');
       }
     }
 

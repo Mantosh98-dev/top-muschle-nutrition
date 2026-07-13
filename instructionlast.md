@@ -1,282 +1,447 @@
-# Premium UI/UX Redesign Request
+# PROJECT AUDIT & DEVELOPMENT RULES (STRICT)
 
-Redesign my existing supplement e-commerce website to achieve a premium, modern, high-end, and conversion-focused look inspired by leading fitness brands such as MuscleBlaze, MyProtein, and Nutrabay. Do NOT copy any website. Create a completely original design with the same premium quality and user experience.
+## Objective
 
-## Current Website Structure
+You are not allowed to assume anything.
 
-My website currently has only these pages:
+Before writing or modifying a single line of code, you MUST completely understand the entire project.
 
-• Home
-• Products
-• Authenticate Product
-• Contact
-
-Do NOT add new pages such as Login, Signup, Profile, Wishlist, Cart, Checkout, Dashboard, Blog, or any unnecessary features.
-
-Keep all existing functionality exactly the same. Only improve the UI, UX, layout, spacing, typography, animations, and overall visual quality.
+Your first task is NOT coding.
+Your first task is auditing.
 
 ---
 
-# Overall Design Style
+# Phase 1 - Full Project Audit
 
-Create a clean, modern, premium supplement brand website.
+Read every file in the project.
 
-The design should feel:
+Do NOT skip any file.
 
-• Premium
-• Powerful
-• Professional
-• Sporty
-• Modern
-• High-end
-• Conversion-focused
+This includes:
 
-The website should never look empty, oversized, or too minimal.
+- src/
+- app/
+- components/
+- pages/
+- layouts/
+- hooks/
+- utils/
+- services/
+- api/
+- assets/
+- public/
+- styles/
+- config/
+- middleware/
+- context/
+- lib/
+- constants/
+- types/
+- package.json
+- tsconfig
+- vite.config
+- next.config
+- eslint
+- prettier
+- environment files
+- routing
+- database
+- authentication
+- admin
+- user panel
+- documentation
 
-Increase content density while keeping the layout clean and easy to read.
+Read EVERYTHING.
 
----
-
-
-# Header
-
-Improve the existing header.
-
-Requirements:
-
-• Sticky header
-• Premium logo placement
-• Clean hamburger menu
-• Better spacing
-• Better icon sizing
-• Modern mobile navigation
-• Smooth open/close animation
-
-Do not add extra navigation items.
-
----
-
-
-# Trust Section
-
-Current trust cards:
-
-• Fast Delivery
-• Authentic Products
-• Secure Payment
-• Customer Support
-
-Improve them.
-
-Requirements:
-
-• Compact 2×2 grid
-• Smaller cards
-• Better icons
-• Better shadows
-• Better spacing
-• Premium appearance
-
-Avoid oversized cards.
+Never assume.
 
 ---
 
-# Categories Section
+# Phase 2 - Understand Architecture
 
-The current category icons are too large.
+Generate a complete architecture report.
 
-Please redesign this section.
+Explain:
 
-Requirements:
+- Folder structure
+- Project flow
+- Routing flow
+- Authentication flow
+- State management
+- API flow
+- Database flow
+- Component hierarchy
+- Admin workflow
+- User workflow
+- Product workflow
+- Banner workflow
+- Authentication workflow
+- Search workflow
+- Category workflow
+- Checkout flow
+- Build process
+- Deployment process
 
-• Reduce icon size by 25–35%
-• Make category cards smaller
-• Reduce unnecessary padding
-• Reduce excessive white space
-• Show more categories on screen
-• Perfect alignment
-• Better typography
-• Smooth horizontal scrolling
-• Modern circular icons
-• Premium appearance
-
-The section should feel compact like premium e-commerce websites.
-
----
-
-# Featured Products
-
-Redesign the product cards.
-
-Current cards are too large.
-
-Requirements:
-
-• Smaller product cards
-• Less empty space
-• Better image proportions
-• Premium shadows
-• Rounded corners
-• Better spacing
-• Better typography
-• Attractive badges
-• Better product title styling
-• Better price styling
-• Better button styling
-
-The cards should display more products on screen without looking crowded.
+Everything.
 
 ---
 
-# Buttons
+# Phase 3 - File Documentation
 
-Improve all buttons.
+For EVERY file create documentation.
 
-Requirements:
+Example
 
-• Premium gradients where appropriate
-• Rounded corners
-• Better shadows
-• Better typography
-• Smooth hover animation
-• Smooth tap animation
-• Ripple effect
-• Consistent sizing
+File:
+src/components/Navbar.tsx
 
----
+Purpose:
+...
 
-# Typography
+Imports:
+...
 
-Use a premium modern font.
+Exports:
+...
 
-Create a strong visual hierarchy.
+Dependencies:
+...
 
-Improve:
+Used By:
+...
 
-• Headings
-• Subheadings
-• Paragraphs
-• Product names
-• Buttons
+Contains:
+...
 
----
+Functions:
+...
 
-# Spacing
+Potential Problems:
+...
 
-Reduce excessive white space throughout the website.
+Future Improvements:
+...
 
-Use a consistent spacing system.
-
-The homepage should feel content-rich instead of empty.
+Never skip a file.
 
 ---
 
-# Cards
+# Phase 4 - Code Review
 
-Improve every card.
+Review EVERY file.
 
-Requirements:
+Check line by line.
 
-• Softer shadows
-• Better border radius
-• Better padding
-• Modern design
-• Premium appearance
+Find
+
+✓ Bugs
+
+✓ Dead code
+
+✓ Duplicate code
+
+✓ Bad naming
+
+✓ Bad architecture
+
+✓ Performance issues
+
+✓ Memory leaks
+
+✓ React issues
+
+✓ State issues
+
+✓ Routing issues
+
+✓ Mobile issues
+
+✓ Desktop issues
+
+✓ Accessibility
+
+✓ SEO
+
+✓ Security
+
+✓ Validation
+
+✓ Error handling
+
+✓ Loading states
+
+✓ Empty states
+
+✓ Edge cases
+
+✓ Type safety
+
+✓ Console errors
+
+✓ Console warnings
+
+✓ Unused imports
+
+✓ Unused variables
+
+✓ CSS conflicts
+
+✓ Tailwind conflicts
+
+✓ Responsive issues
+
+✓ Image optimization
+
+✓ Bundle size
+
+✓ Lazy loading
+
+✓ Code splitting
+
+✓ API optimization
+
+✓ Database optimization
+
+✓ Render optimization
+
+✓ Re-render issues
+
+✓ Hydration issues
+
+✓ SSR issues
+
+✓ Client component issues
+
+✓ Build warnings
+
+✓ Production issues
+
+✓ Scalability issues
+
+Nothing should be skipped.
 
 ---
 
-# Animations
+# Phase 5 - UI Review
 
-Add subtle premium animations.
+Inspect EVERY page.
 
-Examples:
+Desktop
 
-• Fade in
-• Slide up
-• Scale
-• Hover effects
-• Button interactions
-• Smooth transitions
-• Smooth scrolling
+Tablet
 
-Animations should feel fast and premium.
+Mobile
 
-Avoid excessive animation.
+Check
 
----
+Navigation
 
-# Footer
+Buttons
 
-Redesign the footer.
+Forms
 
-Include:
+Cards
 
-• Contact information
-• Social media icons
-• Copyright
-• Quick links
-• Privacy Policy
-• Terms & Conditions
+Product pages
 
-Keep it clean and premium.
+Admin
 
----
+Search
 
-# Mobile Optimization
+Authentication
 
-Requirements:
+Footer
 
-• Perfect responsiveness
-• Better touch targets
-• Better scrolling
-• Better spacing
-• Fast loading
-• Optimized images
-• Lazy loading
+Drawer
 
----
+Sidebar
 
-# Performance
+Banner
 
-Improve:
+Responsive layout
 
-• Page speed
-• Image optimization
-• CSS optimization
-• JavaScript optimization
+Spacing
 
-Avoid unnecessary code.
+Typography
+
+Alignment
+
+Animations
+
+Overflow
+
+Broken links
+
+Scroll
+
+Hover
+
+Touch interactions
+
+Everything.
 
 ---
 
-# Important Rules
+# Phase 6 - Feature Audit
 
-❌ Do NOT copy MuscleBlaze.
+List every feature.
 
-❌ Do NOT redesign the website from scratch.
+Mark each feature as
 
-❌ Do NOT change my website structure.
+✅ Working
 
-❌ Do NOT remove existing functionality.
+⚠ Needs Improvement
 
-❌ Do NOT add Login, Wishlist, Cart, Checkout, Dashboard, or other unnecessary features.
+❌ Broken
 
-✅ Only improve the UI/UX.
+Explain WHY.
 
-✅ Keep my branding.
+---
 
-✅ Make everything more premium.
+# Phase 7 - Documentation
 
-✅ Make icons smaller.
+Generate professional documentation.
 
-✅ Make category cards compact.
+Create:
 
-✅ Make product cards smaller.
+PROJECT_OVERVIEW.md
 
-✅ Reduce white space.
+ARCHITECTURE.md
 
-✅ Increase visual quality.
+FOLDER_STRUCTURE.md
 
-✅ Keep everything clean, responsive, and professional.
+COMPONENTS.md
 
-The final result should look like a premium supplement brand website with an original design, excellent mobile experience, and significantly improved visual quality while preserving my existing functionality and structure.
+ROUTES.md
+
+API.md
+
+DATABASE.md
+
+STATE_MANAGEMENT.md
+
+WORKFLOW.md
+
+ADMIN_WORKFLOW.md
+
+USER_WORKFLOW.md
+
+DEPLOYMENT.md
+
+KNOWN_ISSUES.md
+
+TODO.md
+
+CHANGELOG.md
+
+FUTURE_IMPROVEMENTS.md
+
+CODE_GUIDELINES.md
+
+CONTRIBUTING.md
+
+DEVELOPER_GUIDE.md
+
+Every document must be complete.
+
+---
+
+# Phase 8 - Code Quality
+
+Refactor ONLY where necessary.
+
+Do NOT change functionality.
+
+Improve
+
+Naming
+
+Structure
+
+Readability
+
+Maintainability
+
+Performance
+
+Consistency
+
+Reusability
+
+Add meaningful comments only where logic is complex.
+
+Do NOT add unnecessary comments.
+
+---
+
+# Phase 9 - Reporting
+
+Generate a final report.
+
+Include
+
+Overall score
+
+Architecture score
+
+Code quality score
+
+Performance score
+
+Security score
+
+Accessibility score
+
+SEO score
+
+Responsive score
+
+Developer experience score
+
+Maintainability score
+
+List every issue.
+
+Rank them by priority.
+
+Critical
+
+High
+
+Medium
+
+Low
+
+Include estimated fix effort.
+
+---
+
+# Rules
+
+Never guess.
+
+Never skip files.
+
+Never delete code unless verified unused.
+
+Never change UI without reason.
+
+Never rename files unless necessary.
+
+Always preserve functionality.
+
+Always verify before modifying.
+
+After every change explain:
+
+- What changed
+- Why it changed
+- Which files changed
+- Possible side effects
+- How it was tested
+
+Always think like a senior software architect, senior frontend engineer, senior backend engineer, QA engineer, UI/UX reviewer, DevOps engineer, security engineer, and technical writer.
+
+Your priority is understanding the project first, then improving it safely.
+
+No shortcuts.

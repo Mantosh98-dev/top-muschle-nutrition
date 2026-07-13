@@ -1938,11 +1938,6 @@ async function renderTabSettings(workspace) {
           <label class="form-label" for="settings-address">Physical Office Address</label>
           <input type="text" id="settings-address" class="form-input" value="${escapeHTML(settings.contact_address || '')}">
         </div>
-        
-        <div class="form-group">
-          <label class="form-label" for="settings-map">Google Maps Embed HTML / Source URL</label>
-          <input type="text" id="settings-map" class="form-input" placeholder="Insert google maps iframe HTML src url" value="${escapeHTML(settings.google_map_iframe || '')}">
-        </div>
       </div>
       
       <!-- Subtab 3: SEO -->
@@ -2171,7 +2166,7 @@ async function renderTabSettings(workspace) {
         contact_phone: document.getElementById('settings-phone').value.trim(),
         contact_email: document.getElementById('settings-email').value.trim(),
         contact_address: document.getElementById('settings-address').value.trim(),
-        google_map_iframe: document.getElementById('settings-map').value.trim() || null,
+        google_map_iframe: null,
         seo_title: document.getElementById('settings-seo-title').value.trim(),
         seo_description: document.getElementById('settings-seo-desc').value.trim()
       };

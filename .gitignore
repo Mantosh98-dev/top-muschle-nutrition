@@ -108,4 +108,5 @@ web_modules/
 # Vite build directory
 dist/
 dist-ssr/
+.vite/
 *.local

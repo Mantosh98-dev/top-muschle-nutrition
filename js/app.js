@@ -223,6 +223,41 @@ export function hideLoader() {
   loaderOverlay.classList.remove('active');
 }
 
+// Mobile Drawer elements
+const drawerOverlay = document.getElementById('mobile-drawer-overlay');
+const drawer = document.getElementById('mobile-drawer');
+const drawerCloseBtn = document.getElementById('drawer-close-btn');
+
+export function openMobileDrawer() {
+  if (drawer && drawerOverlay) {
+    drawer.classList.add('active');
+    drawerOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    // Set active state on hamburger button
+    if (mobileMenuBtn) {
+      mobileMenuBtn.classList.add('active');
+      mobileMenuBtn.setAttribute('aria-expanded', 'true');
+      const icon = mobileMenuBtn.querySelector('i');
+      if (icon) icon.className = 'fas fa-times';
+    }
+  }
+}
+
+export function closeMobileDrawer() {
+  if (drawer && drawerOverlay) {
+    drawer.classList.remove('active');
+    drawerOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+    // Reset hamburger button state
+    if (mobileMenuBtn) {
+      mobileMenuBtn.classList.remove('active');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      const icon = mobileMenuBtn.querySelector('i');
+      if (icon) icon.className = 'fas fa-bars';
+    }
+  }
+}
+
 // Scroll Animation Observer — reusable initializer
 function initScrollAnimations() {
   const observer = new IntersectionObserver((entries) => {
@@ -300,7 +335,7 @@ async function init() {
           e.stopPropagation();
           activeCategoryFilter = cat.id;
           activeBrandFilter = null;
-          router.navigate(`/products`);
+          router.navigate(`/products?category=${cat.id}`);
 
           closeMobileDrawer();
 
@@ -363,7 +398,7 @@ async function init() {
           activeCategoryFilter = cat.id;
           activeBrandFilter = null;
           closeMobileDrawer();
-          router.navigate(`/products`);
+          router.navigate(`/products?category=${cat.id}`);
         });
 
         li.appendChild(a);
@@ -399,14 +434,14 @@ async function init() {
     
     // Section scroll router helper for Contact
     router.addRoute('/contact', () => {
-      const contactSection = document.getElementById('contact-section');
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth' });
+      const footerSection = document.querySelector('.footer');
+      if (footerSection) {
+        footerSection.scrollIntoView({ behavior: 'smooth' });
       } else {
         renderHome().then(() => {
-          const contactSec = document.getElementById('contact-section');
-          if (contactSec) {
-            contactSec.scrollIntoView({ behavior: 'smooth' });
+          const footerSec = document.querySelector('.footer');
+          if (footerSec) {
+            footerSec.scrollIntoView({ behavior: 'smooth' });
           }
         });
       }
@@ -609,40 +644,7 @@ function setupGlobalListeners() {
     });
   }
 
-  // Mobile sliding drawer interactions
-  const drawerOverlay = document.getElementById('mobile-drawer-overlay');
-  const drawer = document.getElementById('mobile-drawer');
-  const drawerCloseBtn = document.getElementById('drawer-close-btn');
-
-  const openMobileDrawer = () => {
-    if (drawer && drawerOverlay) {
-      drawer.classList.add('active');
-      drawerOverlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-      // Set active state on hamburger button
-      if (mobileMenuBtn) {
-        mobileMenuBtn.classList.add('active');
-        mobileMenuBtn.setAttribute('aria-expanded', 'true');
-        const icon = mobileMenuBtn.querySelector('i');
-        if (icon) icon.className = 'fas fa-times';
-      }
-    }
-  };
-
-  const closeMobileDrawer = () => {
-    if (drawer && drawerOverlay) {
-      drawer.classList.remove('active');
-      drawerOverlay.classList.remove('active');
-      document.body.style.overflow = '';
-      // Reset hamburger button state
-      if (mobileMenuBtn) {
-        mobileMenuBtn.classList.remove('active');
-        mobileMenuBtn.setAttribute('aria-expanded', 'false');
-        const icon = mobileMenuBtn.querySelector('i');
-        if (icon) icon.className = 'fas fa-bars';
-      }
-    }
-  };
+  // Mobile sliding drawer interactions (using module-level handlers)
 
   if (mobileMenuBtn) {
     mobileMenuBtn.addEventListener('click', (e) => {
@@ -700,7 +702,7 @@ function setupGlobalListeners() {
     });
   }
 
-  // Close mobile drawer when links are clicked
+  // Close mobile drawer and navigate when links are clicked
   document.querySelectorAll('.drawer-nav-link, .drawer-sublink, .drawer-logo-link').forEach(link => {
     link.addEventListener('click', (e) => {
       // Don't close if it is the Our Products accordion parent link click
@@ -709,16 +711,26 @@ function setupGlobalListeners() {
       }
       
       const href = link.getAttribute('href');
-      if (href && (href === '/' || href.startsWith('/products') || href === '/verify' || href === '/contact')) {
-        if (!link.classList.contains('drawer-sublink') || href === '/products') {
-          productSearchQuery = '';
-          const headerSearchInput = document.getElementById('header-search-input');
-          const drawerSearchInput = document.getElementById('drawer-search-input');
-          if (headerSearchInput) headerSearchInput.value = '';
-          if (drawerSearchInput) drawerSearchInput.value = '';
+      if (href && href !== '#') {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Reset category filters if navigating to non-product pages or root products page
+        if (href === '/' || href === '/products' || href === '/verify' || href === '/contact') {
+          if (!link.classList.contains('drawer-sublink') || href === '/products') {
+            productSearchQuery = '';
+            activeCategoryFilter = null;
+            activeBrandFilter = null;
+            const headerSearchInput = document.getElementById('header-search-input');
+            const drawerSearchInput = document.getElementById('drawer-search-input');
+            if (headerSearchInput) headerSearchInput.value = '';
+            if (drawerSearchInput) drawerSearchInput.value = '';
+          }
         }
+        
+        closeMobileDrawer();
+        router.navigate(href);
       }
-      setTimeout(closeMobileDrawer, 0);
     });
   });
 
@@ -2172,54 +2184,6 @@ async function renderHome() {
       `;
     }
 
-    // 9. Contact Section
-    html += `
-      <section class="section section-bg" id="contact-section">
-        <div class="container">
-          <div class="section-header animate-on-scroll">
-            <span class="section-badge">Reach Out</span>
-            <h2 class="section-title">Contact & Support</h2>
-            <p class="section-subtitle">Have questions or need assistance placing an order? Let's connect.</p>
-          </div>
-          
-          <div class="contact-grid">
-            <div class="contact-card animate-slide-left">
-              <div class="contact-header">
-                <h3>Get In Touch</h3>
-                <p>Our sales team is available directly on WhatsApp.</p>
-              </div>
-              <div class="contact-info-list">
-                <div class="contact-item">
-                  <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
-                  <div class="contact-text">
-                    <h4>Address</h4>
-                    <p>${globalSettings.contact_address}</p>
-                  </div>
-                </div>
-                <div class="contact-item">
-                  <div class="contact-icon"><i class="fas fa-phone"></i></div>
-                  <div class="contact-text">
-                    <h4>Phone Support</h4>
-                    <p>${globalSettings.contact_phone}</p>
-                  </div>
-                </div>
-                <div class="contact-item">
-                  <div class="contact-icon"><i class="fas fa-envelope"></i></div>
-                  <div class="contact-text">
-                    <h4>Email Support</h4>
-                    <p>${globalSettings.contact_email}</p>
-                  </div>
-                </div>
-              </div>
-              <a href="https://wa.me/${(globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '')}" target="_blank" rel="noopener" class="btn btn-whatsapp" style="margin-top: 12px;">
-                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
-
     appContent.innerHTML = html;
 
     // Bind Category Clicks
@@ -2227,7 +2191,7 @@ async function renderHome() {
       card.addEventListener('click', () => {
         activeCategoryFilter = card.dataset.categoryId;
         activeBrandFilter = null;
-        router.navigate('/products');
+        router.navigate(`/products?category=${card.dataset.categoryId}`);
       });
     });
 
@@ -2310,10 +2274,62 @@ function initProductSliders() {
 }
 
 
+// Helper to update active category sublink classes on navigation
+export function updateCategoryLinksActiveState() {
+  // Update desktop dropdown links
+  const desktopDropdown = document.getElementById('nav-products-dropdown');
+  if (desktopDropdown) {
+    desktopDropdown.querySelectorAll('.dropdown-sublink').forEach(link => {
+      const href = link.getAttribute('href');
+      const isAll = href === '/products';
+      const catId = !isAll ? href.split('category=')[1] : null;
+      if ((isAll && !activeCategoryFilter) || (catId && catId === activeCategoryFilter)) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  // Update mobile drawer dropdown links
+  const drawerDropdown = document.getElementById('drawer-products-dropdown');
+  if (drawerDropdown) {
+    drawerDropdown.querySelectorAll('.drawer-sublink').forEach(link => {
+      const href = link.getAttribute('href');
+      const isAll = href === '/products';
+      const catId = !isAll ? href.split('category=')[1] : null;
+      if ((isAll && !activeCategoryFilter) || (catId && catId === activeCategoryFilter)) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+}
+
 // 2. PRODUCTS VIEW (Catalogue)
 async function renderProducts() {
   showLoader();
   try {
+    // Parse query params from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    if (categoryParam) {
+      activeCategoryFilter = categoryParam;
+    } else {
+      activeCategoryFilter = null;
+    }
+    const brandParam = urlParams.get('brand');
+    if (brandParam) {
+      activeBrandFilter = brandParam;
+    } else {
+      activeBrandFilter = null;
+    }
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+      productSearchQuery = searchParam;
+    }
+
     const [products, categories] = await Promise.all([
       db.fetchProducts(),
       db.fetchCategories()
@@ -2393,6 +2409,11 @@ async function renderProducts() {
       activeBrandFilter = null;
       labelEl.textContent = text;
 
+      // Update URL and navigation active states without reloading
+      const url = value === 'all' ? '/products' : `/products?category=${value}`;
+      history.pushState({ scrollY: window.scrollY }, '', url);
+      updateCategoryLinksActiveState();
+
       // Update active styling
       menuEl.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
       item.classList.add('active');
@@ -2415,6 +2436,12 @@ async function renderProducts() {
 
     // Initialize scroll animations
     initScrollAnimations();
+
+    // Highlight active categories in navigation/drawer
+    updateCategoryLinksActiveState();
+    
+    // Ensure we scroll to the top of the page
+    window.scrollTo({ top: 0, behavior: 'instant' });
 
   } catch (error) {
     console.error('Products page failed:', error);
@@ -3626,6 +3653,9 @@ function renderProductVerification() {
   appContent.innerHTML = `
     <section class="section">
       <div class="container verify-wrapper" style="max-width: 720px; margin: 40px auto; padding: 0 var(--pad-mobile);">
+        <div style="margin-bottom: 24px;" class="animate-on-scroll">
+          <button class="pd-back-btn" onclick="window.history.back();"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
         ${bannerHTML}
         <div class="verify-card animate-scale" style="max-width: 560px; margin: 0 auto;">
           <div class="category-icon-box" style="margin: 0 auto; color: var(--primary);">
@@ -3816,7 +3846,7 @@ async function renderCategories() {
       card.addEventListener('click', () => {
         activeCategoryFilter = card.dataset.categoryId;
         activeBrandFilter = null;
-        router.navigate('/products');
+        router.navigate(`/products?category=${card.dataset.categoryId}`);
       });
     });
 
