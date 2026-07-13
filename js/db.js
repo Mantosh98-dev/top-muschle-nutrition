@@ -297,6 +297,21 @@ export async function fetchAuthCodes() {
   return data;
 }
 
+export async function fetchAuthCodeById(id) {
+  checkConfig();
+  const { data, error } = await supabaseClient
+    .from('authentication_codes')
+    .select(`
+      *,
+      products (id, title)
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function saveAuthCode(codeData) {
   checkConfig();
   const { data, error } = await supabaseClient

@@ -1698,8 +1698,7 @@ async function openCodeModal(codeId = null) {
   if (codeId) {
     showLoader();
     try {
-      const codes = await db.fetchAuthCodes();
-      codeData = codes.find(c => c.id === codeId) || codeData;
+      codeData = await db.fetchAuthCodeById(codeId);
     } catch (err) {
       showToast('Error loading code info', 'error');
       return;

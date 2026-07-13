@@ -78,7 +78,8 @@ Then: `import { createClient } from '@supabase/supabase-js';`
 **File:** `js/admin.js` → `openCodeModal(codeId)`  
 **Problem:** To edit a single code, the function fetches ALL auth codes and then uses `Array.find()`. This is an O(n) client-side filter for a data that should be fetched by primary key.
 
-**Recommendation:** Add a `db.fetchAuthCodeById(id)` function that queries `supabaseClient.from('authentication_codes').select('...').eq('id', id).single()`.
+**Status:** ✅ **Resolved**  
+**Resolution:** Created a dedicated `db.fetchAuthCodeById(id)` function in `js/db.js` that points to the record by primary key, and modified `js/admin.js` to call it.
 
 ---
 
@@ -190,7 +191,7 @@ Then: `import { createClient } from '@supabase/supabase-js';`
 | ISS-003 | 🔴 High | `js/db.js` | Open |
 | ISS-004 | 🔴 High | `js/supabase-client.js` | Open |
 | ISS-005 | 🔴 High | `js/admin.js` + `js/db.js` | Open |
-| ISS-006 | 🟡 Medium | `js/admin.js` | Open |
+| ISS-006 | 🟡 Medium | `js/admin.js` | Resolved |
 | ISS-007 | 🟡 Medium | `js/app.js` | Open |
 | ISS-008 | 🟡 Medium | `js/app.js` | Open |
 | ISS-009 | 🟡 Medium | `js/app.js` + `schema.sql` | Open |
