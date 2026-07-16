@@ -5842,4 +5842,48 @@ section, .section {
   }
 }
 
+/* ============================================================
+   ADVERTISEMENT BANNER SYSTEM
+   ============================================================ */
+.ad-banner-placeholder {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
 
+.ad-banner-item {
+  width: 100%;
+}
+
+.ad-banner-item.standard-banner {
+  margin: 36px 0;
+}
+
+.ad-banner-item.full-width-banner {
+  margin: 24px 0;
+}
+
+.ad-banner-item a {
+  display: block;
+  width: 100%;
+}
+
+.ad-banner-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ad-banner-item.standard-banner {
+    margin: 20px 0;
+  }
+  .ad-banner-item.full-width-banner {
+    margin: 12px 0;
+  }
+  .ad-banner-item.standard-banner a {
+    border-radius: var(--r-md) !important;
+  }
+}

@@ -163,6 +163,9 @@ async function renderDashboard() {
           <li class="admin-nav-item ${activeTab === 'customization' ? 'active' : ''}">
             <button data-tab="customization"><i class="fas fa-palette"></i> Website Customization</button>
           </li>
+          <li class="admin-nav-item ${activeTab === 'banners' ? 'active' : ''}">
+            <button data-tab="banners"><i class="fas fa-ad"></i> Ad Banners</button>
+          </li>
           <li class="admin-nav-item ${activeTab === 'codes' ? 'active' : ''}">
             <button data-tab="codes"><i class="fas fa-shield-halved"></i> Verification Codes</button>
           </li>
@@ -313,6 +316,9 @@ async function renderActiveWorkspaceTab() {
         break;
       case 'customization':
         await renderTabCustomization(workspace);
+        break;
+      case 'banners':
+        await renderTabBanners(workspace);
         break;
 
       default:
@@ -2348,92 +2354,6 @@ async function renderTabCustomization(workspace) {
             </div>
           </div>
         </div>
-
-        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
-
-        <!-- Promotional Banner Panel -->
-        <h3 class="settings-section-title">Promotional Banners</h3>
-        <div style="margin-bottom:12px;">
-          <label class="switch-label" for="settings-promo-banner-show" style="margin:0;">
-            <input type="checkbox" id="settings-promo-banner-show" class="switch-input" ${settings.promo_banner_show ? 'checked' : ''}>
-            <span class="switch-slider"></span>
-            <span>Enable Promotional Hero Banner</span>
-          </label>
-        </div>
-        <div class="form-group" style="margin-bottom:16px;">
-          <label class="form-label" for="settings-promo-banner-image-url">Banner Image URL</label>
-          <div style="display:flex; gap:12px;">
-            <input type="text" id="settings-promo-banner-image-url" class="form-input" placeholder="https://image-link.com/promo.jpg" value="${escapeHTML(settings.promo_banner_image_url || '')}">
-            <button class="btn btn-dark" id="settings-promo-banner-upload-btn" style="padding:12px;" type="button" aria-label="Upload promo banner"><i class="fas fa-upload"></i></button>
-            <input type="file" id="settings-promo-banner-file-input" style="display:none;" accept="image/*">
-          </div>
-          <div id="settings-promo-banner-preview-wrap">
-            ${settings.promo_banner_image_url ? `<img src="${escapeHTML(settings.promo_banner_image_url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
-          </div>
-        </div>
-        <div class="form-group" style="margin-bottom:24px;">
-          <label class="form-label" for="settings-promo-banner-link">Banner Click Destination Link</label>
-          <input type="text" id="settings-promo-banner-link" class="form-input" placeholder="e.g. /products or category link" value="${escapeHTML(settings.promo_banner_link || '')}">
-        </div>
-
-        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
-
-        <!-- Authentication Page Banner Panel -->
-        <h3 class="settings-section-title">Authenticate Product Page Banner</h3>
-        <div style="margin-bottom:12px;">
-          <label class="switch-label" for="settings-auth-banner-show" style="margin:0;">
-            <input type="checkbox" id="settings-auth-banner-show" class="switch-input" ${settings.slider_settings?.auth_banner_show ? 'checked' : ''}>
-            <span class="switch-slider"></span>
-            <span>Enable Authenticate Page Banner</span>
-          </label>
-        </div>
-        <div class="form-group" style="margin-bottom:16px;">
-          <label class="form-label" for="settings-auth-banner-image-url">Banner Image URL</label>
-          <div style="display:flex; gap:12px;">
-            <input type="text" id="settings-auth-banner-image-url" class="form-input" placeholder="https://image-link.com/auth-banner.jpg" value="${escapeHTML(settings.slider_settings?.auth_banner_image_url || '')}">
-            <button class="btn btn-dark" id="settings-auth-banner-upload-btn" style="padding:12px;" type="button" aria-label="Upload auth banner"><i class="fas fa-upload"></i></button>
-            <input type="file" id="settings-auth-banner-file-input" style="display:none;" accept="image/*">
-          </div>
-          <div id="settings-auth-banner-preview-wrap">
-            ${settings.slider_settings?.auth_banner_image_url ? `<img src="${escapeHTML(settings.slider_settings.auth_banner_image_url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : ''}
-          </div>
-        </div>
-        <div class="form-group" style="margin-bottom:24px;">
-          <label class="form-label" for="settings-auth-banner-link">Banner Click Destination Link</label>
-          <input type="text" id="settings-auth-banner-link" class="form-input" placeholder="e.g. /products or category link" value="${escapeHTML(settings.slider_settings?.auth_banner_link || '')}">
-        </div>
-
-        <hr style="border:0; border-top:1px solid var(--border-color); margin:24px 0;">
-
-        <!-- Call-To-Action (CTA) Banner Panel -->
-        <h3 class="settings-section-title">Call-To-Action Banner (Pre-footer)</h3>
-        <div style="margin-bottom:12px;">
-          <label class="switch-label" for="settings-cta-banner-show" style="margin:0;">
-            <input type="checkbox" id="settings-cta-banner-show" class="switch-input" ${settings.cta_banner_show ? 'checked' : ''}>
-            <span class="switch-slider"></span>
-            <span>Enable CTA Section</span>
-          </label>
-        </div>
-        <div class="form-group" style="margin-bottom:16px;">
-          <label class="form-label" for="settings-cta-banner-title">CTA Banner Title Heading</label>
-          <input type="text" id="settings-cta-banner-title" class="form-input" value="${escapeHTML(settings.cta_banner_title || 'Ready to Level Up Your Workouts?')}">
-        </div>
-        <div class="form-group" style="margin-bottom:16px;">
-          <label class="form-label" for="settings-cta-banner-desc">CTA Subtitle Description</label>
-          <textarea id="settings-cta-banner-desc" class="form-input" style="height:60px; resize:none;">${escapeHTML(settings.cta_banner_desc || 'Chat with our experts on WhatsApp for personalized supplement guidance.')}</textarea>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-          <div class="form-group">
-            <label class="form-label" for="settings-cta-banner-btn-text">Button Text</label>
-            <input type="text" id="settings-cta-banner-btn-text" class="form-input" value="${escapeHTML(settings.cta_banner_btn_text || 'Chat on WhatsApp')}">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="settings-cta-banner-bg-color">CTA Background Color</label>
-            <div style="display:flex; gap:10px; align-items:center;">
-              <input type="color" id="settings-cta-banner-bg-color" value="${escapeHTML(settings.cta_banner_bg_color || '#161618')}" style="width:40px; height:40px; border:none; cursor:pointer;">
-              <input type="text" id="settings-cta-banner-bg-color-text" class="form-input" style="flex:1;" value="${escapeHTML(settings.cta_banner_bg_color || '#161618')}">
-            </div>
-          </div>
         </div>
       </div>
       
@@ -2952,88 +2872,7 @@ async function renderTabCustomization(workspace) {
     });
   }
 
-  const ctaBgInput = document.getElementById('settings-cta-banner-bg-color');
-  const ctaBgText = document.getElementById('settings-cta-banner-bg-color-text');
-  if (ctaBgInput && ctaBgText) {
-    ctaBgInput.addEventListener('input', (e) => ctaBgText.value = e.target.value);
-    ctaBgText.addEventListener('input', (e) => {
-      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) ctaBgInput.value = e.target.value;
-    });
-  }
 
-  // Promotional Banner image uploader
-  const promoFileBtn = document.getElementById('settings-promo-banner-upload-btn');
-  const promoFileInput = document.getElementById('settings-promo-banner-file-input');
-  if (promoFileBtn && promoFileInput) {
-    promoFileBtn.addEventListener('click', () => promoFileInput.click());
-    promoFileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      showLoader();
-      try {
-        const publicUrl = await db.uploadImage(file, 'brand-assets');
-        document.getElementById('settings-promo-banner-image-url').value = publicUrl;
-        const previewWrap = document.getElementById('settings-promo-banner-preview-wrap');
-        if (previewWrap) {
-          previewWrap.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">`;
-        }
-        showToast('Promotional banner uploaded successfully', 'success');
-      } catch (err) {
-        showToast('Promo banner upload failed', 'error');
-      } finally {
-        hideLoader();
-      }
-    });
-  }
-
-  // Promotional Banner manual input preview syncing
-  const promoBannerInput = document.getElementById('settings-promo-banner-image-url');
-  if (promoBannerInput) {
-    promoBannerInput.addEventListener('input', () => {
-      const url = promoBannerInput.value.trim();
-      const previewWrap = document.getElementById('settings-promo-banner-preview-wrap');
-      if (previewWrap) {
-        previewWrap.innerHTML = url ? `<img src="${escapeHTML(url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : '';
-      }
-    });
-  }
-
-  // Authentication Page Banner image uploader
-  const authFileBtn = document.getElementById('settings-auth-banner-upload-btn');
-  const authFileInput = document.getElementById('settings-auth-banner-file-input');
-  if (authFileBtn && authFileInput) {
-    authFileBtn.addEventListener('click', () => authFileInput.click());
-    authFileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      showLoader();
-      try {
-        const publicUrl = await db.uploadImage(file, 'brand-assets');
-        document.getElementById('settings-auth-banner-image-url').value = publicUrl;
-        const previewWrap = document.getElementById('settings-auth-banner-preview-wrap');
-        if (previewWrap) {
-          previewWrap.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">`;
-        }
-        showToast('Authentication page banner uploaded successfully', 'success');
-      } catch (err) {
-        showToast('Authentication banner upload failed', 'error');
-      } finally {
-        hideLoader();
-      }
-    });
-  }
-
-  // Authentication Page Banner manual input preview syncing
-  const authBannerInput = document.getElementById('settings-auth-banner-image-url');
-  if (authBannerInput) {
-    authBannerInput.addEventListener('input', () => {
-      const url = authBannerInput.value.trim();
-      const previewWrap = document.getElementById('settings-auth-banner-preview-wrap');
-      if (previewWrap) {
-        previewWrap.innerHTML = url ? `<img src="${escapeHTML(url)}" style="max-height: 80px; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff; padding: 4px; object-fit:contain;">` : '';
-      }
-    });
-  }
 
 
 
@@ -3140,14 +2979,14 @@ async function renderTabCustomization(workspace) {
         announcement_text: document.getElementById('settings-announcement-text').value.trim(),
         announcement_bg_color: document.getElementById('settings-announcement-bg-color-text').value.trim(),
         announcement_text_color: document.getElementById('settings-announcement-text-color-text').value.trim(),
-        promo_banner_show: document.getElementById('settings-promo-banner-show').checked,
-        promo_banner_image_url: document.getElementById('settings-promo-banner-image-url').value.trim() || null,
-        promo_banner_link: document.getElementById('settings-promo-banner-link').value.trim() || null,
-        cta_banner_show: document.getElementById('settings-cta-banner-show').checked,
-        cta_banner_title: document.getElementById('settings-cta-banner-title').value.trim(),
-        cta_banner_desc: document.getElementById('settings-cta-banner-desc').value.trim(),
-        cta_banner_btn_text: document.getElementById('settings-cta-banner-btn-text').value.trim(),
-        cta_banner_bg_color: document.getElementById('settings-cta-banner-bg-color-text').value.trim(),
+        promo_banner_show: settings.promo_banner_show,
+        promo_banner_image_url: settings.promo_banner_image_url,
+        promo_banner_link: settings.promo_banner_link,
+        cta_banner_show: settings.cta_banner_show,
+        cta_banner_title: settings.cta_banner_title,
+        cta_banner_desc: settings.cta_banner_desc,
+        cta_banner_btn_text: settings.cta_banner_btn_text,
+        cta_banner_bg_color: settings.cta_banner_bg_color,
         show_top_products: document.getElementById('settings-show-top-products').checked,
         show_best_sellers: document.getElementById('settings-show-best-sellers').checked,
         show_trending_products: document.getElementById('settings-show-trending-products').checked,
@@ -3183,9 +3022,9 @@ async function renderTabCustomization(workspace) {
           cards: localSliderSettings.cards,
           show_shop_by_brand: document.getElementById('settings-show-shop-by-brand').checked,
           show_customer_reviews: document.getElementById('settings-show-customer-reviews').checked,
-          auth_banner_show: document.getElementById('settings-auth-banner-show').checked,
-          auth_banner_image_url: document.getElementById('settings-auth-banner-image-url').value.trim() || null,
-          auth_banner_link: document.getElementById('settings-auth-banner-link').value.trim() || null,
+          auth_banner_show: settings.slider_settings?.auth_banner_show || false,
+          auth_banner_image_url: settings.slider_settings?.auth_banner_image_url || null,
+          auth_banner_link: settings.slider_settings?.auth_banner_link || null,
           categories_title: document.getElementById('settings-categories-title') ? document.getElementById('settings-categories-title').value.trim() : 'CATEGORIES',
           featured_products_title: document.getElementById('settings-featured-title') ? document.getElementById('settings-featured-title').value.trim() : 'FEATURED PRODUCTS'
         }
@@ -3422,4 +3261,447 @@ async function openAddReviewModal() {
     }
   });
 }
+
+// ==========================================
+// TAB 7: ADVERTISEMENT BANNERS MANAGEMENT
+// ==========================================
+async function renderTabBanners(workspace) {
+  const banners = await db.fetchBanners();
+
+  workspace.innerHTML = `
+    <div class="admin-header-row">
+      <div class="admin-title-desc">
+        <h2 class="admin-title">Manage Advertisement Banners</h2>
+        <span class="admin-subtitle">Configure promotional, marketing, and CTA banners dynamically across pages.</span>
+      </div>
+      <button class="btn btn-primary" id="admin-add-banner-btn">
+        <i class="fas fa-plus"></i> Add Banner
+      </button>
+    </div>
+    
+    <div class="admin-table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Thumbnail</th>
+            <th>Banner Name</th>
+            <th>Placement</th>
+            <th>Layout & Aspect</th>
+            <th>Priority & Sort</th>
+            <th>Active & Enabled</th>
+            <th>Date Range</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${banners.length > 0 ? banners.map(b => {
+            const hasDates = b.start_date || b.end_date;
+            const startStr = b.start_date ? new Date(b.start_date).toLocaleDateString() : 'Immediate';
+            const endStr = b.end_date ? new Date(b.end_date).toLocaleDateString() : 'Forever';
+            
+            return `
+              <tr>
+                <td><img src="${b.image_url}" style="width:70px; height:40px; object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:#fff;"></td>
+                <td>
+                  <strong>${escapeHTML(b.name)}</strong>
+                </td>
+                <td>
+                  <span class="section-badge" style="font-size:0.7rem; text-transform:none; letter-spacing:0; padding:4px 8px;">Page: ${escapeHTML(b.target_page)}</span>
+                  <br><span class="section-badge" style="font-size:0.7rem; text-transform:none; letter-spacing:0; padding:4px 8px; margin-top:4px; background:var(--gray-100); color:var(--text-sub);">Pos: ${escapeHTML(b.position)}</span>
+                </td>
+                <td>
+                  <small style="font-weight:600;">Type: ${escapeHTML(b.layout_type)}</small>
+                  <br><small style="color:var(--text-sub);">Aspect: ${escapeHTML(b.aspect_ratio)}</small>
+                </td>
+                <td>
+                  <small>Priority: ${b.display_priority}</small>
+                  <br><small style="color:var(--text-sub);">Sort: ${b.sort_order}</small>
+                </td>
+                <td>
+                  <span class="section-badge" style="font-size:0.65rem; padding: 4px 8px; border-radius:var(--r-xs); text-transform:none; letter-spacing:0; color: ${b.is_active ? 'var(--success)' : 'var(--error)'}; background: ${b.is_active ? 'var(--success-bg)' : 'var(--error-bg)'};">
+                    ${b.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                  <br>
+                  <span class="section-badge" style="font-size:0.65rem; padding: 4px 8px; border-radius:var(--r-xs); text-transform:none; letter-spacing:0; margin-top:4px; color: ${b.is_enabled ? 'var(--success)' : 'var(--error)'}; background: ${b.is_enabled ? 'var(--success-bg)' : 'var(--error-bg)'};">
+                    ${b.is_enabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                </td>
+                <td>
+                  <small style="font-size:0.75rem;">From: ${startStr}</small>
+                  <br><small style="font-size:0.75rem; color:var(--text-sub);">To: ${endStr}</small>
+                </td>
+                <td>
+                  <div class="cell-actions">
+                    <button class="btn-icon btn-edit edit-banner-btn" data-id="${b.id}" title="Edit"><i class="fas fa-edit"></i></button>
+                    <button class="btn-icon btn-delete delete-banner-btn" data-id="${b.id}" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('') : `
+            <tr>
+              <td colspan="8" style="text-align:center; padding: 32px 0; color:var(--text-secondary);">No banners configured yet.</td>
+            </tr>
+          `}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // Bind Add Banner button
+  document.getElementById('admin-add-banner-btn').addEventListener('click', () => openBannerModal());
+
+  // Bind Edit buttons
+  document.querySelectorAll('.edit-banner-btn').forEach(btn => {
+    btn.addEventListener('click', () => openBannerModal(btn.dataset.id));
+  });
+
+  // Bind Delete buttons
+  document.querySelectorAll('.delete-banner-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (confirm('Are you sure you want to delete this advertisement banner?')) {
+        showLoader();
+        try {
+          await db.deleteBanner(btn.dataset.id);
+          showToast('Banner deleted successfully', 'success');
+          // Refresh global cache
+          try {
+            const freshBanners = await db.fetchBanners();
+            if (window.globalBanners !== undefined) {
+              window.globalBanners = freshBanners;
+            }
+          } catch (e) {
+            console.error("Cache update failed:", e);
+          }
+          renderActiveWorkspaceTab();
+        } catch (err) {
+          showToast('Failed to delete banner', 'error');
+        } finally {
+          hideLoader();
+        }
+      }
+    });
+  });
+}
+
+// 7a. BANNER CREATION / MODIFICATION DIALOG MODAL
+async function openBannerModal(bannerId = null) {
+  const modal = document.getElementById('admin-modal');
+  let banner = {
+    name: '',
+    image_url: '',
+    click_url: '',
+    open_new_tab: false,
+    is_active: true,
+    is_enabled: true,
+    start_date: '',
+    end_date: '',
+    display_priority: 0,
+    sort_order: 0,
+    target_page: 'homepage',
+    position: 'below_hero',
+    layout_type: 'standard',
+    aspect_ratio: '16:9'
+  };
+
+  if (bannerId) {
+    showLoader();
+    try {
+      const allBanners = await db.fetchBanners();
+      const found = allBanners.find(b => b.id === bannerId);
+      if (found) banner = found;
+    } catch (e) {
+      showToast('Failed to load banner details', 'error');
+      hideLoader();
+      return;
+    }
+    hideLoader();
+  }
+
+  // Format dates for input type="datetime-local"
+  const formatDateForInput = (isoString) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(date - tzOffset)).toISOString().slice(0, 16);
+    return localISOTime;
+  };
+
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 600px; width:100%;">
+      <div class="modal-header">
+        <h3 class="modal-title">${bannerId ? 'Edit Ad Banner' : 'Create Ad Banner'}</h3>
+        <button class="modal-close" id="banner-modal-close-btn">&times;</button>
+      </div>
+      
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 8px; text-align: left;">
+        <div class="form-group">
+          <label class="form-label">Banner Name *</label>
+          <input type="text" id="banner-name" class="form-input" placeholder="e.g. Summer Special Whey Protein Promo" value="${escapeHTML(banner.name)}" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px;">
+          <div class="form-group">
+            <label class="form-label">Target Page *</label>
+            <select id="banner-target-page" class="form-input">
+              <option value="homepage" ${banner.target_page === 'homepage' ? 'selected' : ''}>Homepage</option>
+              <option value="product_page" ${banner.target_page === 'product_page' ? 'selected' : ''}>Product Catalogue</option>
+              <option value="product_details_page" ${banner.target_page === 'product_details_page' ? 'selected' : ''}>Product Details</option>
+              <option value="category_page" ${banner.target_page === 'category_page' ? 'selected' : ''}>Category Page</option>
+              <option value="brand_page" ${banner.target_page === 'brand_page' ? 'selected' : ''}>Brand Page</option>
+              <option value="auth_page" ${banner.target_page === 'auth_page' ? 'selected' : ''}>Authentication Page</option>
+              <option value="search_page" ${banner.target_page === 'search_page' ? 'selected' : ''}>Search Page</option>
+              <option value="custom" ${!['homepage', 'product_page', 'product_details_page', 'category_page', 'brand_page', 'auth_page', 'search_page'].includes(banner.target_page) ? 'selected' : ''}>Custom Value...</option>
+            </select>
+            <input type="text" id="banner-target-page-custom" class="form-input" style="margin-top:8px; display:${!['homepage', 'product_page', 'product_details_page', 'category_page', 'brand_page', 'auth_page', 'search_page'].includes(banner.target_page) ? 'block' : 'none'};" placeholder="Enter custom page identifier" value="${escapeHTML(banner.target_page)}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Position *</label>
+            <select id="banner-position" class="form-input">
+              <option value="below_hero" ${banner.position === 'below_hero' ? 'selected' : ''}>Below Hero (Homepage)</option>
+              <option value="above_categories" ${banner.position === 'above_categories' ? 'selected' : ''}>Above Categories (Homepage)</option>
+              <option value="below_categories" ${banner.position === 'below_categories' ? 'selected' : ''}>Below Categories (Homepage)</option>
+              <option value="above_featured" ${banner.position === 'above_featured' ? 'selected' : ''}>Above Featured (Homepage)</option>
+              <option value="below_featured" ${banner.position === 'below_featured' ? 'selected' : ''}>Below Featured (Homepage)</option>
+              <option value="above_bestsellers" ${banner.position === 'above_bestsellers' ? 'selected' : ''}>Above Best Sellers (Homepage)</option>
+              <option value="below_bestsellers" ${banner.position === 'below_bestsellers' ? 'selected' : ''}>Below Best Sellers (Homepage)</option>
+              <option value="between_sections" ${banner.position === 'between_sections' ? 'selected' : ''}>Between Product Sections</option>
+              <option value="above_footer" ${banner.position === 'above_footer' ? 'selected' : ''}>Above Footer</option>
+              <option value="above_content" ${banner.position === 'above_content' ? 'selected' : ''}>Above Content</option>
+              <option value="below_content" ${banner.position === 'below_content' ? 'selected' : ''}>Below Content</option>
+              <option value="custom" ${!['below_hero', 'above_categories', 'below_categories', 'above_featured', 'below_featured', 'above_bestsellers', 'below_bestsellers', 'between_sections', 'above_footer', 'above_content', 'below_content'].includes(banner.position) ? 'selected' : ''}>Custom Position...</option>
+            </select>
+            <input type="text" id="banner-position-custom" class="form-input" style="margin-top:8px; display:${!['below_hero', 'above_categories', 'below_categories', 'above_featured', 'below_featured', 'above_bestsellers', 'below_bestsellers', 'between_sections', 'above_footer', 'above_content', 'below_content'].includes(banner.position) ? 'block' : 'none'};" placeholder="Enter custom position identifier" value="${escapeHTML(banner.position)}">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px;">
+          <div class="form-group">
+            <label class="form-label">Layout Type *</label>
+            <select id="banner-layout-type" class="form-input">
+              <option value="standard" ${banner.layout_type === 'standard' ? 'selected' : ''}>Standard (Contained)</option>
+              <option value="full_width" ${banner.layout_type === 'full_width' ? 'selected' : ''}>Full Width (Screen Edge)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Aspect Ratio *</label>
+            <select id="banner-aspect-ratio" class="form-input">
+              <option value="16:9" ${banner.aspect_ratio === '16:9' ? 'selected' : ''}>16:9</option>
+              <option value="16:4" ${banner.aspect_ratio === '16:4' ? 'selected' : ''}>16:4 (Slim Banner)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:12px;">
+          <label class="form-label">Banner Image * (JPEG / PNG)</label>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <div id="banner-preview" style="width:70px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border-color); overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f9f9f9; flex-shrink:0;">
+              ${banner.image_url ? `<img src="${banner.image_url}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`}
+            </div>
+            <input type="text" id="banner-image-url" class="form-input" placeholder="https://image-link.com/banner.png" value="${escapeHTML(banner.image_url)}" style="flex:1;" required>
+            <button class="btn btn-dark" id="banner-upload-btn" type="button" aria-label="Upload Banner Image"><i class="fas fa-upload"></i></button>
+            <input type="file" id="banner-file-input" style="display:none;" accept="image/png, image/jpeg, image/jpg">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:12px;">
+          <label class="form-label">Click URL / Redirect Link</label>
+          <input type="text" id="banner-click-url" class="form-input" placeholder="e.g. /products or /verify or custom URL" value="${escapeHTML(banner.click_url || '')}">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px;">
+          <div class="form-group">
+            <label class="form-label">Display Priority</label>
+            <input type="number" id="banner-display-priority" class="form-input" value="${banner.display_priority}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sort Order</label>
+            <input type="number" id="banner-sort-order" class="form-input" value="${banner.sort_order}">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px;">
+          <div class="form-group">
+            <label class="form-label">Start Date (Optional)</label>
+            <input type="datetime-local" id="banner-start-date" class="form-input" value="${formatDateForInput(banner.start_date)}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Date (Optional)</label>
+            <input type="datetime-local" id="banner-end-date" class="form-input" value="${formatDateForInput(banner.end_date)}">
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:16px; padding: 12px; background:var(--gray-50); border-radius:var(--r-xs);">
+          <label class="switch-label" for="banner-open-new-tab" style="margin:0; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="banner-open-new-tab" class="switch-input" ${banner.open_new_tab ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Open Link in New Tab</span>
+          </label>
+          <label class="switch-label" for="banner-is-active" style="margin:0; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="banner-is-active" class="switch-input" ${banner.is_active ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Active Status</span>
+          </label>
+          <label class="switch-label" for="banner-is-enabled" style="margin:0; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="banner-is-enabled" class="switch-input" ${banner.is_enabled ? 'checked' : ''}>
+            <span class="switch-slider"></span>
+            <span>Enabled Status</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="modal-footer" style="margin-top:16px; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn btn-secondary" id="banner-modal-cancel-btn">Cancel</button>
+        <button class="btn btn-primary" id="banner-modal-save-btn">Save Banner</button>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add('active');
+
+  // Bind close buttons
+  const closeBtn = document.getElementById('banner-modal-close-btn');
+  const cancelBtn = document.getElementById('banner-modal-cancel-btn');
+  const closeModal = () => {
+    modal.classList.remove('active');
+  };
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+
+  // Bind custom field toggles
+  const targetSelect = document.getElementById('banner-target-page');
+  const targetCustom = document.getElementById('banner-target-page-custom');
+  targetSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'custom') {
+      targetCustom.style.display = 'block';
+      targetCustom.value = '';
+      targetCustom.focus();
+    } else {
+      targetCustom.style.display = 'none';
+      targetCustom.value = e.target.value;
+    }
+  });
+
+  const positionSelect = document.getElementById('banner-position');
+  const positionCustom = document.getElementById('banner-position-custom');
+  positionSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'custom') {
+      positionCustom.style.display = 'block';
+      positionCustom.value = '';
+      positionCustom.focus();
+    } else {
+      positionCustom.style.display = 'none';
+      positionCustom.value = e.target.value;
+    }
+  });
+
+  // Bind Image Upload Button
+  const uploadBtn = document.getElementById('banner-upload-btn');
+  const fileInput = document.getElementById('banner-file-input');
+  const imageUrlInput = document.getElementById('banner-image-url');
+  const previewContainer = document.getElementById('banner-preview');
+
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    showLoader();
+    try {
+      const publicUrl = await db.uploadImage(file, 'banners');
+      imageUrlInput.value = publicUrl;
+      if (previewContainer) {
+        previewContainer.innerHTML = `<img src="${escapeHTML(publicUrl)}" style="width:100%; height:100%; object-fit:cover;">`;
+      }
+      showToast('Image uploaded successfully', 'success');
+    } catch (err) {
+      showToast('Image upload failed', 'error');
+    } finally {
+      hideLoader();
+    }
+  });
+
+  imageUrlInput.addEventListener('input', () => {
+    const url = imageUrlInput.value.trim();
+    if (previewContainer) {
+      previewContainer.innerHTML = url ? `<img src="${escapeHTML(url)}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-image" style="color:var(--text-muted);"></i>`;
+    }
+  });
+
+  // Save Banner Trigger
+  const saveBtn = document.getElementById('banner-modal-save-btn');
+  saveBtn.addEventListener('click', async () => {
+    const name = document.getElementById('banner-name').value.trim();
+    const imageUrl = imageUrlInput.value.trim();
+    const clickUrl = document.getElementById('banner-click-url').value.trim();
+    const openNewTab = document.getElementById('banner-open-new-tab').checked;
+    const isActive = document.getElementById('banner-is-active').checked;
+    const isEnabled = document.getElementById('banner-is-enabled').checked;
+    const startDate = document.getElementById('banner-start-date').value;
+    const endDate = document.getElementById('banner-end-date').value;
+    const displayPriority = parseInt(document.getElementById('banner-display-priority').value) || 0;
+    const sortOrder = parseInt(document.getElementById('banner-sort-order').value) || 0;
+    const targetPage = targetSelect.value === 'custom' ? targetCustom.value.trim() : targetSelect.value;
+    const position = positionSelect.value === 'custom' ? positionCustom.value.trim() : positionSelect.value;
+    const layoutType = document.getElementById('banner-layout-type').value;
+    const aspectRatio = document.getElementById('banner-aspect-ratio').value;
+
+    if (!name) {
+      showToast('Banner Name is required', 'error');
+      return;
+    }
+    if (!imageUrl) {
+      showToast('Banner Image is required', 'error');
+      return;
+    }
+    if (!targetPage) {
+      showToast('Target Page is required', 'error');
+      return;
+    }
+    if (!position) {
+      showToast('Position is required', 'error');
+      return;
+    }
+
+    const payload = {
+      name,
+      image_url: imageUrl,
+      click_url: clickUrl || null,
+      open_new_tab: openNewTab,
+      is_active: isActive,
+      is_enabled: isEnabled,
+      start_date: startDate ? new Date(startDate).toISOString() : null,
+      end_date: endDate ? new Date(endDate).toISOString() : null,
+      display_priority: displayPriority,
+      sort_order: sortOrder,
+      target_page: targetPage,
+      position: position,
+      layout_type: layoutType,
+      aspect_ratio: aspectRatio
+    };
+
+    if (bannerId) payload.id = bannerId;
+
+    showLoader();
+    try {
+      await db.saveBanner(payload);
+      showToast(bannerId ? 'Banner updated successfully' : 'Banner created successfully', 'success');
+      // Refresh global cache
+      try {
+        const freshBanners = await db.fetchBanners();
+        if (window.globalBanners !== undefined) {
+          window.globalBanners = freshBanners;
+        }
+      } catch (e) {
+        console.error("Cache update failed:", e);
+      }
+      closeModal();
+      renderActiveWorkspaceTab();
+    } catch (err) {
+      showToast(err.message || 'Failed to save banner', 'error');
+    } finally {
+      hideLoader();
+    }
+  });
+}
+
 

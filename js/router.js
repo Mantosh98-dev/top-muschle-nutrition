@@ -115,12 +115,14 @@ class Router {
 
       if (result instanceof Promise) {
         result.then(() => {
+          if (typeof window.renderBanners === 'function') window.renderBanners();
           setTimeout(restoreScroll, 50);
         }).catch(err => {
           console.error("Error in route handler:", err);
           restoreScroll();
         });
       } else {
+        if (typeof window.renderBanners === 'function') window.renderBanners();
         setTimeout(restoreScroll, 50);
       }
     } else {
@@ -151,12 +153,14 @@ class Router {
 
         if (result instanceof Promise) {
           result.then(() => {
+            if (typeof window.renderBanners === 'function') window.renderBanners();
             setTimeout(restoreScroll, 50);
           }).catch(err => {
             console.error("Error in 404 handler:", err);
             restoreScroll();
           });
         } else {
+          if (typeof window.renderBanners === 'function') window.renderBanners();
           setTimeout(restoreScroll, 50);
         }
       }

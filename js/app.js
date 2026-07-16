@@ -186,6 +186,7 @@ window.handleWishlistToggleClick = handleWishlistToggleClick;
 
 // Global variables
 export let globalSettings = null;
+export let globalBanners = [];
 let activeCategoryFilter = null;
 let activeBrandFilter = null;
 let productSearchQuery = '';
@@ -305,6 +306,13 @@ async function init() {
     const fetchedSettings = await db.fetchSettings();
     globalSettings = mergeSettings(fetchedSettings);
     applyBranding(globalSettings);
+
+    // 2a. Fetch advertisement banners
+    try {
+      globalBanners = await db.fetchBanners();
+    } catch (e) {
+      console.warn("Failed to fetch advertisement banners:", e);
+    }
 
     // 2b. Fetch and render categories in dropdown
     let categoriesList = [];
@@ -1761,74 +1769,10 @@ async function renderHome() {
 
     // 1. Hero Slider
     html += renderHeroSlider(globalSettings);
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="below_hero"></div>`;
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="above_categories"></div>`;
 
-    // 2. Features Section (NEW)
-    html += `
-      <section class="features-section animate-on-scroll">
-        <div class="container">
-          <div class="features-grid">
-            <div class="feature-item">
-              <span class="feature-icon"><i class="fas fa-truck-fast"></i></span>
-              <div class="feature-info">
-                <h4>Fast Delivery</h4>
-                <p>Quick dispatch nationwide</p>
-              </div>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon"><i class="fas fa-shield-halved"></i></span>
-              <div class="feature-info">
-                <h4>Authentic Products</h4>
-                <p>100% genuine supplements</p>
-              </div>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon"><i class="fas fa-credit-card"></i></span>
-              <div class="feature-info">
-                <h4>Secure Payment</h4>
-                <p>Safe checkout & COD</p>
-              </div>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon"><i class="fas fa-headset"></i></span>
-              <div class="feature-info">
-                <h4>Customer Support</h4>
-                <p>Dedicated assistance</p>
-              </div>
-            </div>
-          </div>
-          <div class="features-cta">
-            <a href="/products" class="btn btn-primary">Shop Products</a>
-            <a href="/verify" class="btn btn-outline">Authenticate Product</a>
-          </div>
-        </div>
-      </section>
-    `;
-
-    // Promotional Banner (if enabled)
-    if (globalSettings.promo_banner_show && globalSettings.promo_banner_image_url) {
-      html += `
-        <section class="section promo-banner-section" style="padding: 30px 0; background: var(--gray-50); border-bottom: 1px solid var(--border-color);">
-          <div class="container">
-            <a href="${globalSettings.promo_banner_link || '/products'}" style="display:block; overflow:hidden; border-radius:var(--r-lg); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-              <img src="${globalSettings.promo_banner_image_url}" alt="Promotional Banner" style="width:100%; height:auto; object-fit:cover; display:block;" loading="lazy" decoding="async">
-            </a>
-          </div>
-        </section>
-      `;
-    }
-
-    // Video Section 1 (if enabled)
-    html += renderVideoSection(
-      1, 
-      globalSettings.video1_show, 
-      globalSettings.video1_title, 
-      globalSettings.video1_desc, 
-      globalSettings.video1_type, 
-      globalSettings.video1_mp4_url, 
-      globalSettings.video1_youtube_url
-    );
-
-    // 3. Shop by Category (Goal)
+    // 2. Shop by Category (Goal)
     if (categories.length > 0) {
       const getCategoryIcon = (name) => {
         const n = (name || '').toLowerCase();
@@ -1876,8 +1820,10 @@ async function renderHome() {
         </section>
       `;
     }
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="below_categories"></div>`;
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="above_featured"></div>`;
 
-    // 4. Featured Products
+    // 3. Featured Products
     const featuredTitle = (globalSettings.slider_settings && globalSettings.slider_settings.featured_products_title) || 'FEATURED PRODUCTS';
 
     html += `
@@ -1907,76 +1853,10 @@ async function renderHome() {
         </div>
       </section>
     `;
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="below_featured"></div>`;
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="above_bestsellers"></div>`;
 
-    // Bottom Trust Bar Section
-    html += `
-      <section class="bottom-trust-bar-section animate-on-scroll">
-        <div class="container">
-          <div class="bottom-trust-bar">
-            <div class="trust-bar-item">
-              <span class="trust-bar-icon"><i class="fas fa-shield-alt"></i></span>
-              <span class="trust-bar-text">100% Genuine Products</span>
-            </div>
-            <div class="trust-bar-item">
-              <span class="trust-bar-icon"><i class="fas fa-tags"></i></span>
-              <span class="trust-bar-text">Best Prices Guaranteed</span>
-            </div>
-            <div class="trust-bar-item">
-              <span class="trust-bar-icon"><i class="fas fa-shipping-fast"></i></span>
-              <span class="trust-bar-text">On Time Delivery</span>
-            </div>
-            <div class="trust-bar-item">
-              <span class="trust-bar-icon"><i class="fas fa-rotate-left"></i></span>
-              <span class="trust-bar-text">Easy Returns Policy</span>
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
-
-    // Video Section 2 (if enabled)
-    html += renderVideoSection(
-      2, 
-      globalSettings.video2_show, 
-      globalSettings.video2_title, 
-      globalSettings.video2_desc, 
-      globalSettings.video2_type, 
-      globalSettings.video2_mp4_url, 
-      globalSettings.video2_youtube_url
-    );
-
-    // Top Products (if enabled)
-    if (globalSettings.show_top_products) {
-      html += `
-        <section class="section">
-          <div class="container">
-            <div class="section-header-row animate-on-scroll">
-              <h2 class="section-title-row">Top Products</h2>
-              <a href="/products" class="section-view-all-link">View all <i class="fas fa-chevron-right"></i></a>
-            </div>
-            
-            ${topProducts.length > 0 ? `
-              <div class="slider-container animate-on-scroll">
-                <button class="slider-btn btn-prev" aria-label="Previous Products"><i class="fas fa-chevron-left"></i></button>
-                <div class="products-slider-track">
-                  ${topProducts.map((prod, i) => renderProductCard(prod, i)).join('')}
-                </div>
-                <button class="slider-btn btn-next" aria-label="Next Products"><i class="fas fa-chevron-right"></i></button>
-              </div>
-            ` : `
-              <div class="no-products">
-                <i class="fas fa-box-open"></i>
-                <h3>No Top Products Listed</h3>
-                <p>Check back later or browse our full catalogue.</p>
-                <a href="/products" class="btn btn-primary" style="margin-top: 16px;">View All Products</a>
-              </div>
-            `}
-          </div>
-        </section>
-      `;
-    }
-
-    // 5. Best Sellers
+    // 4. Best Sellers
     if (globalSettings.show_best_sellers) {
       html += `
         <section class="section section-bg">
@@ -2006,6 +1886,31 @@ async function renderHome() {
         </section>
       `;
     }
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="below_bestsellers"></div>`;
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="between_sections"></div>`;
+
+    // 5. Other Product Sections (Latest, Trending, video feeds, customer reviews, brand section, etc.)
+    // Video Section 1 (if enabled)
+    html += renderVideoSection(
+      1, 
+      globalSettings.video1_show, 
+      globalSettings.video1_title, 
+      globalSettings.video1_desc, 
+      globalSettings.video1_type, 
+      globalSettings.video1_mp4_url, 
+      globalSettings.video1_youtube_url
+    );
+
+    // Video Section 2 (if enabled)
+    html += renderVideoSection(
+      2, 
+      globalSettings.video2_show, 
+      globalSettings.video2_title, 
+      globalSettings.video2_desc, 
+      globalSettings.video2_type, 
+      globalSettings.video2_mp4_url, 
+      globalSettings.video2_youtube_url
+    );
 
     // Trending Products (if enabled)
     if (globalSettings.show_trending_products) {
@@ -2038,7 +1943,7 @@ async function renderHome() {
       `;
     }
 
-    // 6. Shop by Brand (disabled by default, hidden/shown via Admin toggle)
+    // Shop by Brand (if enabled)
     const showShopByBrand = globalSettings.slider_settings?.show_shop_by_brand || false;
     if (showShopByBrand) {
       const uniqueBrands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
@@ -2071,43 +1976,7 @@ async function renderHome() {
       }
     }
 
-    // 7. Why Choose Us Banner (full-width dark gradient banner section)
-    html += `
-      <section class="why-choose-us-banner animate-on-scroll">
-        <div class="container">
-          <div class="banner-content">
-            <span class="section-badge">Why Choose Us</span>
-            <h2>Your Trusted Partner in Fitness & Health</h2>
-            <p>We are committed to delivering the highest quality, 100% authentic sports supplements directly to you.</p>
-            
-            <div class="banner-features">
-              <div class="bf-item">
-                <i class="fas fa-check-double"></i>
-                <h3>Authentic Products</h3>
-                <p>100% genuine supplements with direct code verification</p>
-              </div>
-              <div class="bf-item">
-                <i class="fas fa-award"></i>
-                <h3>Trusted Brands</h3>
-                <p>Only top-tier certified sports nutrition brands</p>
-              </div>
-              <div class="bf-item">
-                <i class="fas fa-shipping-fast"></i>
-                <h3>Fast Delivery</h3>
-                <p>Secure packaging and quick shipping across the region</p>
-              </div>
-              <div class="bf-item">
-                <i class="fas fa-headset"></i>
-                <h3>Customer Support</h3>
-                <p>Dedicated order placement and advice directly on WhatsApp</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
-
-    // 8. Customer Reviews (disabled by default, hidden/shown via Admin toggle)
+    // Customer Reviews (if enabled)
     const showCustomerReviews = globalSettings.slider_settings?.show_customer_reviews || false;
     if (showCustomerReviews) {
       let homepageReviews = [];
@@ -2168,22 +2037,7 @@ async function renderHome() {
       `;
     }
 
-    // CTA Banner (if enabled)
-    if (globalSettings.cta_banner_show) {
-      html += `
-        <section class="section cta-banner-section" style="padding: 70px 0; background: ${globalSettings.cta_banner_bg_color || '#161618'}; color: #ffffff; text-align: center; position: relative; overflow: hidden; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-          <div style="position:absolute; inset:0; background:radial-gradient(circle at center, rgba(var(--primary-rgb, 211, 47, 47), 0.15) 0%, transparent 65%); pointer-events:none;"></div>
-          <div class="container" style="position:relative; z-index:2; max-width: 680px; display:flex; flex-direction:column; gap:20px; align-items:center; margin: 0 auto;">
-            <h2 style="color:#ffffff; font-size:clamp(1.7rem, 3.5vw, 2.4rem); font-weight:800; font-family:var(--font-heading); margin: 0;">${escapeHTML(globalSettings.cta_banner_title || 'Ready to Level Up Your Workouts?')}</h2>
-            <p style="color:rgba(255,255,255,0.75); font-size:1.02rem; line-height:1.6; margin: 0;">${escapeHTML(globalSettings.cta_banner_desc || 'Chat with our experts on WhatsApp for personalized supplement guidance.')}</p>
-            <a href="https://wa.me/${(globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '')}" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top:8px; display:inline-flex; align-items:center; gap:8px;">
-              <i class="fab fa-whatsapp" style="font-size:1.15rem;"></i> ${escapeHTML(globalSettings.cta_banner_btn_text || 'Chat on WhatsApp')}
-            </a>
-          </div>
-        </section>
-      `;
-    }
-
+    html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="above_footer"></div>`;
     appContent.innerHTML = html;
 
     // Bind Category Clicks
@@ -2338,6 +2192,15 @@ async function renderProducts() {
     const activeCategory = activeCategoryFilter ? categories.find(c => c.id === activeCategoryFilter) : null;
     const activeCategoryName = activeCategory ? activeCategory.name : (activeBrandFilter ? `Brand: ${activeBrandFilter}` : 'All Categories');
 
+    let pageType = 'product_page';
+    if (productSearchQuery) {
+      pageType = 'search_page';
+    } else if (activeBrandFilter) {
+      pageType = 'brand_page';
+    } else if (activeCategoryFilter) {
+      pageType = 'category_page';
+    }
+
     appContent.innerHTML = `
       <section class="section">
         <div class="container">
@@ -2350,6 +2213,8 @@ async function renderProducts() {
             <h2 class="section-title">Our Supplements</h2>
             <p class="section-subtitle">Premium grade products designed for peak performance.</p>
           </div>
+          
+          <div class="ad-banner-placeholder" data-page="${pageType}" data-position="above_content"></div>
           
           <div class="products-filter-bar animate-on-scroll">
             <div class="search-input-wrap">
@@ -2374,6 +2239,8 @@ async function renderProducts() {
           <div class="products-grid" id="catalogue-grid">
             <!-- Product Cards injected dynamically -->
           </div>
+          
+          <div class="ad-banner-placeholder" data-page="${pageType}" data-position="below_content"></div>
         </div>
       </section>
     `;
@@ -3093,6 +2960,8 @@ async function renderProductDetails(params) {
         </div>
       </div>
 
+      <div class="ad-banner-placeholder" data-page="product_page" data-position="above_content"></div>
+
       <!-- Main Product Layout -->
       <div class="pd-page">
         <div class="container">
@@ -3259,6 +3128,7 @@ async function renderProductDetails(params) {
           </div>
 
           <!-- RELATED PRODUCTS -->
+          <div class="ad-banner-placeholder" data-page="product_page" data-position="below_content"></div>
           ${relatedHTML}
 
           <!-- REVIEWS CONTAINER -->
@@ -3642,25 +3512,15 @@ async function renderProductDetails(params) {
 
 // 4. VERIFICATION VIEW (Verify Authentic Product)
 function renderProductVerification() {
-  const sliderSettings = globalSettings.slider_settings || {};
-  let bannerHTML = '';
-  if (sliderSettings.auth_banner_show && sliderSettings.auth_banner_image_url) {
-    bannerHTML = `
-      <div class="auth-banner-container" style="width: 100%; margin-bottom: 32px;">
-        <a href="${sliderSettings.auth_banner_link || '#'}" style="display:block; overflow:hidden; border-radius:var(--r-md); box-shadow:var(--shadow-sm); transition:transform 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-          <img src="${sliderSettings.auth_banner_image_url}" alt="Authenticate Product Banner" style="width:100%; height:auto; object-fit:cover; display:block; border-radius:var(--r-md);" loading="lazy" decoding="async">
-        </a>
-      </div>
-    `;
-  }
-
   appContent.innerHTML = `
     <section class="section">
       <div class="container verify-wrapper" style="max-width: 720px; margin: 40px auto; padding: 0 var(--pad-mobile);">
         <div style="margin-bottom: 24px;" class="animate-on-scroll">
           <button class="pd-back-btn" onclick="window.history.back();"><i class="fas fa-arrow-left"></i> Back</button>
         </div>
-        ${bannerHTML}
+        
+        <div class="ad-banner-placeholder" data-page="auth_page" data-position="above_content"></div>
+        
         <div class="verify-card animate-scale" style="max-width: 560px; margin: 0 auto;">
           <div class="category-icon-box" style="margin: 0 auto; color: var(--primary);">
             <i class="fas fa-shield-alt"></i>
@@ -3680,6 +3540,8 @@ function renderProductVerification() {
             <!-- Results populated here -->
           </div>
         </div>
+        
+        <div class="ad-banner-placeholder" data-page="auth_page" data-position="below_content"></div>
       </div>
     </section>
   `;
@@ -3838,9 +3700,13 @@ async function renderCategories() {
             <p class="section-subtitle">Find the right supplements tailored to your workouts and recovery goals.</p>
           </div>
           
+          <div class="ad-banner-placeholder" data-page="category_page" data-position="above_content"></div>
+          
           <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; margin-top: 32px;">
             ${categoriesHTML}
           </div>
+          
+          <div class="ad-banner-placeholder" data-page="category_page" data-position="below_content"></div>
         </div>
       </section>
     `;
@@ -4070,6 +3936,74 @@ async function renderAccount() {
     hideLoader();
   }
 }
+
+// Render Advertisement Banners in placeholders
+export function renderBanners() {
+  const placeholders = document.querySelectorAll('.ad-banner-placeholder');
+  if (placeholders.length === 0) return;
+
+  const now = new Date();
+  placeholders.forEach(placeholder => {
+    const page = placeholder.dataset.page;
+    const position = placeholder.dataset.position;
+
+    // Filter banners for this placeholder
+    const filtered = globalBanners.filter(b => {
+      // Check target page (case-insensitive)
+      if ((b.target_page || '').toLowerCase() !== (page || '').toLowerCase()) return false;
+      // Check position (case-insensitive)
+      if ((b.position || '').toLowerCase() !== (position || '').toLowerCase()) return false;
+      // Check active and enabled status
+      if (!b.is_active || !b.is_enabled) return false;
+      // Check date bounds
+      if (b.start_date && new Date(b.start_date) > now) return false;
+      if (b.end_date && new Date(b.end_date) < now) return false;
+      return true;
+    });
+
+    // Sort by sort_order first, then display_priority
+    filtered.sort((a, b) => {
+      if (a.sort_order !== b.sort_order) {
+        return a.sort_order - b.sort_order;
+      }
+      return a.display_priority - b.display_priority;
+    });
+
+    if (filtered.length > 0) {
+      placeholder.innerHTML = filtered.map(banner => {
+        const clickUrl = banner.click_url || '#';
+        const openInNewTab = banner.open_new_tab ? 'target="_blank" rel="noopener"' : '';
+        const aspectClass = banner.aspect_ratio === '16:4' ? 'aspect-16-4' : 'aspect-16-9';
+
+        if (banner.layout_type === 'full_width') {
+          return `
+            <div class="ad-banner-item full-width-banner animate-on-scroll">
+              <a href="${clickUrl}" ${openInNewTab}>
+                <img src="${banner.image_url}" alt="${escapeHTML(banner.name)}" style="aspect-ratio: ${banner.aspect_ratio === '16:4' ? '16/4' : '16/9'};" loading="lazy" decoding="async">
+              </a>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="ad-banner-item standard-banner animate-on-scroll">
+              <div class="container">
+                <a href="${clickUrl}" ${openInNewTab} style="border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.3s ease; aspect-ratio: ${banner.aspect_ratio === '16:4' ? '16/4' : '16/9'};" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                  <img src="${banner.image_url}" alt="${escapeHTML(banner.name)}" loading="lazy" decoding="async">
+                </a>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+    } else {
+      placeholder.innerHTML = '';
+    }
+  });
+
+  // Re-run scroll animations since new elements might have been injected
+  initScrollAnimations();
+}
+window.renderBanners = renderBanners;
 
 // Start app
 init();

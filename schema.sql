@@ -332,3 +332,51 @@ CREATE POLICY "Allow admin manage brand-assets" ON storage.objects
 -- 7. ADD SLIDER SETTINGS TO SETTINGS TABLE
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS slider_settings JSONB DEFAULT NULL;
 
+--------------------------------------------------------------------------------
+-- 8. CREATE ADVERTISEMENT BANNERS SYSTEM
+--------------------------------------------------------------------------------
+
+-- Create advertisement_banners table
+CREATE TABLE IF NOT EXISTS advertisement_banners (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  image_url TEXT NOT NULL,
+  click_url TEXT,
+  open_new_tab BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  is_enabled BOOLEAN DEFAULT true,
+  start_date TIMESTAMP WITH TIME ZONE,
+  end_date TIMESTAMP WITH TIME ZONE,
+  display_priority INTEGER DEFAULT 0,
+  sort_order INTEGER DEFAULT 0,
+  target_page TEXT NOT NULL,
+  position TEXT NOT NULL,
+  layout_type TEXT NOT NULL DEFAULT 'standard',
+  aspect_ratio TEXT NOT NULL DEFAULT '16:9',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE advertisement_banners ENABLE ROW LEVEL SECURITY;
+
+-- Select policy (readable by public)
+CREATE POLICY "Allow public read advertisement_banners" ON advertisement_banners
+  FOR SELECT USING (true);
+
+-- Admin policy (admin can manage all banners)
+CREATE POLICY "Allow admin manage advertisement_banners" ON advertisement_banners
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Seed banners storage bucket if it does not exist
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('banners', 'banners', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- RLS Policies on Storage Objects for banners bucket
+DROP POLICY IF EXISTS "Allow public read banners" ON storage.objects;
+CREATE POLICY "Allow public read banners" ON storage.objects
+  FOR SELECT USING (bucket_id = 'banners');
+
+DROP POLICY IF EXISTS "Allow admin manage banners" ON storage.objects;
+CREATE POLICY "Allow admin manage banners" ON storage.objects
+  FOR ALL TO authenticated USING (bucket_id = 'banners') WITH CHECK (bucket_id = 'banners');

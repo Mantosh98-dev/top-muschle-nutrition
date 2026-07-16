@@ -455,3 +455,40 @@ export async function updateReviewApproval(id, approved) {
   return data;
 }
 
+/* --- Advertisement Banners Database Actions --- */
+export async function fetchBanners() {
+  checkConfig();
+  const { data, error } = await supabaseClient
+    .from('advertisement_banners')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('display_priority', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function saveBanner(bannerData) {
+  checkConfig();
+  const { data, error } = await supabaseClient
+    .from('advertisement_banners')
+    .upsert(bannerData)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteBanner(id) {
+  checkConfig();
+  const { error } = await supabaseClient
+    .from('advertisement_banners')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return true;
+}
+
+
