@@ -1,27 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>404 Not Found</title>
-<style>
-body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#fff;color:#202124;display:flex;align-items:center;justify-content:center;height:100vh}
-.box{max-width:620px;padding:24px}
-.code{font-size:88px;font-weight:300;color:#5f6368;margin:0}
-h1{font-size:30px;font-weight:400;margin:0 0 16px}
-p{color:#5f6368;margin:10px 0}
-hr{border:0;border-top:1px solid #e0e0e0;margin:24px 0}
-.small{font-size:13px;color:#80868b}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Premium quality supplements for workouts, recovery and health goals. Order via WhatsApp.">
+  <title>Top Muscle Nutrition - Premium Supplements</title>
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.topmusclenutrition.in">
+  <meta property="og:title" id="og-title" content="Top Muscle Nutrition">
+  <meta property="og:description" id="og-desc" content="Premium Supplements for Strength & Performance">
+  <meta property="og:image" id="og-image" content="https://www.topmusclenutrition.in/og-image.jpg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://www.topmusclenutrition.in">
+  <meta property="twitter:title" id="twitter-title" content="Top Muscle Nutrition">
+  <meta property="twitter:description" id="twitter-desc" content="Premium Supplements for Strength & Performance">
+  <meta property="twitter:image" id="twitter-image" content="https://www.topmusclenutrition.in/og-image.jpg">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" id="structured-data">
+  {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": "Top Muscle Nutrition",
+    "description": "Premium Supplements for Strength & Performance",
+    "url": "https://www.topmusclenutrition.in",
+    "image": "https://www.topmusclenutrition.in/og-image.jpg"
+  }
+  </script>
+
+  <!-- Google Fonts — Outfit (headings) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+    media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap">
+  </noscript>
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="/style.css">
+
+  <!-- FontAwesome Icons (deferred for performance) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print"
+    onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </noscript>
+
+  <!-- Favicon and PWA Assets -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" id="pwa-manifest" href="/site.webmanifest">
+  <script>
+    if (window.location.pathname.startsWith('/admin')) {
+      document.getElementById('pwa-manifest').setAttribute('href', '/admin.webmanifest');
+    }
+  </script>
+  <meta name="theme-color" content="#d60000">
 </head>
+
 <body>
-<div class="box">
-<div class="code">404</div>
-<h1>That’s an error.</h1>
-<p>The requested URL was not found on this server.</p>
-<p>The server could not locate the requested resource. Please verify the URL or try again later.</p>
-<hr>
-<p class="small">HTTP ERROR 404</p>
-</div>
+
+  <!-- Skip to main content (accessibility) -->
+  <a href="#app-content" class="skip-link">Skip to main content</a>
+
+  <!-- Announcement Bar -->
+  <div id="announcement-bar" class="announcement-bar" style="display: none;" role="banner" aria-live="polite">
+    <div class="announcement-container">
+      <div class="announcement-track-wrap">
+        <span id="announcement-text" class="announcement-track"></span>
+      </div>
+      <button id="announcement-close-btn" class="announcement-close-btn"
+        aria-label="Close announcement">&times;</button>
+    </div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="navbar" role="banner">
+    <div class="container">
+      <a href="/" class="logo-link" aria-label="Top Muscle Nutrition - Home">
+        <img id="nav-logo"
+          src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png"
+          alt="Top Muscle Nutrition Logo" class="logo-img" width="100" height="40" fetchpriority="high">
+        <span id="nav-brand-name" class="brand-name">Top Muscle Nutrition</span>
+      </a>
+
+      <!-- Header Search (Desktop & Mobile) -->
+      <div class="header-search-container">
+        <form id="header-search-form" class="header-search-form">
+          <input type="text" id="header-search-input" class="header-search-input" placeholder="Search for products..." aria-label="Search products" autocomplete="off">
+          <button type="submit" class="header-search-btn" aria-label="Search button">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
+        <div id="header-search-suggestions" class="header-search-suggestions" style="display: none;"></div>
+      </div>
+
+      <!-- Mobile Toggler -->
+      <button class="menu-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="nav-menu">
+        <i class="fas fa-bars" style="font-size: 1.35rem; color: var(--text);"></i>
+      </button>
+
+      <!-- Nav Menu Links -->
+      <ul class="nav-menu" id="nav-menu" role="navigation" aria-label="Main navigation">
+        <li><a href="/" class="nav-link active" id="nav-home">Home</a></li>
+        <li class="nav-item-dropdown">
+          <div class="nav-link-wrap">
+            <a href="/products" class="nav-link" id="nav-products">Our Products <i class="fas fa-chevron-down nav-dropdown-icon" aria-hidden="true"></i></a>
+            <button class="dropdown-toggle-btn" aria-label="Toggle Products Submenu" aria-expanded="false"
+              aria-controls="nav-products-dropdown">
+              <i class="fas fa-chevron-down" aria-hidden="true"></i>
+            </button>
+          </div>
+          <ul class="dropdown-submenu" id="nav-products-dropdown" aria-label="Products submenu">
+            <li><a href="/products" class="dropdown-sublink">All Products</a></li>
+          </ul>
+        </li>
+        <li><a href="/verify" class="nav-link" id="nav-verify">Authenticate Product</a></li>
+        <li><a href="/contact" class="nav-link" id="nav-contact">Contact Us</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Core Dynamic Content Area -->
+  <main id="app-content" role="main" aria-label="Main content">
+    <!-- Loaded views dynamically through routing -->
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo" aria-label="Top Muscle Nutrition - Home">
+            <img id="footer-logo-img"
+              src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png"
+              alt="Top Muscle Nutrition Logo" loading="lazy" decoding="async" width="100" height="40">
+            <span id="footer-brand-text">Top Muscle Nutrition</span>
+          </a>
+          <p id="footer-desc" class="footer-desc">Premium quality supplements designed to power your workouts and speed
+            up recovery.</p>
+          <div class="footer-socials" id="footer-socials" aria-label="Social media links">
+            <!-- Dynamically populated socials -->
+          </div>
+        </div>
+
+        <div>
+          <h3 class="footer-title">Quick Links</h3>
+          <ul class="footer-links" aria-label="Quick links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/products">Our Catalogue</a></li>
+            <li><a href="/verify">Authenticate Product</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="footer-title">Contact Support</h3>
+          <div class="footer-contact" id="footer-contact-list" aria-label="Contact information">
+            <!-- Dynamically populated contacts -->
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p id="footer-copyright">© 2026 Top Muscle Nutrition. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="/privacy-policy" class="footer-bottom-link">Privacy Policy</a>
+          <span class="footer-bottom-separator">|</span>
+          <a href="/terms-and-conditions" class="footer-bottom-link">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile Drawer Overlay -->
+  <div id="mobile-drawer-overlay" class="mobile-drawer-overlay" aria-hidden="true"></div>
+
+  <!-- Premium Mobile Hamburger Drawer -->
+  <div id="mobile-drawer" class="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="drawer-header">
+      <a href="/" class="drawer-logo-link" aria-label="Top Muscle Nutrition - Home">
+        <img id="drawer-logo" src="https://hblbnsgwrjmpgjmmhpoy.supabase.co/storage/v1/object/public/images/brand/BrandLogo.png" alt="Top Muscle Nutrition Logo" class="drawer-logo-img" width="100" height="40">
+      </a>
+      <button id="drawer-close-btn" class="drawer-close-btn" aria-label="Close Menu">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Navigation Links -->
+      <nav class="drawer-nav" role="navigation" aria-label="Mobile navigation">
+        <ul class="drawer-nav-list">
+          <li>
+            <a href="/" class="drawer-nav-link active" id="drawer-nav-home">
+              <i class="fas fa-home"></i> Home
+            </a>
+          </li>
+          <li class="drawer-dropdown-item">
+            <a href="#" class="drawer-dropdown-toggle" id="drawer-products-toggle" role="button" aria-haspopup="true" aria-expanded="false">
+              <span><i class="fas fa-shopping-bag"></i> Our Products</span>
+              <i class="fas fa-chevron-down drawer-dropdown-icon"></i>
+            </a>
+            <ul class="drawer-submenu" id="drawer-products-dropdown">
+              <li><a href="/products" class="drawer-sublink">All Products</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="/verify" class="drawer-nav-link" id="drawer-nav-verify">
+              <i class="fas fa-shield-alt"></i> Authenticate Product
+            </a>
+          </li>
+          <li>
+            <a href="/contact" class="drawer-nav-link" id="drawer-nav-contact">
+              <i class="fas fa-phone-alt"></i> Contact Us
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+
+
+      <!-- Trust Section -->
+      <div class="drawer-trust-section">
+        <h4 class="drawer-section-subtitle">WHY CHOOSE US?</h4>
+        <div class="drawer-trust-grid">
+          <div class="drawer-trust-card">
+            <div class="drawer-trust-icon"><i class="fas fa-truck"></i></div>
+            <div class="drawer-trust-info">
+              <h5>Fast Delivery</h5>
+              <p>Quick dispatch nationwide</p>
+            </div>
+          </div>
+          <div class="drawer-trust-card">
+            <div class="drawer-trust-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="drawer-trust-info">
+              <h5>100% Authentic Products</h5>
+              <p>Original & trusted supplements</p>
+            </div>
+          </div>
+          <div class="drawer-trust-card">
+            <div class="drawer-trust-icon"><i class="fas fa-credit-card"></i></div>
+            <div class="drawer-trust-info">
+              <h5>Secure Payments</h5>
+              <p>Safe checkout & COD</p>
+            </div>
+          </div>
+          <div class="drawer-trust-card">
+            <div class="drawer-trust-icon"><i class="fas fa-headset"></i></div>
+            <div class="drawer-trust-info">
+              <h5>Customer Support</h5>
+              <p>We are always here to help you</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="drawer-trust-badge">
+          <i class="fas fa-heart"></i>
+          <span>Trusted by Thousands of Fitness Customers</span>
+        </div>
+      </div>
+
+      <!-- Footer Section inside Drawer -->
+      <div class="drawer-footer">
+        <h4 class="drawer-footer-brand">TOP MUSCLE NUTRITION</h4>
+        <p class="drawer-footer-tagline">Fuel Your Strength 💪</p>
+        <div class="drawer-socials">
+          <a href="#" class="drawer-social-link" id="drawer-social-instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="drawer-social-link" id="drawer-social-facebook" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+          <a href="#" class="drawer-social-link" id="drawer-social-youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+        <div class="drawer-footer-copyright">
+          © 2026 Top Muscle Nutrition<br>All Rights Reserved.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Loading Screen Spinner Overlay -->
+  <div id="loader-overlay" class="loader-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Scroll to Top Floating Button -->
+  <button id="scroll-to-top" class="scroll-to-top" aria-label="Scroll to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+  <!-- Modular JS Application Script -->
+  <script type="module" src="/js/app.js"></script>
+
 </body>
+
 </html>
