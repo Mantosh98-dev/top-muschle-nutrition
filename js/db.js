@@ -171,7 +171,17 @@ export async function fetchProducts(filters = {}) {
   }
 
   if (filters.search) {
-    query = query.ilike('title', `%${filters.search}%`);
+    const s = filters.search.trim();
+    if (s) {
+      query = query.or(
+        `title.ilike.%${s}%,` +
+        `short_description.ilike.%${s}%,` +
+        `flavors.ilike.%${s}%,` +
+        `brand.ilike.%${s}%,` +
+        `product_type.ilike.%${s}%,` +
+        `slug.ilike.%${s}%`
+      );
+    }
   }
 
   // Sort featured products first, then new arrivals

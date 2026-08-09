@@ -12,6 +12,16 @@ let activeCustomizationSubTab = 'slider';
 // Track product form state (especially uploaded/added images list)
 let tempProductImages = [];
 
+// Helper utility to normalize flavor names into stable slug keys
+export function slugifyFlavor(name) {
+  if (!name) return '';
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 // Entry point for admin rendering
 export async function renderAdminPage(params) {
   if (!isSupabaseConfigured()) {
@@ -140,45 +150,77 @@ async function renderDashboard() {
       <!-- Sidebar Panel -->
       <aside class="admin-sidebar">
         <div class="admin-sidebar-header">
-          <span class="admin-sidebar-title">Admin Portal</span>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <button id="admin-theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
+          <div class="admin-sidebar-title-group">
+            <div class="admin-brand-icon">
+              <i class="fas fa-dumbbell"></i>
+            </div>
+            <div>
+              <span class="admin-sidebar-title">Top Muscle</span>
+              <span style="font-size:0.65rem; display:block; color:#10B981; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Management Console</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button id="admin-theme-toggle" class="theme-toggle-btn" style="color:#94A3B8; background:rgba(255,255,255,0.05); width:32px; height:32px; border-radius:6px;" aria-label="Toggle Theme">
               <i class="fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}"></i>
-            </button>
-            <button id="admin-menu-toggle" class="admin-menu-toggle-btn" aria-label="Toggle Menu">
-              <i class="fas fa-bars"></i>
             </button>
           </div>
         </div>
-        <ul class="admin-nav-list">
-          <li class="admin-nav-item ${activeTab === 'dashboard' ? 'active' : ''}">
-            <button data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
-          </li>
-          <li class="admin-nav-item ${activeTab === 'products' ? 'active' : ''}">
-            <button data-tab="products"><i class="fas fa-boxes"></i> Products</button>
-          </li>
-          <li class="admin-nav-item ${activeTab === 'categories' || activeTab === 'preferences' ? 'active' : ''}">
-            <button data-tab="preferences"><i class="fas fa-sliders-h"></i> Preferences</button>
-          </li>
-          <li class="admin-nav-item ${activeTab === 'customization' ? 'active' : ''}">
-            <button data-tab="customization"><i class="fas fa-palette"></i> Website Customization</button>
-          </li>
-          <li class="admin-nav-item ${activeTab === 'banners' ? 'active' : ''}">
-            <button data-tab="banners"><i class="fas fa-ad"></i> Ad Banners</button>
-          </li>
-          <li class="admin-nav-item ${activeTab === 'codes' ? 'active' : ''}">
-            <button data-tab="codes"><i class="fas fa-shield-halved"></i> Verification Codes</button>
-          </li>
-          <li class="admin-nav-item ${activeTab === 'reviews' ? 'active' : ''}">
-            <button data-tab="reviews"><i class="fas fa-star"></i> Reviews</button>
-          </li>
-          <li class="admin-nav-item ${activeTab === 'settings' ? 'active' : ''}">
-            <button data-tab="settings"><i class="fas fa-cog"></i> Settings</button>
-          </li>
-          <li class="admin-nav-item logout">
-            <button id="admin-logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-          </li>
-        </ul>
+
+        <div style="overflow-y:auto; flex:1;">
+          <div class="admin-nav-section-label">Main Controls</div>
+          <ul class="admin-nav-list">
+            <li class="admin-nav-item ${activeTab === 'dashboard' ? 'active' : ''}">
+              <button data-tab="dashboard"><i class="fas fa-chart-line"></i> Overview Dashboard</button>
+            </li>
+            <li class="admin-nav-item ${activeTab === 'products' ? 'active' : ''}">
+              <button data-tab="products"><i class="fas fa-boxes"></i> Product Catalog</button>
+            </li>
+            <li class="admin-nav-item ${activeTab === 'categories' || activeTab === 'preferences' ? 'active' : ''}">
+              <button data-tab="preferences"><i class="fas fa-sliders-h"></i> Categories & Weights</button>
+            </li>
+          </ul>
+
+          <div class="admin-nav-section-label">Storefront & Marketing</div>
+          <ul class="admin-nav-list">
+            <li class="admin-nav-item ${activeTab === 'customization' ? 'active' : ''}">
+              <button data-tab="customization"><i class="fas fa-palette"></i> Website Customization</button>
+            </li>
+            <li class="admin-nav-item ${activeTab === 'banners' ? 'active' : ''}">
+              <button data-tab="banners"><i class="fas fa-ad"></i> Promotional Banners</button>
+            </li>
+          </ul>
+
+          <div class="admin-nav-section-label">Trust & Customers</div>
+          <ul class="admin-nav-list">
+            <li class="admin-nav-item ${activeTab === 'codes' ? 'active' : ''}">
+              <button data-tab="codes"><i class="fas fa-shield-halved"></i> Verification Codes</button>
+            </li>
+            <li class="admin-nav-item ${activeTab === 'reviews' ? 'active' : ''}">
+              <button data-tab="reviews"><i class="fas fa-star"></i> Customer Reviews</button>
+            </li>
+          </ul>
+
+          <div class="admin-nav-section-label">System & Account</div>
+          <ul class="admin-nav-list">
+            <li class="admin-nav-item ${activeTab === 'settings' ? 'active' : ''}">
+              <button data-tab="settings"><i class="fas fa-cog"></i> Global Settings</button>
+            </li>
+            <li class="admin-nav-item logout">
+              <button id="admin-logout-btn"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Sidebar User Profile Footer -->
+        <div class="admin-sidebar-user">
+          <div class="admin-avatar">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <div class="admin-user-info">
+            <span class="admin-user-name">${currentSession?.user?.email || 'Admin User'}</span>
+            <span class="admin-user-role">🟢 Super Administrator</span>
+          </div>
+        </div>
       </aside>
 
       <!-- Main Workspace -->
@@ -531,6 +573,9 @@ async function renderTabProducts(workspace) {
     </div>
   `;
 
+  // Bind add button
+  document.getElementById('admin-add-product-btn').addEventListener('click', () => openProductModal());
+
   // Helper to bind action listeners to dynamically rendered table rows
   function bindRowListeners() {
     // Bind edit buttons
@@ -605,6 +650,7 @@ async function openProductModal(productId = null) {
   
   tempProductImages = [];
   let tempProductVariants = [];
+  let tempFlavorImages = {};
   
   try {
     const [fetchedCats, fetchedSettings] = await Promise.all([
@@ -621,6 +667,9 @@ async function openProductModal(productId = null) {
       if (!product.product_type) product.product_type = 'gym';
       tempProductImages = (product.product_images || []).map(img => img.image_url);
       tempProductVariants = (Array.isArray(product.variants) && product.variants.length > 1) ? [...product.variants] : [];
+      if (product.flavor_images && typeof product.flavor_images === 'object') {
+        tempFlavorImages = { ...product.flavor_images };
+      }
     }
   } catch (err) {
     showToast('Failed to initialize product editor', 'error');
@@ -789,6 +838,16 @@ async function openProductModal(productId = null) {
               <!-- Injected variant rows -->
             </div>
           </div>
+
+          <!-- Flavor-Specific Images Section -->
+          <div style="margin-top: 14px; background:var(--gray-50); padding:18px; border-radius:var(--r-md); border:1px solid var(--border);">
+            <span style="font-size:0.85rem; font-weight:700; color:var(--text-sub); display:block; margin-bottom:4px;">Flavor-Specific Images</span>
+            <span style="font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:12px;">Upload or paste an image URL for each unique flavor variant. Selecting a flavor on the product page will show its image.</span>
+            <div id="prod-flavor-images-list" style="display:flex; flex-direction:column; gap:8px;">
+              <!-- Injected flavor image rows -->
+            </div>
+          </div>
+
         </div>
 
         <hr style="border:0; border-top:1px solid var(--border-color); margin: 16px 0;">
@@ -991,6 +1050,7 @@ async function openProductModal(productId = null) {
         const idx = parseInt(input.dataset.index);
         const val = e.target.value.trim();
         tempProductVariants[idx].flavor = val;
+        renderModalFlavorImages();
       });
     });
 
@@ -1013,7 +1073,151 @@ async function openProductModal(productId = null) {
         renderModalVariants();
       });
     });
+
+    // Refresh flavor image controls whenever variants change
+    renderModalFlavorImages();
   }
+
+  // Render flavor-specific image uploaded rows
+  function renderModalFlavorImages() {
+    const flavorContainer = document.getElementById('prod-flavor-images-list');
+    if (!flavorContainer) return;
+
+    const uniqueFlavors = [...new Set(
+      tempProductVariants
+        .map(v => v.flavor ? v.flavor.trim() : '')
+        .filter(Boolean)
+    )];
+
+    // Auto update flavors list text box if variants present
+    const flavorsInput = document.getElementById('prod-flavors');
+    if (flavorsInput && uniqueFlavors.length > 0) {
+      flavorsInput.value = uniqueFlavors.join(', ');
+    }
+
+    if (uniqueFlavors.length === 0) {
+      flavorContainer.innerHTML = `<span style="font-size:0.8rem; color:var(--text-muted); text-align:center; display:block; padding:8px 0; font-weight:500;">No flavor variants added yet. Specify flavors in the variant list above to set flavor-specific photos.</span>`;
+      return;
+    }
+
+    flavorContainer.innerHTML = '';
+    uniqueFlavors.forEach(flavorName => {
+      const slug = slugifyFlavor(flavorName);
+      const existingUrl = tempFlavorImages[slug] || '';
+
+      const card = document.createElement('div');
+      card.className = 'flavor-swatch-drop-card';
+      card.dataset.slug = slug;
+      card.style.cssText = 'display:flex; align-items:center; justify-content:space-between; background:var(--white); padding:8px 12px; border-radius:var(--r-sm); border:1px solid var(--border); gap:12px; margin-bottom:6px; flex-wrap:wrap; transition:all 0.2s ease;';
+      card.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:240px;">
+          <span style="font-size:0.85rem; font-weight:700; color:var(--text); min-width:110px;">${escapeHTML(flavorName)}:</span>
+          <input type="text" class="form-input flavor-img-url-input" data-slug="${slug}" placeholder="Paste image URL or Drag & Drop file here..." value="${escapeHTML(existingUrl)}" style="flex:1; padding:6px 10px; font-size:0.82rem; height:34px;">
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <label class="btn btn-secondary" style="padding:4px 10px; font-size:0.78rem; cursor:pointer; margin:0; height:34px; display:inline-flex; align-items:center; background:var(--white); border:1px solid var(--border); color:var(--text);">
+            <i class="fas fa-upload" style="margin-right:4px;"></i> Upload File
+            <input type="file" class="flavor-file-input" data-slug="${slug}" style="display:none;" accept="image/*">
+          </label>
+          ${existingUrl ? `
+            <div style="width:34px; height:34px; border-radius:4px; overflow:hidden; border:1px solid var(--border); background:#eee;">
+              <img src="${existingUrl}" style="width:100%; height:100%; object-fit:cover;" alt="${escapeHTML(flavorName)}">
+            </div>
+            <button type="button" class="btn-icon btn-delete remove-flavor-img-btn" data-slug="${slug}" style="padding:4px; height:34px; width:34px; display:flex; align-items:center; justify-content:center;" title="Clear image"><i class="fas fa-times"></i></button>
+          ` : ''}
+        </div>
+      `;
+      flavorContainer.appendChild(card);
+    });
+
+    // Attach Drag & Drop handlers to flavor cards
+    flavorContainer.querySelectorAll('.flavor-swatch-drop-card').forEach(card => {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        card.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, false);
+      });
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        card.addEventListener(eventName, () => card.classList.add('drag-over'), false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        card.addEventListener(eventName, () => card.classList.remove('drag-over'), false);
+      });
+
+      card.addEventListener('drop', async (e) => {
+        const slug = card.dataset.slug;
+        const dt = e.dataTransfer;
+        const files = dt ? dt.files : null;
+        if (!files || files.length === 0) return;
+        const file = files[0];
+        if (!file.type.startsWith('image/')) {
+          showToast('Please drop a valid image file.', 'error');
+          return;
+        }
+        showLoader();
+        try {
+          const publicUrl = await db.uploadImage(file, 'product-images');
+          tempFlavorImages[slug] = publicUrl;
+          showToast(`Image uploaded for flavor via Drag & Drop!`, 'success');
+          renderModalFlavorImages();
+        } catch (err) {
+          console.error(err);
+          showToast('Failed to upload flavor image', 'error');
+        } finally {
+          hideLoader();
+        }
+      });
+    });
+
+    // Event handlers for URL inputs
+    flavorContainer.querySelectorAll('.flavor-img-url-input').forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const slug = inp.dataset.slug;
+        const val = e.target.value.trim();
+        if (val) {
+          tempFlavorImages[slug] = val;
+        } else {
+          delete tempFlavorImages[slug];
+        }
+        renderModalFlavorImages();
+      });
+    });
+
+    // Event handlers for file uploads
+    flavorContainer.querySelectorAll('.flavor-file-input').forEach(fileInp => {
+      fileInp.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        const slug = fileInp.dataset.slug;
+        if (!file) return;
+        showLoader();
+        try {
+          const publicUrl = await db.uploadImage(file, 'product-images');
+          tempFlavorImages[slug] = publicUrl;
+          showToast(`Image uploaded for flavor!`, 'success');
+          renderModalFlavorImages();
+        } catch (err) {
+          console.error(err);
+          showToast('Failed to upload flavor image', 'error');
+        } finally {
+          hideLoader();
+        }
+      });
+    });
+
+    // Event handlers for remove image button
+    flavorContainer.querySelectorAll('.remove-flavor-img-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const slug = btn.dataset.slug;
+        delete tempFlavorImages[slug];
+        renderModalFlavorImages();
+      });
+    });
+  }
+
+
 
   // Bind Add Variant Button
   document.getElementById('prod-add-variant-btn').addEventListener('click', () => {
@@ -1033,11 +1237,56 @@ async function openProductModal(productId = null) {
     renderModalVariants();
   });
 
-  // Image Upload handler
+  // Image Upload handler & Drag & Drop Support
   const fileArea = document.getElementById('prod-image-uploader');
   const fileInput = document.getElementById('prod-image-file-input');
   fileArea.addEventListener('click', () => fileInput.click());
   
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    fileArea.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, false);
+  });
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    fileArea.addEventListener(eventName, () => fileArea.classList.add('drag-over'), false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    fileArea.addEventListener(eventName, () => fileArea.classList.remove('drag-over'), false);
+  });
+
+  fileArea.addEventListener('drop', async (e) => {
+    const dt = e.dataTransfer;
+    const files = dt ? dt.files : null;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (!file.type.startsWith('image/')) {
+      showToast('Please drop a valid image file.', 'error');
+      return;
+    }
+
+    if (tempProductImages.length >= 10) {
+      showToast('Maximum of 10 gallery images allowed', 'error');
+      return;
+    }
+
+    showLoader();
+    try {
+      const publicUrl = await db.uploadImage(file, 'product-images');
+      tempProductImages.push(publicUrl);
+      renderModalGalleryPreview();
+      showToast('Image uploaded via Drag & Drop!', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to upload image', 'error');
+    } finally {
+      hideLoader();
+    }
+  });
+
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1101,12 +1350,24 @@ async function openProductModal(productId = null) {
 
     // Validate multiple variants if configured
     if (tempProductVariants.length > 0) {
+      const seenCombos = new Set();
       for (let i = 0; i < tempProductVariants.length; i++) {
         const v = tempProductVariants[i];
-        if (!v.weight) {
+        if (!v.weight || !v.weight.trim()) {
           showToast(`Variant #${i+1} must have a weight size.`, 'error');
           return;
         }
+
+        const flavorSlug = slugifyFlavor(v.flavor || '');
+        const weightNorm = v.weight.trim().toLowerCase();
+        const comboKey = `${weightNorm}:::${flavorSlug}`;
+
+        if (seenCombos.has(comboKey)) {
+          showToast(`Duplicate variant combination: ${v.weight} ${v.flavor ? '(' + v.flavor + ')' : ''}`, 'error');
+          return;
+        }
+        seenCombos.add(comboKey);
+
         if (!v.price || isNaN(v.price) || parseFloat(v.price) <= 0) {
           showToast(`Variant #${i+1} must have a valid original price.`, 'error');
           return;
@@ -1172,12 +1433,37 @@ async function openProductModal(productId = null) {
       }];
     }
 
+    // Auto-generate flavors list from variants
+    const uniqueFlavorsList = [...new Set(
+      finalVariants
+        .map(v => v.flavor ? v.flavor.trim() : '')
+        .filter(Boolean)
+    )];
+
+    const autoFlavorsText = uniqueFlavorsList.length > 0 
+      ? uniqueFlavorsList.join(', ')
+      : (document.getElementById('prod-flavors').value.trim() || null);
+
+    // Compute thumbnail (safe fallback chain: first flavor image -> first gallery image -> null)
+    let computedThumbnail = null;
+    if (uniqueFlavorsList.length > 0) {
+      const firstSlug = slugifyFlavor(uniqueFlavorsList[0]);
+      if (tempFlavorImages[firstSlug]) {
+        computedThumbnail = tempFlavorImages[firstSlug];
+      }
+    }
+    if (!computedThumbnail && tempProductImages.length > 0) {
+      computedThumbnail = tempProductImages[0];
+    }
+
     const payload = {
       title,
       slug,
       product_type: modal.querySelector('input[name="prod-type"]:checked')?.value || 'gym',
       brand: document.getElementById('prod-brand').value.trim() || 'Top Muscle Nutrition',
-      flavors: document.getElementById('prod-flavors').value.trim() || null,
+      flavors: autoFlavorsText,
+      flavor_images: tempFlavorImages,
+      thumbnail: computedThumbnail,
       category_id: document.getElementById('prod-category').value || null,
       short_description: document.getElementById('prod-short-desc').value.trim() || null,
       long_description: document.getElementById('prod-long-desc').value.trim() || null,

@@ -103,7 +103,7 @@ export function mergeSettings(settings) {
       }
     }
   }
-  
+
   // Robust check for slider_settings parsing
   if (typeof merged.slider_settings === 'string') {
     try {
@@ -113,7 +113,7 @@ export function mergeSettings(settings) {
       merged.slider_settings = { ...DEFAULT_SLIDER_SETTINGS };
     }
   }
-  
+
   // If it's missing or null, set defaults
   if (!merged.slider_settings) {
     merged.slider_settings = { ...DEFAULT_SLIDER_SETTINGS };
@@ -132,7 +132,7 @@ export function mergeSettings(settings) {
 // Escapes HTML special characters to prevent XSS vulnerabilities
 export function escapeHTML(str) {
   if (!str) return '';
-  return String(str).replace(/[&<>'"]/g, 
+  return String(str).replace(/[&<>'"]/g,
     tag => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -202,14 +202,14 @@ export function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  
+
   let icon = 'info-circle';
   if (type === 'success') icon = 'check-circle';
   else if (type === 'error') icon = 'exclamation-circle';
-  
+
   toast.innerHTML = `<i class="fas fa-${icon}"></i> <span>${message}</span>`;
   container.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.style.animation = 'fadeOut 0.3s ease-out forwards';
     setTimeout(() => toast.remove(), 300);
@@ -278,7 +278,7 @@ function initScrollAnimations() {
 // Initialise App
 async function init() {
   setupGlobalListeners();
-  
+
   try {
     // 1. Check if Supabase keys exist
     if (!isSupabaseConfigured()) {
@@ -290,7 +290,7 @@ async function init() {
       }
       return;
     }
-    
+
     // Wait for Supabase SDK to load and client to initialize (with a 4-second timeout)
     showLoader();
     try {
@@ -301,7 +301,7 @@ async function init() {
     } catch (timeoutErr) {
       throw new Error('Supabase SDK timeout. Please check your internet connection.');
     }
-    
+
     // 2. Fetch and apply branding settings
     const fetchedSettings = await db.fetchSettings();
     globalSettings = mergeSettings(fetchedSettings);
@@ -426,7 +426,7 @@ async function init() {
         });
       }
     }
-    
+
     // 3. Register routes
     router.addRoute('/', renderHome);
     router.addRoute('/products', renderProducts);
@@ -439,7 +439,7 @@ async function init() {
     router.addRoute('/cart', renderCart);
     router.addRoute('/account', renderAccount);
     router.addRoute('/404', render404);
-    
+
     // Section scroll router helper for Contact
     router.addRoute('/contact', () => {
       const footerSection = document.querySelector('.footer');
@@ -454,7 +454,7 @@ async function init() {
         });
       }
     });
-    
+
     // Lazy-load Admin routes so visitors don't download admin code (110KB+)
     router.addRoute('/admin', async () => {
       showLoader();
@@ -480,10 +480,10 @@ async function init() {
         hideLoader();
       }
     });
-    
+
     // Initial route check
     router.handleRoute();
-    
+
   } catch (error) {
     console.error('App init failed:', error);
     showToast('Failed to connect to database.', 'error');
@@ -530,8 +530,8 @@ function setupGlobalListeners() {
 
     const filtered = allSearchProducts.filter(prod => {
       return (prod.title || '').toLowerCase().includes(query) ||
-             (prod.brand || '').toLowerCase().includes(query) ||
-             (prod.categories && prod.categories.name || '').toLowerCase().includes(query);
+        (prod.brand || '').toLowerCase().includes(query) ||
+        (prod.categories && prod.categories.name || '').toLowerCase().includes(query);
     }).slice(0, 5);
 
     if (filtered.length === 0) {
@@ -717,12 +717,12 @@ function setupGlobalListeners() {
       if (link.closest('.drawer-dropdown-toggle')) {
         return;
       }
-      
+
       const href = link.getAttribute('href');
       if (href && href !== '#') {
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Reset category filters if navigating to non-product pages or root products page
         if (href === '/' || href === '/products' || href === '/verify' || href === '/contact') {
           if (!link.classList.contains('drawer-sublink') || href === '/products') {
@@ -735,7 +735,7 @@ function setupGlobalListeners() {
             if (drawerSearchInput) drawerSearchInput.value = '';
           }
         }
-        
+
         closeMobileDrawer();
         router.navigate(href);
       }
@@ -757,8 +757,8 @@ function setupGlobalListeners() {
 
     const filtered = allSearchProducts.filter(prod => {
       return (prod.title || '').toLowerCase().includes(query) ||
-             (prod.brand || '').toLowerCase().includes(query) ||
-             (prod.categories && prod.categories.name || '').toLowerCase().includes(query);
+        (prod.brand || '').toLowerCase().includes(query) ||
+        (prod.categories && prod.categories.name || '').toLowerCase().includes(query);
     }).slice(0, 5);
 
     if (filtered.length === 0) {
@@ -1086,7 +1086,7 @@ export function applyBranding(settings) {
   const annText = document.getElementById('announcement-text');
   if (annBar && annText) {
     const isClosed = localStorage.getItem('announcement-closed') === 'true' &&
-                     localStorage.getItem('announcement-closed-text') === settings.announcement_text;
+      localStorage.getItem('announcement-closed-text') === settings.announcement_text;
     if (settings.announcement_show && settings.announcement_text && !isClosed) {
       annText.textContent = settings.announcement_text;
       annBar.style.backgroundColor = settings.announcement_bg_color || settings.primary_color;
@@ -1111,7 +1111,7 @@ export function applyBranding(settings) {
 
   // Document Properties
   document.title = settings.seo_title;
-  
+
   let metaDesc = document.querySelector('meta[name="description"]');
   if (metaDesc) metaDesc.setAttribute('content', settings.seo_description);
 
@@ -1121,22 +1121,22 @@ export function applyBranding(settings) {
   // Update Open Graph and Twitter Metadata
   const ogTitle = document.getElementById('og-title');
   if (ogTitle) ogTitle.setAttribute('content', settings.seo_title);
-  
+
   const ogDesc = document.getElementById('og-desc');
   if (ogDesc) ogDesc.setAttribute('content', settings.seo_description);
-  
+
   const ogImage = document.getElementById('og-image');
   if (ogImage) {
     const defaultOgUrl = window.location.origin + '/og-image.jpg';
     ogImage.setAttribute('content', settings.og_image_url || defaultOgUrl);
   }
-  
+
   const twitterTitle = document.getElementById('twitter-title');
   if (twitterTitle) twitterTitle.setAttribute('content', settings.seo_title);
-  
+
   const twitterDesc = document.getElementById('twitter-desc');
   if (twitterDesc) twitterDesc.setAttribute('content', settings.seo_description);
-  
+
   const twitterImage = document.getElementById('twitter-image');
   if (twitterImage) {
     const defaultOgUrl = window.location.origin + '/og-image.jpg';
@@ -1190,7 +1190,7 @@ export function applyBranding(settings) {
   // Navbar Brand Logo and Name
   const navBrandLogo = document.getElementById('nav-logo');
   const navBrandName = document.getElementById('nav-brand-name');
-  
+
   if (settings.brand_logo_url) {
     navBrandLogo.src = settings.brand_logo_url;
     navBrandLogo.style.display = 'block';
@@ -1259,6 +1259,10 @@ export function applyBranding(settings) {
       <i class="fas fa-envelope"></i>
       <span>${settings.contact_email}</span>
     </div>
+    <div class="footer-contact-item">
+      <i class="fab fa-linkedin" style="color: #0a66c2;"></i>
+      <a href="https://www.linkedin.com/in/sharikhan25/" target="_blank" rel="noopener" class="footer-dev-contact-link">Contact Developer</a>
+    </div>
   `;
 
   // Update Mobile Drawer Branding and Logo
@@ -1300,7 +1304,7 @@ export function applyBranding(settings) {
   const drawerInstagram = document.getElementById('drawer-social-instagram');
   const drawerFacebook = document.getElementById('drawer-social-facebook');
   const drawerYoutube = document.getElementById('drawer-social-youtube');
-  
+
   if (drawerInstagram) {
     if (settings.social_instagram) {
       drawerInstagram.href = settings.social_instagram;
@@ -1425,22 +1429,22 @@ function renderHeroSlider(settings) {
       <div class="slider-viewport">
         <div class="slider-track">
           ${activeCards.map((card, idx) => {
-            const desktopImg = card.image_url;
-            const mobileImg = card.mobile_image_url || card.image_url;
-            const pictureHtml = `
+    const desktopImg = card.image_url;
+    const mobileImg = card.mobile_image_url || card.image_url;
+    const pictureHtml = `
               <picture style="width:100%; height:100%; display:block;">
                 <source media="(max-width: 768px)" srcset="${mobileImg}">
                 <img src="${desktopImg}" alt="Hero Banner ${idx + 1}" class="slider-card-img" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} decoding="async">
               </picture>
             `;
-            const innerHtml = card.link_url ? `<a href="${escapeHTML(card.link_url)}" style="display:block; width:100%; height:100%; cursor:pointer;">${pictureHtml}</a>` : pictureHtml;
+    const innerHtml = card.link_url ? `<a href="${escapeHTML(card.link_url)}" style="display:block; width:100%; height:100%; cursor:pointer;">${pictureHtml}</a>` : pictureHtml;
 
-            return `
+    return `
               <div class="hero-slider-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
                 ${innerHtml}
               </div>
             `;
-          }).join('')}
+  }).join('')}
         </div>
         
         <!-- Navigation Arrows -->
@@ -1707,13 +1711,13 @@ async function renderHome() {
     const topProducts = allProducts.filter(p => p.top_product);
     const bestSellers = allProducts.filter(p => p.best_seller);
     const trendingProducts = allProducts.filter(p => p.trending);
-    
+
 
 
     // Reusable video section builder function
     function renderVideoSection(sectionNum, show, title, desc, type, mp4Url, youtubeUrl) {
       if (!show) return '';
-      
+
       let mediaHTML = '';
       if (type === 'youtube' && youtubeUrl) {
         let embedUrl = youtubeUrl;
@@ -1734,7 +1738,7 @@ async function renderHome() {
             embedUrl = `https://www.youtube.com/embed/${trimmed}`;
           }
         }
-        
+
         mediaHTML = `
           <div class="video-embed-container" style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:var(--r-lg); box-shadow:var(--shadow-md); border:1px solid var(--border);">
             <iframe src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen title="${escapeHTML(title)}"></iframe>
@@ -1747,9 +1751,9 @@ async function renderHome() {
           </div>
         `;
       }
-      
+
       if (!mediaHTML) return ''; // Automatically hide section if no valid video URL
-      
+
       return `
         <section class="section video-section-home-${sectionNum}" style="border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--gray-50);">
           <div class="container" style="max-width:960px;">
@@ -1800,9 +1804,9 @@ async function renderHome() {
             
             <div class="category-preview-grid">
               ${categories.map((cat, i) => {
-                const iconName = getCategoryIcon(cat.name);
-                const hasImage = !!cat.image_url;
-                return `
+        const iconName = getCategoryIcon(cat.name);
+        const hasImage = !!cat.image_url;
+        return `
                   <div class="category-card animate-on-scroll delay-${(i % 8) + 1}" data-category-id="${cat.id}">
                     <div class="category-icon-box">
                       ${hasImage ? `
@@ -1814,7 +1818,7 @@ async function renderHome() {
                     <h3 class="category-name">${escapeHTML(cat.name)}</h3>
                   </div>
                 `;
-              }).join('')}
+      }).join('')}
             </div>
           </div>
         </section>
@@ -1892,23 +1896,23 @@ async function renderHome() {
     // 5. Other Product Sections (Latest, Trending, video feeds, customer reviews, brand section, etc.)
     // Video Section 1 (if enabled)
     html += renderVideoSection(
-      1, 
-      globalSettings.video1_show, 
-      globalSettings.video1_title, 
-      globalSettings.video1_desc, 
-      globalSettings.video1_type, 
-      globalSettings.video1_mp4_url, 
+      1,
+      globalSettings.video1_show,
+      globalSettings.video1_title,
+      globalSettings.video1_desc,
+      globalSettings.video1_type,
+      globalSettings.video1_mp4_url,
       globalSettings.video1_youtube_url
     );
 
     // Video Section 2 (if enabled)
     html += renderVideoSection(
-      2, 
-      globalSettings.video2_show, 
-      globalSettings.video2_title, 
-      globalSettings.video2_desc, 
-      globalSettings.video2_type, 
-      globalSettings.video2_mp4_url, 
+      2,
+      globalSettings.video2_show,
+      globalSettings.video2_title,
+      globalSettings.video2_desc,
+      globalSettings.video2_type,
+      globalSettings.video2_mp4_url,
       globalSettings.video2_youtube_url
     );
 
@@ -2310,7 +2314,7 @@ async function renderProducts() {
 
     // Highlight active categories in navigation/drawer
     updateCategoryLinksActiveState();
-    
+
     // Ensure we scroll to the top of the page
     window.scrollTo({ top: 0, behavior: 'instant' });
 
@@ -2330,8 +2334,8 @@ function filterAndRenderProducts(allProducts) {
   const filtered = allProducts.filter(prod => {
     const matchesCategory = !activeCategoryFilter || prod.category_id === activeCategoryFilter;
     const matchesBrand = !activeBrandFilter || prod.brand === activeBrandFilter;
-    const matchesSearch = !productSearchQuery || prod.title.toLowerCase().includes(productSearchQuery.toLowerCase()) || 
-                          (prod.short_description && prod.short_description.toLowerCase().includes(productSearchQuery.toLowerCase()));
+    const matchesSearch = !productSearchQuery || prod.title.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
+      (prod.short_description && prod.short_description.toLowerCase().includes(productSearchQuery.toLowerCase()));
     return matchesCategory && matchesBrand && matchesSearch;
   });
 
@@ -2352,9 +2356,12 @@ function filterAndRenderProducts(allProducts) {
 
 // Single Card HTML compiler
 function renderProductCard(prod, index = 0) {
-  const mainImage = prod.product_images && prod.product_images.length > 0 
-    ? prod.product_images[0].image_url 
-    : 'https://via.placeholder.com/300?text=No+Image';
+  const flavorsList = getFlavorsForProduct(prod);
+  const firstFlavorSlug = flavorsList.length > 0 ? slugifyFlavor(flavorsList[0]) : null;
+  const mainImage = (firstFlavorSlug && prod.flavor_images && prod.flavor_images[firstFlavorSlug])
+    || prod.thumbnail
+    || (prod.product_images && prod.product_images.length > 0 ? prod.product_images[0].image_url : null)
+    || 'https://placehold.co/300x300/f5f5f7/86868b?text=No+Image';
 
   const delayClass = `delay-${(index % 6) + 1}`;
 
@@ -2370,7 +2377,7 @@ function renderProductCard(prod, index = 0) {
       const currentVal = v.offer_price || v.price || Infinity;
       return currentVal < min ? currentVal : min;
     }, Infinity);
-    
+
     if (minPrice !== Infinity) {
       priceHTML = `
         <div class="product-price-row">
@@ -2450,14 +2457,14 @@ function renderProductCard(prod, index = 0) {
 // Helper parser for FDA-style Nutrition Facts Card
 function parseNutritionInfo(nutritionStr) {
   if (!nutritionStr) return '';
-  
+
   // Try parsing lines like "Label: Value" or "Label - Value"
   const lines = nutritionStr.split('\n').map(l => l.trim()).filter(Boolean);
   const items = [];
   let servingSize = '1 scoop (approx. 33g)';
   let servingsPerContainer = 'Approx. 30';
   let calories = '120';
-  
+
   const cleanLines = [];
   lines.forEach(line => {
     // Try matching Label: Value or Label - Value
@@ -2478,7 +2485,7 @@ function parseNutritionInfo(nutritionStr) {
       cleanLines.push(line);
     }
   });
-  
+
   // If no items were parsed, just treat it as free-form HTML lines
   if (items.length === 0 && cleanLines.length > 0) {
     return `
@@ -2487,7 +2494,7 @@ function parseNutritionInfo(nutritionStr) {
       </div>
     `;
   }
-  
+
   return `
     <div class="nutrition-facts-card">
       <div class="nutrition-facts-header">
@@ -2522,7 +2529,7 @@ function parseNutritionInfo(nutritionStr) {
 function openShareModal(product) {
   const url = window.location.href;
   const text = `Check out ${product.title} - Premium quality supplement from Top Muscle Nutrition!`;
-  
+
   if (navigator.share) {
     navigator.share({
       title: product.title,
@@ -2605,7 +2612,7 @@ function showShareFallbackModal(product, url, text) {
   const closeModal = () => {
     modal.classList.remove('active');
   };
-  
+
   modal.querySelector('#close-share-modal').addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
@@ -2646,65 +2653,34 @@ function showShareFallbackModal(product, url, text) {
   });
 }
 
-// Helper parser for flavors
+// Helper utility to normalize flavor names into stable slug keys
+export function slugifyFlavor(name) {
+  if (!name) return '';
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+// Helper parser for flavors (strictly data-driven)
 function getFlavorsForProduct(product) {
   if (product.flavors) {
-    return product.flavors.split(',').map(f => f.trim()).filter(Boolean);
+    const list = product.flavors.split(',').map(f => f.trim()).filter(Boolean);
+    if (list.length > 0) return [...new Set(list)];
   }
-  
+
   // If flavor is specified inside variants
   if (Array.isArray(product.variants)) {
-    const variantFlavors = product.variants.map(v => v.flavor).filter(Boolean).map(f => f.trim());
+    const variantFlavors = product.variants
+      .map(v => v.flavor ? v.flavor.trim() : '')
+      .filter(Boolean);
     if (variantFlavors.length > 0) {
       return [...new Set(variantFlavors)];
     }
   }
 
-  const title = product.title.toLowerCase();
-  const flavors = [];
-  
-  // Check if title has a flavour keyword
-  const flavorMatch = product.title.match(/([a-zA-Z0-9\s]+)(?:Flavour|Flavor)/i);
-  if (flavorMatch) {
-    const extractedFlavor = flavorMatch[1].trim();
-    let cleaned = extractedFlavor
-      .replace(/gold whey protein/i, '')
-      .replace(/why protein/i, '')
-      .replace(/micronized creatine/i, '')
-      .replace(/premium/i, '')
-      .trim();
-    if (cleaned) {
-      flavors.push(cleaned.charAt(0).toUpperCase() + cleaned.slice(1));
-    }
-  }
-  
-  if (title.includes('protein')) {
-    if (flavors.length === 0) {
-      flavors.push('Belgian Chocolate');
-    }
-    const standardProteinFlavors = ['Cafe Latte', 'Pista Kulfi', 'Mango', 'Vanilla Cream', 'Strawberry'];
-    standardProteinFlavors.forEach(f => {
-      if (!flavors.some(existing => existing.toLowerCase() === f.toLowerCase()) && flavors.length < 3) {
-        flavors.push(f);
-      }
-    });
-  } else if (title.includes('creatine')) {
-    if (flavors.length === 0) {
-      flavors.push('Unflavored');
-    }
-    const standardCreatineFlavors = ['Fruit Punch', 'Blue Raspberry', 'Orange'];
-    standardCreatineFlavors.forEach(f => {
-      if (!flavors.some(existing => existing.toLowerCase() === f.toLowerCase()) && flavors.length < 3) {
-        flavors.push(f);
-      }
-    });
-  } else {
-    if (flavors.length === 0) {
-      flavors.push('Standard');
-    }
-  }
-  
-  return flavors;
+  return [];
 }
 
 // 3. PRODUCT DETAILS VIEW
@@ -2740,7 +2716,7 @@ async function renderProductDetails(params) {
     try {
       const [fetchedReviews, allCatProducts] = await Promise.all([
         db.fetchReviews(product.id).catch(err => { console.error('Failed to load reviews:', err); return []; }),
-        product.category_id 
+        product.category_id
           ? db.fetchProducts({ category_id: product.category_id }).catch(err => { console.error('Failed to load related products:', err); return []; })
           : Promise.resolve([])
       ]);
@@ -2750,12 +2726,61 @@ async function renderProductDetails(params) {
       console.error('Failed to load dynamic details:', err);
     }
 
+    // Preload flavor images for instant switching
+    if (product.flavor_images && typeof product.flavor_images === 'object') {
+      Object.values(product.flavor_images).forEach(imgUrl => {
+        if (imgUrl) {
+          const img = new Image();
+          img.src = imgUrl;
+        }
+      });
+    }
+
     const totalReviews = reviews.length;
     const avgRating = totalReviews > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1) : '0.0';
     const avgStars = Math.round(parseFloat(avgRating));
 
     const images = product.product_images || [];
-    const mainImage = images.length > 0 ? images[0].image_url : 'https://placehold.co/600x600/f5f5f7/86868b?text=No+Image';
+
+    // Check if variants exist
+    const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
+    const flavorsList = getFlavorsForProduct(product);
+
+    // Deep link parameters support (?flavor=... &weight=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const flavorParam = urlParams.get('flavor');
+    const weightParam = urlParams.get('weight');
+
+    let selectedFlavor = '';
+    if (flavorParam) {
+      const matchF = flavorsList.find(f => f.toLowerCase() === flavorParam.toLowerCase());
+      if (matchF) selectedFlavor = matchF;
+    }
+    if (!selectedFlavor && flavorsList.length > 0) {
+      selectedFlavor = flavorsList[0];
+    }
+
+    let selectedWeight = '';
+    if (hasVariants) {
+      if (weightParam) {
+        const matchW = product.variants.find(v => v.weight.toLowerCase() === weightParam.toLowerCase());
+        if (matchW) selectedWeight = matchW.weight;
+      }
+      if (!selectedWeight) {
+        if (selectedFlavor) {
+          const vForF = product.variants.find(v => slugifyFlavor(v.flavor) === slugifyFlavor(selectedFlavor));
+          selectedWeight = vForF ? vForF.weight : product.variants[0].weight;
+        } else {
+          selectedWeight = product.variants[0].weight;
+        }
+      }
+    }
+
+    // Main Image lookup using Safe Fallback Chain: Flavor Image -> Thumbnail -> First Gallery Image -> Placeholder
+    const initialFlavorSlug = slugifyFlavor(selectedFlavor);
+    const mainImage = (product.flavor_images && product.flavor_images[initialFlavorSlug])
+      || product.thumbnail
+      || (images.length > 0 ? images[0].image_url : 'https://placehold.co/600x600/f5f5f7/86868b?text=No+Image');
 
     // Build about sections
     const aboutSections = [
@@ -2766,10 +2791,6 @@ async function renderProductDetails(params) {
       { key: 'usage', title: 'Usage Instructions', icon: 'directions' },
       { key: 'warnings', title: 'Safety & Warnings', icon: 'shield-alt' }
     ].filter(s => product[s.key]);
-
-    // Check if variants exist
-    const hasVariants = Array.isArray(product.variants) && product.variants.length > 1;
-    const flavorsList = getFlavorsForProduct(product);
 
     let sizeOptionsHTML = '';
     if (hasVariants) {
@@ -2790,7 +2811,7 @@ async function renderProductDetails(params) {
     // 1. Gallery Thumbnails
     const thumbsHTML = images.map((img, i) => `
       <div class="pd-thumb ${i === 0 ? 'active' : ''}" data-url="${img.image_url}">
-        <img src="${img.image_url}" alt="${escapeHTML(product.title)} gallery image ${i+1}" loading="lazy">
+        <img src="${img.image_url}" alt="${escapeHTML(product.title)} gallery image ${i + 1}" loading="lazy">
       </div>
     `).join('');
 
@@ -2816,11 +2837,41 @@ async function renderProductDetails(params) {
       </div>
     `;
 
-    // 3. Weight/Size Variants selector
+    // 3. Visual Swatch Flavor Selection Cards
+    let flavorsHTML = '';
+    if (flavorsList.length > 0) {
+      const flavorSwatchesHTML = flavorsList.map(f => {
+        const fSlug = slugifyFlavor(f);
+        const swatchImgUrl = (product.flavor_images && product.flavor_images[fSlug])
+          || product.thumbnail
+          || (images.length > 0 ? images[0].image_url : 'https://placehold.co/100x100/f5f5f7/86868b?text=Flavor');
+
+        return `
+          <button type="button" class="pd-flavor-swatch-card ${f === selectedFlavor ? 'active' : ''}" data-flavor="${escapeHTML(f)}" aria-label="Select flavor ${escapeHTML(f)}">
+            <img src="${swatchImgUrl}" class="pd-flavor-swatch-thumb" alt="${escapeHTML(f)}" loading="lazy">
+            <span class="pd-flavor-swatch-name">${escapeHTML(f)}</span>
+          </button>
+        `;
+      }).join('');
+
+      flavorsHTML = `
+        <div class="pd-variants-section" style="margin-top: 6px; margin-bottom: 14px;">
+          <div style="font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <span>Selected Flavor:</span>
+            <span id="pd-selected-flavor-text" style="color:var(--primary); font-weight:800;">${escapeHTML(selectedFlavor || 'Standard')}</span>
+          </div>
+          <div class="pd-flavor-swatch-list" id="pd-flavor-chips-list">
+            ${flavorSwatchesHTML}
+          </div>
+        </div>
+      `;
+    }
+
+    // 4. Weight/Size Variants selector
     let variantsHTML = '';
     if (hasVariants) {
       const chipsHTML = product.variants.map((v, i) => `
-        <button class="pd-size-chip ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="Select size ${escapeHTML(v.weight)}">
+        <button class="pd-size-chip ${v.weight === selectedWeight ? 'active' : ''}" data-index="${i}" aria-label="Select size ${escapeHTML(v.weight)}">
           ${escapeHTML(v.weight)}
         </button>
       `).join('');
@@ -2900,7 +2951,7 @@ async function renderProductDetails(params) {
     let reviewsListHTML = '';
     if (reviews.length > 0) {
       reviewsListHTML = reviews.map(r => {
-        const dateStr = new Date(r.created_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+        const dateStr = new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
         const starIcons = Array.from({ length: 5 }).map((_, i) => `<i class="${i < r.rating ? 'fas' : 'far'} fa-star"></i>`).join('');
         const commentHTML = r.comment ? `<p class="review-comment">${escapeHTML(r.comment)}</p>` : '';
         return `
@@ -3007,6 +3058,9 @@ async function renderProductDetails(params) {
 
                 <!-- Rating Badge -->
                 ${ratingBadgeHTML}
+
+                <!-- Flavor Selection Chips -->
+                ${flavorsHTML}
 
                 <!-- Size / Weight Selection Chips -->
                 ${variantsHTML}
@@ -3195,7 +3249,7 @@ async function renderProductDetails(params) {
       const waMessage = `Hello! I'm interested in ordering:\n\n*${product.title}*${sizeStr}${flavorStr}${priceStr}\n\nPlease confirm availability. Thank you!`;
       const cleanedNumber = (globalSettings.whatsapp_number || '').replace(/[^0-9]/g, '');
       const waUrl = `https://wa.me/${cleanedNumber}?text=${encodeURIComponent(waMessage)}`;
-      
+
       const waButtons = document.querySelectorAll('.pd-wa-btn');
       waButtons.forEach(btn => btn.href = waUrl);
     }
@@ -3239,13 +3293,83 @@ async function renderProductDetails(params) {
       updateWhatsAppLinks(variant, null);
     }
 
+    // Dynamic variant UI updater (image, price, URL sync, WhatsApp payload)
+    function updateVariantUI() {
+      let matchedVariant = null;
+      if (hasVariants) {
+        matchedVariant = product.variants.find(v => {
+          const matchW = !selectedWeight || (v.weight === selectedWeight);
+          const matchF = !selectedFlavor || (slugifyFlavor(v.flavor) === slugifyFlavor(selectedFlavor));
+          return matchW && matchF;
+        });
+
+        if (!matchedVariant && selectedFlavor) {
+          matchedVariant = product.variants.find(v => slugifyFlavor(v.flavor) === slugifyFlavor(selectedFlavor));
+        }
+        if (!matchedVariant && selectedWeight) {
+          matchedVariant = product.variants.find(v => v.weight === selectedWeight);
+        }
+        if (!matchedVariant) {
+          matchedVariant = product.variants[0];
+        }
+      } else {
+        matchedVariant = {
+          weight: product.weight || 'Standard',
+          price: product.price,
+          offer_price: product.offer_price
+        };
+      }
+
+      // 6-Tier Smart Fallback Chain for main product photo (Variant combo -> Flavor -> Size -> Thumbnail -> Gallery -> Placeholder)
+      const fSlug = slugifyFlavor(selectedFlavor);
+      const wSlug = slugifyFlavor(selectedWeight);
+      const comboSlug = `${wSlug}:::${fSlug}`;
+
+      const imageUrl = (matchedVariant && matchedVariant.image_url)
+        || (product.flavor_images && product.flavor_images[comboSlug])
+        || (product.flavor_images && product.flavor_images[fSlug])
+        || (product.flavor_images && product.flavor_images[wSlug])
+        || product.thumbnail
+        || (images.length > 0 ? images[0].image_url : null)
+        || 'https://placehold.co/600x600/f5f5f7/86868b?text=No+Image';
+
+      const mainImgEl = document.getElementById('pd-main-img');
+      if (mainImgEl && mainImgEl.src !== imageUrl) {
+        mainImgEl.style.opacity = '0.7';
+        mainImgEl.src = imageUrl;
+        setTimeout(() => { mainImgEl.style.opacity = '1'; }, 100);
+      }
+
+      // Update Selected Flavor header text label
+      const flavorTextEl = document.getElementById('pd-selected-flavor-text');
+      if (flavorTextEl) {
+        flavorTextEl.textContent = selectedFlavor || 'Standard';
+      }
+
+      // Live URL Query Sync (Amazon/Flipkart style without page reload)
+      const newParams = new URLSearchParams(window.location.search);
+      if (selectedFlavor) newParams.set('flavor', selectedFlavor);
+      if (selectedWeight) newParams.set('weight', selectedWeight);
+      const newUrl = `${window.location.pathname}?${newParams.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+
+      updateProductPricing(matchedVariant);
+      updateWhatsAppLinks(matchedVariant, selectedFlavor);
+    }
+
     // Initialize display values
-    const initialVariant = hasVariants ? product.variants[0] : {
-      weight: product.weight || 'Standard',
-      price: product.price,
-      offer_price: product.offer_price
-    };
-    updateProductPricing(initialVariant);
+    updateVariantUI();
+
+    // Bind Visual Swatch Flavor Cards click
+    const flavorCards = document.querySelectorAll('.pd-flavor-swatch-card');
+    flavorCards.forEach(card => {
+      card.addEventListener('click', () => {
+        flavorCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        selectedFlavor = card.dataset.flavor;
+        updateVariantUI();
+      });
+    });
 
     // Bind size selector chips clicks
     if (hasVariants) {
@@ -3257,7 +3381,8 @@ async function renderProductDetails(params) {
           const index = parseInt(chip.dataset.index);
           const variant = product.variants[index];
           if (variant) {
-            updateProductPricing(variant);
+            selectedWeight = variant.weight;
+            updateVariantUI();
           }
         });
       });
@@ -3304,12 +3429,12 @@ async function renderProductDetails(params) {
         </div>
       </div>
     `;
-    
+
     let lightboxEl = document.getElementById('pd-lightbox-modal');
     if (lightboxEl) lightboxEl.remove();
     document.body.insertAdjacentHTML('beforeend', lightboxHTML);
     lightboxEl = document.getElementById('pd-lightbox-modal');
-    
+
     let currentImgIndex = 0;
 
     const openLightbox = (index) => {
@@ -3382,7 +3507,7 @@ async function renderProductDetails(params) {
       else if (e.key === 'ArrowLeft') navigateLightbox(-1);
       else if (e.key === 'ArrowRight') navigateLightbox(1);
     };
-    
+
     if (window.currentLightboxKeyHandler) {
       window.removeEventListener('keydown', window.currentLightboxKeyHandler);
     }
@@ -3395,14 +3520,14 @@ async function renderProductDetails(params) {
         const item = trigger.closest('.faq-item');
         const content = item.querySelector('.faq-content');
         const isActive = item.classList.contains('active');
-        
+
         // Collapse all items
         document.querySelectorAll('.faq-item').forEach(i => {
           i.classList.remove('active');
           const c = i.querySelector('.faq-content');
           if (c) c.style.maxHeight = '0';
         });
-        
+
         if (!isActive) {
           item.classList.add('active');
           content.style.maxHeight = content.scrollHeight + 'px';
@@ -3414,10 +3539,10 @@ async function renderProductDetails(params) {
     let selectedRating = 5;
     const starContainer = document.getElementById('rating-star-select');
     const ratingInput = document.getElementById('review-rating-val');
-    
+
     if (starContainer) {
       const stars = starContainer.querySelectorAll('i');
-      
+
       const updateStars = (val) => {
         stars.forEach((star, index) => {
           if (index < val) {
@@ -3444,7 +3569,7 @@ async function renderProductDetails(params) {
       submitReviewBtn.addEventListener('click', async () => {
         const nameInput = document.getElementById('review-name');
         const commentInput = document.getElementById('review-comment');
-        
+
         const reviewer_name = nameInput.value.trim();
         const comment = commentInput.value.trim();
         const rating = parseInt(ratingInput.value);
@@ -3565,12 +3690,12 @@ function renderProductVerification() {
 
     try {
       const result = await db.verifyProductCode(code);
-      
+
       if (result.verified) {
         // Formatting dates
-        const mfgDate = result.manufacturing_date ? new Date(result.manufacturing_date).toLocaleDateString(undefined, {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
-        const expDate = result.expiry_date ? new Date(result.expiry_date).toLocaleDateString(undefined, {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
-        
+        const mfgDate = result.manufacturing_date ? new Date(result.manufacturing_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+        const expDate = result.expiry_date ? new Date(result.expiry_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
         resultBox.className = 'result-box success';
         resultBox.innerHTML = `
           <div class="result-success-header">
@@ -3604,7 +3729,7 @@ function renderProductVerification() {
           <div style="font-size:0.9rem; margin-top:4px;">The code entered is invalid or does not exist in our systems. Please check the digits and try again or contact support.</div>
         `;
       }
-      
+
       resultBox.style.display = 'block';
 
     } catch (err) {
@@ -3650,7 +3775,7 @@ async function renderCategories() {
   try {
     const categories = await db.fetchCategories();
     let categoriesHTML = '';
-    
+
     const getCategoryIcon = (name) => {
       const n = (name || '').toLowerCase();
       if (n.includes('whey') || n.includes('protein')) return 'flask';
