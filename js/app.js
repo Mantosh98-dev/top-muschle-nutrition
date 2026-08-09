@@ -1259,10 +1259,6 @@ export function applyBranding(settings) {
       <i class="fas fa-envelope"></i>
       <span>${settings.contact_email}</span>
     </div>
-    <div class="footer-contact-item">
-      <i class="fab fa-linkedin" style="color: #0a66c2;"></i>
-      <a href="https://www.linkedin.com/in/sharikhan25/" target="_blank" rel="noopener" class="footer-dev-contact-link">Contact Developer</a>
-    </div>
   `;
 
   // Update Mobile Drawer Branding and Logo
