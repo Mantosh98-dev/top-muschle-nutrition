@@ -147,6 +147,25 @@ async function renderDashboard() {
   // Render Sidebar and Workspace
   appContent.innerHTML = `
     <div class="admin-dashboard ${isDarkMode ? 'admin-dark-mode' : ''}">
+      <!-- Admin Mobile Top Bar -->
+      <div class="admin-mobile-topbar">
+        <button id="admin-menu-toggle" class="admin-mobile-menu-btn" aria-label="Toggle Admin Navigation">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="admin-mobile-brand">
+          <div class="admin-brand-icon" style="width: 28px; height: 28px; font-size: 0.9rem;">
+            <i class="fas fa-dumbbell"></i>
+          </div>
+          <span style="font-family: var(--font-heading); font-weight: 800; font-size: 1.1rem; color: var(--text);">Top Muscle Admin</span>
+        </div>
+        <button id="admin-theme-toggle-mobile" class="theme-toggle-btn" style="width:36px; height:36px; border-radius:8px;" aria-label="Toggle Theme">
+          <i class="fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}"></i>
+        </button>
+      </div>
+
+      <!-- Backdrop Overlay for Mobile Drawer -->
+      <div id="admin-sidebar-overlay" class="admin-sidebar-overlay" aria-hidden="true"></div>
+
       <!-- Sidebar Panel -->
       <aside class="admin-sidebar">
         <div class="admin-sidebar-header">
@@ -162,6 +181,9 @@ async function renderDashboard() {
           <div style="display: flex; align-items: center; gap: 6px;">
             <button id="admin-theme-toggle" class="theme-toggle-btn" style="color:#94A3B8; background:rgba(255,255,255,0.05); width:32px; height:32px; border-radius:6px;" aria-label="Toggle Theme">
               <i class="fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}"></i>
+            </button>
+            <button id="admin-sidebar-close-btn" class="admin-sidebar-close-btn" aria-label="Close Sidebar">
+              <i class="fas fa-times"></i>
             </button>
           </div>
         </div>
@@ -235,11 +257,25 @@ async function renderDashboard() {
 
   // Bind Sidebar navigation buttons
   const sidebarEl = document.querySelector('.admin-sidebar');
+  const overlayEl = document.getElementById('admin-sidebar-overlay');
+  
+  const closeSidebarDrawer = () => {
+    if (sidebarEl) sidebarEl.classList.remove('menu-open');
+    if (overlayEl) overlayEl.classList.remove('active');
+    document.body.classList.remove('admin-sidebar-locked');
+  };
+
+  const openSidebarDrawer = () => {
+    if (sidebarEl) sidebarEl.classList.add('menu-open');
+    if (overlayEl) overlayEl.classList.add('active');
+    document.body.classList.add('admin-sidebar-locked');
+  };
+
   document.querySelectorAll('.admin-nav-item button').forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
       if (tab) {
-        if (sidebarEl) sidebarEl.classList.remove('menu-open');
+        closeSidebarDrawer();
         router.navigate(`/admin/${tab}`);
       }
     });
@@ -247,32 +283,49 @@ async function renderDashboard() {
 
   // Bind Sidebar Menu Toggle for Mobile
   const menuToggleBtn = document.getElementById('admin-menu-toggle');
-  if (menuToggleBtn && sidebarEl) {
+  if (menuToggleBtn) {
     menuToggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      sidebarEl.classList.toggle('menu-open');
+      if (sidebarEl && sidebarEl.classList.contains('menu-open')) {
+        closeSidebarDrawer();
+      } else {
+        openSidebarDrawer();
+      }
     });
   }
 
-  // Theme Toggle Button
-  const themeToggleBtn = document.getElementById('admin-theme-toggle');
-  const dashboardEl = document.querySelector('.admin-dashboard');
+  const sidebarCloseBtn = document.getElementById('admin-sidebar-close-btn');
+  if (sidebarCloseBtn) {
+    sidebarCloseBtn.addEventListener('click', closeSidebarDrawer);
+  }
 
-  themeToggleBtn.addEventListener('click', () => {
+  if (overlayEl) {
+    overlayEl.addEventListener('click', closeSidebarDrawer);
+  }
+
+  // Theme Toggle Buttons (Desktop & Mobile)
+  const dashboardEl = document.querySelector('.admin-dashboard');
+  const toggleTheme = () => {
     const isCurrentlyDark = dashboardEl.classList.toggle('admin-dark-mode');
     localStorage.setItem('admin-theme', isCurrentlyDark ? 'dark' : 'light');
     
-    // Update button icon
-    const iconEl = themeToggleBtn.querySelector('i');
-    if (isCurrentlyDark) {
-      iconEl.className = 'fas fa-sun';
-    } else {
-      iconEl.className = 'fas fa-moon';
-    }
-  });
+    document.querySelectorAll('#admin-theme-toggle, #admin-theme-toggle-mobile').forEach(btn => {
+      const iconEl = btn.querySelector('i');
+      if (iconEl) {
+        iconEl.className = isCurrentlyDark ? 'fas fa-sun' : 'fas fa-moon';
+      }
+    });
+  };
+
+  const themeToggleBtn = document.getElementById('admin-theme-toggle');
+  if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+
+  const themeToggleMobileBtn = document.getElementById('admin-theme-toggle-mobile');
+  if (themeToggleMobileBtn) themeToggleMobileBtn.addEventListener('click', toggleTheme);
 
   // Logout button
   document.getElementById('admin-logout-btn').addEventListener('click', async () => {
+
     showLoader();
     try {
       try {

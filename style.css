@@ -2799,41 +2799,270 @@ textarea.form-input { resize: vertical; }
   border: 1px solid var(--border);
 }
 
-@media (max-width: 992px) {
+/* ============================================================
+   ADMIN RESPONSIVENESS & MOBILE DRAWER STYLES
+   ============================================================ */
+
+/* Admin Mobile Top Bar */
+.admin-mobile-topbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  width: 100%;
+}
+
+.admin-mobile-menu-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-mobile-menu-btn:hover {
+  background: var(--gray-50);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.admin-mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--text-sub);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.admin-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.admin-sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+body.admin-sidebar-locked {
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
   .admin-dashboard {
     grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
   }
+
+  .admin-mobile-topbar {
+    display: flex;
+  }
+
   .admin-sidebar {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 290px;
+    max-width: 85vw;
+    height: 100vh;
+    z-index: 999;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex !important;
+    flex-direction: column;
+    overflow-y: auto;
   }
+
+  .admin-sidebar.menu-open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .admin-main-panel {
+    padding: 20px 16px 40px !important;
+    width: 100%;
+  }
+
+  .admin-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .admin-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .admin-header-actions .btn {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+  }
+
   .admin-grid-2,
   .admin-grid-3,
   .admin-grid-img-upload {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
+
   .admin-variant-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 8px;
   }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+
+  .settings-card {
+    padding: 18px 14px;
+  }
+
+  .admin-table-container,
+  .admin-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  .admin-table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-title {
+    font-size: 1.4rem;
+  }
+
+  .modal-content,
+  .admin-modal-content {
+    max-width: 95vw !important;
+    padding: 20px 16px !important;
+    margin: 16px auto !important;
+  }
+}
+
+/* ── Dark Mode Refinements for Admin ── */
+.admin-dashboard.admin-dark-mode {
+  background: #0b0f19;
+  color: #f1f5f9;
+}
+
+.admin-dashboard.admin-dark-mode .admin-mobile-topbar,
+.admin-dashboard.admin-dark-mode .admin-sidebar,
+.admin-dashboard.admin-dark-mode .settings-card,
+.admin-dashboard.admin-dark-mode .admin-card,
+.admin-dashboard.admin-dark-mode .admin-stat-card,
+.admin-dashboard.admin-dark-mode .admin-table-card {
+  background: #131b2e;
+  border-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.admin-dashboard.admin-dark-mode .admin-main-panel {
+  background: #0b0f19;
+}
+
+.admin-dashboard.admin-dark-mode .admin-sidebar-header,
+.admin-dashboard.admin-dark-mode .admin-sidebar-user,
+.admin-dashboard.admin-dark-mode .settings-section-title {
+  border-color: #1e293b;
+  background: #101726;
+}
+
+.admin-dashboard.admin-dark-mode .form-input,
+.admin-dashboard.admin-dark-mode .form-select,
+.admin-dashboard.admin-dark-mode .form-textarea {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.admin-dashboard.admin-dark-mode .form-input:focus,
+.admin-dashboard.admin-dark-mode .form-select:focus,
+.admin-dashboard.admin-dark-mode .form-textarea:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.admin-dashboard.admin-dark-mode .admin-nav-item button {
+  color: #94a3b8;
+}
+
+.admin-dashboard.admin-dark-mode .admin-nav-item button:hover {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+.admin-dashboard.admin-dark-mode .admin-nav-item.active button {
+  background: rgba(220, 38, 38, 0.15) !important;
+  color: #ef4444 !important;
+  border-left-color: #ef4444;
 }
 
 .admin-dashboard.admin-dark-mode .btn-ghost {
-  background: var(--bg-alt);
-  border-color: var(--border);
-  color: var(--text);
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
 }
 
 .admin-dashboard.admin-dark-mode .btn-ghost:hover {
-  background: var(--border);
-  border-color: var(--border-hover);
+  background: #334155;
 }
 
 .admin-dashboard.admin-dark-mode .theme-toggle-btn:hover {
-  background: var(--gray-800);
+  background: #1e293b;
   color: var(--primary);
 }
 
 .admin-main-panel {
-  padding: 40px;
+  padding: 32px 36px;
   overflow-y: auto;
 }
 
@@ -2841,7 +3070,7 @@ textarea.form-input { resize: vertical; }
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   gap: 16px;
 }
 
@@ -2853,11 +3082,12 @@ textarea.form-input { resize: vertical; }
 
 .admin-title {
   font-family: var(--font-heading);
-  font-size: 1.6rem;
+  font-size: 1.65rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--text);
 }
+
 
 .admin-subtitle {
   font-size: 0.86rem;
