@@ -345,22 +345,93 @@ export async function deleteAuthCode(id) {
   return true;
 }
 
-// Secure Product Code Verification (runs the PostgreSQL verify_product_code RPC)
-export async function verifyProductCode(code) {
+// Secure Product Code Verification & Backend Activity Logging
+export async function verifyProductCode(code, mobile = '', email = '') {
   checkConfig();
-  // Call the verify_product_code stored procedure (RPC) in Supabase
-  const { data, error } = await supabaseClient.rpc('verify_product_code', {
-    input_code: code.trim().toUpperCase()
-  });
+  const cleanCode = (code || '').trim().toUpperCase();
+  const cleanMobile = (mobile || '').trim();
+  const cleanEmail = (email || '').trim();
 
-  if (error) throw error;
-  
-  if (data && data.length > 0) {
-    return data[0]; // Returns { verified: true, product_name, product_image, manufacturing_date, expiry_date, status }
+  let result = { verified: false };
+
+  // 1. Call the verify_product_code stored procedure (RPC) in Supabase
+  try {
+    const { data, error } = await supabaseClient.rpc('verify_product_code', {
+      input_code: cleanCode
+    });
+
+    if (!error && data && data.length > 0) {
+      result = data[0];
+    }
+  } catch (rpcErr) {
+    console.warn('RPC verify_product_code query error:', rpcErr);
   }
-  
-  return { verified: false };
+
+  // Fallback direct check if RPC was not configured or returned empty
+  if (!result.verified) {
+    try {
+      const { data: codeData, error: codeErr } = await supabaseClient
+        .from('authentication_codes')
+        .select(`
+          id, unique_code, manufacturing_date, expiry_date, status, product_id,
+          products ( id, title, product_images ( image_url, sort_order ) )
+        `)
+        .eq('unique_code', cleanCode)
+        .maybeSingle();
+
+      if (!codeErr && codeData && codeData.products) {
+        const prod = codeData.products;
+        const sortedImages = prod.product_images ? [...prod.product_images].sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0)) : [];
+        result = {
+          verified: true,
+          product_id: prod.id,
+          product_name: prod.title,
+          product_image: sortedImages[0]?.image_url || '',
+          manufacturing_date: codeData.manufacturing_date,
+          expiry_date: codeData.expiry_date,
+          status: codeData.status || 'active'
+        };
+      }
+    } catch (fallbackErr) {
+      console.warn('Fallback direct check error:', fallbackErr);
+    }
+  }
+
+  // 2. Store verification attempt / lead in verification_logs table on backend
+  try {
+    const logData = {
+      code: cleanCode,
+      mobile_number: cleanMobile || 'N/A',
+      email: cleanEmail || null,
+      status: result.verified ? (result.status || 'verified') : 'invalid',
+      product_id: result.product_id || null,
+      product_name: result.product_name || null,
+      created_at: new Date().toISOString()
+    };
+    await supabaseClient.from('verification_logs').insert(logData);
+  } catch (logErr) {
+    console.warn('Failed to insert verification log into database:', logErr);
+  }
+
+  return result;
 }
+
+// Fetch verification logs for Admin
+export async function fetchVerificationLogs(limit = 100) {
+  checkConfig();
+  const { data, error } = await supabaseClient
+    .from('verification_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.warn('fetchVerificationLogs error:', error);
+    return [];
+  }
+  return data || [];
+}
+
 
 /* --- Supabase Storage Image Upload --- */
 export async function uploadImage(file, bucketName = 'product-images') {

@@ -1976,6 +1976,88 @@ async function renderHome() {
       }
     }
 
+    // Quick Product Authentication Bar & Trust Features (Before Reviews)
+    html += `
+      <section class="home-quick-auth-section section animate-on-scroll">
+        <div class="container">
+          <div class="home-quick-auth-card">
+            <div class="home-quick-auth-header">
+              <span class="section-badge"><i class="fas fa-shield-check"></i> Security & Trust</span>
+              <h2 class="home-quick-auth-title">Verify Product Authenticity</h2>
+              <p class="home-quick-auth-desc">Check if your ${escapeHTML(globalSettings.brand_name || 'Top Muscle Nutrition')} product is 100% genuine right here</p>
+            </div>
+
+            <form id="home-quick-auth-form" class="home-quick-auth-form" onsubmit="return false;">
+              <div class="home-quick-auth-inputs">
+                <div class="home-auth-input-wrap">
+                  <input 
+                    type="text" 
+                    id="home-auth-code" 
+                    class="home-auth-input code-input" 
+                    placeholder="Enter Unique Code" 
+                    maxlength="30"
+                    autocomplete="off"
+                    required
+                    aria-label="Enter unique code"
+                  >
+                </div>
+                <div class="home-auth-input-wrap">
+                  <input 
+                    type="tel" 
+                    id="home-auth-mobile" 
+                    class="home-auth-input" 
+                    placeholder="Enter Mobile Number" 
+                    maxlength="15"
+                    autocomplete="tel"
+                    required
+                    aria-label="Enter mobile number"
+                  >
+                </div>
+                <button type="submit" id="home-auth-btn" class="home-auth-submit-btn">
+                  AUTHENTICATE NOW
+                </button>
+              </div>
+            </form>
+
+            <!-- Quick Inline Result Box -->
+            <div id="home-auth-result" class="result-box" style="display: none; max-width: 820px; margin: 18px auto 0;"></div>
+
+            <!-- Trust Badges Bar -->
+            <div class="home-auth-trust-bar">
+              <div class="home-auth-trust-item">
+                <div class="home-auth-trust-icon"><i class="fas fa-shield-check"></i></div>
+                <div class="home-auth-trust-text">
+                  <h4>100% Safe & Secure</h4>
+                  <p>Verified Authentic Batch</p>
+                </div>
+              </div>
+              <div class="home-auth-trust-item">
+                <div class="home-auth-trust-icon"><i class="fas fa-truck-fast"></i></div>
+                <div class="home-auth-trust-text">
+                  <h4>Free & Fast Shipping</h4>
+                  <p>Quick Nationwide Delivery</p>
+                </div>
+              </div>
+              <div class="home-auth-trust-item">
+                <div class="home-auth-trust-icon"><i class="fas fa-award"></i></div>
+                <div class="home-auth-trust-text">
+                  <h4>Lab Tested Quality</h4>
+                  <p>100% Genuine Nutrition</p>
+                </div>
+              </div>
+              <div class="home-auth-trust-item">
+                <div class="home-auth-trust-icon"><i class="fas fa-qrcode"></i></div>
+                <div class="home-auth-trust-text">
+                  <h4>Authenticity Guaranteed</h4>
+                  <p>Anti-Counterfeit Protection</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+
     // Customer Reviews (if enabled)
     const showCustomerReviews = globalSettings.slider_settings?.show_customer_reviews || false;
     if (showCustomerReviews) {
@@ -2040,6 +2122,79 @@ async function renderHome() {
     html += `<div class="ad-banner-placeholder" data-page="homepage" data-position="above_footer"></div>`;
     appContent.innerHTML = html;
 
+    // Wire Home Quick Authentication Form
+    const homeAuthForm = document.getElementById('home-quick-auth-form');
+    const homeAuthCode = document.getElementById('home-auth-code');
+    const homeAuthMobile = document.getElementById('home-auth-mobile');
+    const homeAuthBtn = document.getElementById('home-auth-btn');
+    const homeAuthResult = document.getElementById('home-auth-result');
+
+    if (homeAuthForm && homeAuthCode && homeAuthMobile && homeAuthBtn && homeAuthResult) {
+      homeAuthForm.addEventListener('submit', async (e) => {
+        if (e) e.preventDefault();
+        const code = homeAuthCode.value.trim().replace(/^#/, '');
+        const mobile = homeAuthMobile.value.trim();
+
+        if (!code) {
+          showToast('Please enter your unique code', 'error');
+          homeAuthCode.focus();
+          return;
+        }
+
+        if (!mobile) {
+          showToast('Please enter your mobile number', 'error');
+          homeAuthMobile.focus();
+          return;
+        }
+
+        if (mobile.length < 7) {
+          showToast('Please enter a valid mobile number', 'error');
+          homeAuthMobile.focus();
+          return;
+        }
+
+        homeAuthBtn.disabled = true;
+        const originalBtnText = homeAuthBtn.innerHTML;
+        homeAuthBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        homeAuthResult.style.display = 'none';
+
+        try {
+          const result = await db.verifyProductCode(code, mobile);
+
+          if (result && result.verified) {
+            homeAuthResult.className = 'result-box success';
+            homeAuthResult.innerHTML = `
+              <div class="result-success-header" style="margin-bottom: 8px; padding-bottom: 8px;">
+                <i class="fas fa-check-circle"></i>
+                <span>100% Genuine Authentic Product</span>
+              </div>
+              <div style="font-size: 0.92rem; color: #1e293b;">
+                <strong>${escapeHTML(result.product_name || 'Verified Product')}</strong> — Code #${escapeHTML(code.toUpperCase())} is genuine and authentic.
+                <a href="/verify" style="color: #dc2626; font-weight: 700; text-decoration: underline; margin-left: 8px;">View Full Authentication Details &rarr;</a>
+              </div>
+            `;
+            showToast('Product verified as genuine authentic!', 'success');
+          } else {
+            homeAuthResult.className = 'result-box error';
+            homeAuthResult.innerHTML = `
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <span><i class="fas fa-exclamation-circle"></i> Code <strong>#${escapeHTML(code.toUpperCase())}</strong> not recognized or invalid.</span>
+                <a href="/verify" style="color: #991b1b; font-weight: 700; text-decoration: underline;">Need Help? Open Verification &rarr;</a>
+              </div>
+            `;
+            showToast('Invalid or unrecognized code', 'error');
+          }
+          homeAuthResult.style.display = 'block';
+        } catch (err) {
+          console.error('Home auth error:', err);
+          showToast('Error verifying code. Please try again.', 'error');
+        } finally {
+          homeAuthBtn.disabled = false;
+          homeAuthBtn.innerHTML = originalBtnText;
+        }
+      });
+    }
+
     // Bind Category Clicks
     document.querySelectorAll('.category-card').forEach(card => {
       card.addEventListener('click', () => {
@@ -2048,6 +2203,7 @@ async function renderHome() {
         router.navigate(`/products?category=${card.dataset.categoryId}`);
       });
     });
+
 
     // Bind Brand Card Clicks
     document.querySelectorAll('.brand-card').forEach(card => {
@@ -3631,79 +3787,214 @@ async function renderProductDetails(params) {
 }
 
 
-// 4. VERIFICATION VIEW (Verify Authentic Product)
+// 4. VERIFICATION VIEW (Product Authentication / Check Authenticity)
 function renderProductVerification() {
+  const brandName = globalSettings?.brand_name || 'Top Muscle Nutrition';
+
   appContent.innerHTML = `
-    <section class="section">
-      <div class="container verify-wrapper" style="max-width: 720px; margin: 40px auto; padding: 0 var(--pad-mobile);">
-        <div style="margin-bottom: 24px;" class="animate-on-scroll">
-          <button class="pd-back-btn" onclick="window.history.back();"><i class="fas fa-arrow-left"></i> Back</button>
+    <section class="auth-page-section">
+      <div class="container auth-wrapper">
+        <div style="margin-bottom: 20px;" class="animate-on-scroll">
+          <button class="pd-back-btn" onclick="window.history.back();" aria-label="Go back">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
         </div>
         
         <div class="ad-banner-placeholder" data-page="auth_page" data-position="above_content"></div>
         
-        <div class="verify-card animate-scale" style="max-width: 560px; margin: 0 auto;">
-          <div class="category-icon-box" style="margin: 0 auto; color: var(--primary);">
-            <i class="fas fa-shield-alt"></i>
+        <div class="auth-card animate-scale">
+          <div class="auth-header">
+            <h1 class="auth-title">Check Authenticity</h1>
+            <p class="auth-subtitle">Know if your ${escapeHTML(brandName)} product is authentic</p>
           </div>
-          <h2>Authenticate Product</h2>
-          <p>Protect your health. Verify if your product is genuine by entering the unique security code found on the packaging.</p>
           
-          <div class="verify-input-group">
-            <input type="text" id="verification-code" class="verify-input" maxlength="20" placeholder="ENTER CODE HERE" aria-label="Product verification code">
-            <button id="verify-code-btn" class="btn btn-primary">
-              <i class="fas fa-check-circle"></i> Authenticate Product
+          <form id="auth-verification-form" class="auth-form" onsubmit="return false;">
+            <!-- Unique Code Field -->
+            <div class="auth-field-group">
+              <label for="verification-code" class="auth-field-label">
+                Enter Unique code
+              </label>
+              <input 
+                type="text" 
+                id="verification-code" 
+                class="auth-input auth-code-input" 
+                maxlength="30" 
+                placeholder="e.g. #H876543" 
+                autocomplete="off"
+                required
+                aria-label="Enter unique product code"
+              >
+            </div>
+            
+            <!-- Mobile Number Field -->
+            <div class="auth-field-group">
+              <label for="verification-mobile" class="auth-field-label">
+                Mobile
+              </label>
+              <input 
+                type="tel" 
+                id="verification-mobile" 
+                class="auth-input" 
+                maxlength="15" 
+                placeholder="Mobile Number" 
+                autocomplete="tel"
+                required
+                aria-label="Enter mobile number"
+              >
+            </div>
+            
+            <!-- Email Field (Optional) -->
+            <div class="auth-field-group">
+              <label for="verification-email" class="auth-field-label">
+                Email <span class="optional-tag">(optional)</span>
+              </label>
+              <input 
+                type="email" 
+                id="verification-email" 
+                class="auth-input" 
+                placeholder="Email Id (Optional)" 
+                autocomplete="email"
+                aria-label="Enter email id optional"
+              >
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" id="verify-code-btn" class="auth-submit-btn">
+              Check Now
             </button>
-          </div>
+          </form>
           
           <!-- Results Container -->
-          <div id="verification-result-box" class="result-box">
-            <!-- Results populated here -->
+          <div id="verification-result-box" class="result-box" style="display: none;">
+            <!-- Results populated dynamically -->
           </div>
         </div>
+        
+        <!-- How to Authenticate Guide Section (Vertical Column Layout) -->
+        <div class="how-to-auth-container animate-on-scroll">
+          <div class="how-to-auth-header">
+            <h2 class="how-to-auth-title">How to Authenticate</h2>
+            <p class="how-to-auth-subtitle">Verify your supplement in 4 simple steps to ensure 100% genuine quality</p>
+          </div>
+          
+          <div class="how-to-auth-column">
+            <!-- Step 1 -->
+            <div class="how-to-auth-card">
+              <div class="how-to-auth-step-badge">1</div>
+              <div class="how-to-auth-icon"><i class="fas fa-search"></i></div>
+              <div class="how-to-auth-card-content">
+                <h3 class="how-to-auth-card-title">Locate Code</h3>
+                <p class="how-to-auth-card-desc">Find the security seal sticker on the cap or container of your supplement packaging.</p>
+              </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="how-to-auth-card">
+              <div class="how-to-auth-step-badge">2</div>
+              <div class="how-to-auth-icon"><i class="fas fa-hand-sparkles"></i></div>
+              <div class="how-to-auth-card-content">
+                <h3 class="how-to-auth-card-title">Scratch Gently</h3>
+                <p class="how-to-auth-card-desc">Scratch off the silver protective layer to reveal your unique alphanumeric security code.</p>
+              </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="how-to-auth-card">
+              <div class="how-to-auth-step-badge">3</div>
+              <div class="how-to-auth-icon"><i class="fas fa-mobile-screen"></i></div>
+              <div class="how-to-auth-card-content">
+                <h3 class="how-to-auth-card-title">Enter Details</h3>
+                <p class="how-to-auth-card-desc">Enter your unique code along with your mobile number in the form above and click <strong>Check Now</strong>.</p>
+              </div>
+            </div>
+            
+            <!-- Step 4 -->
+            <div class="how-to-auth-card">
+              <div class="how-to-auth-step-badge">4</div>
+              <div class="how-to-auth-icon"><i class="fas fa-shield-halved"></i></div>
+              <div class="how-to-auth-card-content">
+                <h3 class="how-to-auth-card-title">Get Instant Result</h3>
+                <p class="how-to-auth-card-desc">Get instant real-time confirmation of genuine authenticity, manufacturing date, and batch status.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         
         <div class="ad-banner-placeholder" data-page="auth_page" data-position="below_content"></div>
       </div>
     </section>
   `;
 
+
   // Initialize scroll animations
   initScrollAnimations();
 
-  const inputEl = document.getElementById('verification-code');
+  const codeInput = document.getElementById('verification-code');
+  const mobileInput = document.getElementById('verification-mobile');
+  const emailInput = document.getElementById('verification-email');
+  const formEl = document.getElementById('auth-verification-form');
   const verifyBtn = document.getElementById('verify-code-btn');
   const resultBox = document.getElementById('verification-result-box');
 
-  verifyBtn.addEventListener('click', async () => {
-    const code = inputEl.value.trim();
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+
+    const code = codeInput.value.trim().replace(/^#/, '');
+    const mobile = mobileInput.value.trim();
+    const email = emailInput.value.trim();
+
     if (!code) {
-      showToast('Please enter a product code', 'error');
+      showToast('Please enter your unique product code', 'error');
+      codeInput.focus();
       return;
     }
 
-    showLoader();
+    if (!mobile) {
+      showToast('Please enter your mobile number', 'error');
+      mobileInput.focus();
+      return;
+    }
+
+    if (mobile.length < 7) {
+      showToast('Please enter a valid mobile number', 'error');
+      mobileInput.focus();
+      return;
+    }
+
+    // Set loading state
+    verifyBtn.disabled = true;
+    const originalBtnText = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
     resultBox.style.display = 'none';
 
     try {
-      const result = await db.verifyProductCode(code);
+      // Calls db.verifyProductCode which also automatically stores the log on the Supabase backend
+      const result = await db.verifyProductCode(code, mobile, email);
 
-      if (result.verified) {
-        // Formatting dates
-        const mfgDate = result.manufacturing_date ? new Date(result.manufacturing_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
-        const expDate = result.expiry_date ? new Date(result.expiry_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+      if (result && result.verified) {
+        const mfgDate = result.manufacturing_date 
+          ? new Date(result.manufacturing_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) 
+          : 'Verified Batch';
+        const expDate = result.expiry_date 
+          ? new Date(result.expiry_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) 
+          : 'Verified Batch';
 
         resultBox.className = 'result-box success';
         resultBox.innerHTML = `
           <div class="result-success-header">
             <i class="fas fa-check-circle"></i>
-            <span>Verified Genuine Product</span>
+            <span>100% Authentic Genuine Product</span>
           </div>
           <div class="result-details-grid">
-            <img class="result-prod-img" src="${result.product_image || 'https://via.placeholder.com/100?text=No+Image'}" alt="${result.product_name}">
             <div class="result-info">
-              <div class="result-name">${result.product_name}</div>
+              <div class="result-name">${escapeHTML(result.product_name || 'Top Muscle Nutrition Product')}</div>
               <div class="result-meta-row">
-                <span class="result-label">MFG Date:</span>
+                <span class="result-label">Status:</span>
+                <span class="result-status-badge"><i class="fas fa-shield-check"></i> ${(result.status || 'Active / Verified').toUpperCase()}</span>
+              </div>
+              <div class="result-meta-row">
+                <span class="result-label">Manufacturing Date:</span>
                 <span class="result-val">${mfgDate}</span>
               </div>
               <div class="result-meta-row">
@@ -3711,38 +4002,42 @@ function renderProductVerification() {
                 <span class="result-val">${expDate}</span>
               </div>
               <div class="result-meta-row">
-                <span class="result-label">Status:</span>
-                <span class="result-status-badge">${(result.status || 'active').toUpperCase()}</span>
+                <span class="result-label">Code Checked:</span>
+                <span class="result-val" style="font-family: monospace; letter-spacing: 1px;">#${escapeHTML(code.toUpperCase())}</span>
               </div>
             </div>
           </div>
         `;
+        showToast('Product successfully verified as authentic!', 'success');
       } else {
         resultBox.className = 'result-box error';
         resultBox.innerHTML = `
-          <i class="fas fa-times-circle" style="font-size:1.5rem; margin-bottom:8px;"></i>
-          <div><strong>Verification Failed</strong></div>
-          <div style="font-size:0.9rem; margin-top:4px;">The code entered is invalid or does not exist in our systems. Please check the digits and try again or contact support.</div>
+          <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 6px;">
+            <i class="fas fa-exclamation-circle" style="font-size: 1.25rem;"></i>
+            <span>Verification Failed</span>
+          </div>
+          <p style="margin: 0; font-size: 0.88rem; line-height: 1.5; color: #7f1d1d;">
+            The code <strong>#${escapeHTML(code.toUpperCase())}</strong> does not match any genuine product in our database. Please double-check the unique code printed on your packaging or contact customer support for assistance.
+          </p>
         `;
+        showToast('Invalid or unrecognized code', 'error');
       }
 
       resultBox.style.display = 'block';
+      resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     } catch (err) {
       console.error('Verification error:', err);
-      showToast('Error verifying product code', 'error');
+      showToast('Error verifying product code. Please try again.', 'error');
     } finally {
-      hideLoader();
+      verifyBtn.disabled = false;
+      verifyBtn.innerHTML = originalBtnText;
     }
-  });
+  };
 
-  // Support pressing enter inside input
-  inputEl.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') {
-      verifyBtn.click();
-    }
-  });
+  formEl.addEventListener('submit', handleSubmit);
 }
+
 
 // 5. CUSTOM 404 VIEW
 async function render404() {

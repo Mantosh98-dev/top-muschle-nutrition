@@ -380,3 +380,29 @@ CREATE POLICY "Allow public read banners" ON storage.objects
 DROP POLICY IF EXISTS "Allow admin manage banners" ON storage.objects;
 CREATE POLICY "Allow admin manage banners" ON storage.objects
   FOR ALL TO authenticated USING (bucket_id = 'banners') WITH CHECK (bucket_id = 'banners');
+
+--------------------------------------------------------------------------------
+-- 7. CREATE VERIFICATION LOGS TABLE (Product Authentication History)
+--------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS verification_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT NOT NULL,
+  mobile_number TEXT NOT NULL,
+  email TEXT,
+  status TEXT NOT NULL DEFAULT 'invalid',
+  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+  product_name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE verification_logs ENABLE ROW LEVEL SECURITY;
+
+-- Allow public insertion so customer authenticity checks are recorded
+CREATE POLICY "Allow public insert verification_logs" ON verification_logs
+  FOR INSERT WITH CHECK (true);
+
+-- Allow authenticated admins to view and manage verification logs
+CREATE POLICY "Allow admin manage verification_logs" ON verification_logs
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
